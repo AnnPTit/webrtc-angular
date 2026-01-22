@@ -35,7 +35,7 @@ export class SocketService {
       return;
     }
     
-    this.socket = io('http://localhost:3000');
+    this.socket = io('https://tcnnxwg2-3000.asse.devtunnels.ms/');
 
     this.socket.on('connect', () => {
       this.connected.set(true);

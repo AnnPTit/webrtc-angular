@@ -41,7 +41,32 @@ export class WebrtcService {
   });
 
   private readonly iceServers: RTCConfiguration = {
-    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+    iceServers: [
+      // STUN server
+      { urls: 'stun:stun.relay.metered.ca:80' },
+      // TURN servers từ Metered.ca (credentials của bạn)
+      {
+        urls: 'turn:global.relay.metered.ca:80',
+        username: 'de2fdccebb4b92085f52fc05',
+        credential: 'UT2MgcOElTK1nzhJ',
+      },
+      {
+        urls: 'turn:global.relay.metered.ca:80?transport=tcp',
+        username: 'de2fdccebb4b92085f52fc05',
+        credential: 'UT2MgcOElTK1nzhJ',
+      },
+      {
+        urls: 'turn:global.relay.metered.ca:443',
+        username: 'de2fdccebb4b92085f52fc05',
+        credential: 'UT2MgcOElTK1nzhJ',
+      },
+      {
+        urls: 'turns:global.relay.metered.ca:443?transport=tcp',
+        username: 'de2fdccebb4b92085f52fc05',
+        credential: 'UT2MgcOElTK1nzhJ',
+      },
+    ],
+    iceCandidatePoolSize: 10,
   };
 
   constructor(private socket: SocketService) {}
@@ -276,6 +301,28 @@ export class WebrtcService {
 
     pc.oniceconnectionstatechange = () => {
       console.log(`Peer ${peerId} ICE state:`, pc.iceConnectionState);
+      if (pc.iceConnectionState === 'failed') {
+        console.error(`ICE connection failed for peer ${peerId}. Restarting ICE...`);
+        pc.restartIce();
+      }
+    };
+
+    pc.onicegatheringstatechange = () => {
+      console.log(`Peer ${peerId} ICE gathering state:`, pc.iceGatheringState);
+    };
+
+    pc.onicecandidateerror = (event) => {
+      console.error(`ICE candidate error for peer ${peerId}:`, event);
+    };
+
+    pc.onicecandidate = (e) => {
+      if (e.candidate) {
+        // Log candidate type để debug
+        console.log(`ICE candidate for ${peerId}: type=${e.candidate.type}, protocol=${e.candidate.protocol}, address=${e.candidate.address}`);
+        this.socket.sendIceCandidate(peerId, e.candidate);
+      } else {
+        console.log(`ICE gathering complete for ${peerId}`);
+      }
     };
 
     // Add camera tracks
@@ -327,12 +374,6 @@ export class WebrtcService {
           newStreams.set(peerId, peerStreams);
           return newStreams;
         });
-      }
-    };
-
-    pc.onicecandidate = (e) => {
-      if (e.candidate) {
-        this.socket.sendIceCandidate(peerId, e.candidate);
       }
     };
 
