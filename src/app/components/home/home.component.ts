@@ -3,9 +3,12 @@ import {
   ChangeDetectionStrategy,
   signal,
   inject,
+  OnInit,
+  OnDestroy,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { SocketService } from '../../services/socket';
 
 @Component({
@@ -29,36 +32,132 @@ import { SocketService } from '../../services/socket';
           <span>{{ socket.isConnected() ? 'Connected' : 'Connecting...' }}</span>
         </div>
 
-        <form (ngSubmit)="joinRoom()" class="join-form">
-          <div class="form-group">
-            <label for="roomId">Room ID</label>
-            <input
-              id="roomId"
-              type="text"
-              [(ngModel)]="roomId"
-              name="roomId"
-              placeholder="Enter room ID"
-              required
-              autocomplete="off"
-            />
-          </div>
-
+        <!-- Tabs -->
+        <div class="tabs" role="tablist">
           <button
-            type="submit"
-            class="btn btn-primary"
-            [disabled]="!socket.isConnected() || !roomId().trim()"
+            type="button"
+            role="tab"
+            class="tab"
+            [class.active]="activeTab() === 'join'"
+            [attr.aria-selected]="activeTab() === 'join'"
+            (click)="activeTab.set('join')"
           >
             Join Room
           </button>
-        </form>
+          <button
+            type="button"
+            role="tab"
+            class="tab"
+            [class.active]="activeTab() === 'create'"
+            [attr.aria-selected]="activeTab() === 'create'"
+            (click)="activeTab.set('create')"
+          >
+            Create Room
+          </button>
+        </div>
+
+        @if (activeTab() === 'join') {
+          <form (ngSubmit)="joinRoom()" class="join-form">
+            <div class="form-group">
+              <label for="roomId">Room ID</label>
+              <input
+                id="roomId"
+                type="text"
+                [(ngModel)]="roomId"
+                name="roomId"
+                placeholder="Enter room ID"
+                required
+                autocomplete="off"
+              />
+            </div>
+
+            @if (showPasswordInput()) {
+              <div class="form-group">
+                <label for="joinPassword">Password</label>
+                <input
+                  id="joinPassword"
+                  type="password"
+                  [(ngModel)]="joinPassword"
+                  name="joinPassword"
+                  placeholder="Enter room password"
+                  autocomplete="off"
+                />
+              </div>
+            }
+
+            @if (errorMessage()) {
+              <div class="error-message" role="alert">
+                {{ errorMessage() }}
+              </div>
+            }
+
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="!socket.isConnected() || !roomId().trim() || isLoading()"
+            >
+              {{ isLoading() ? 'Joining...' : 'Join Room' }}
+            </button>
+          </form>
+        }
+
+        @if (activeTab() === 'create') {
+          <form (ngSubmit)="createRoom()" class="join-form">
+            <div class="form-group">
+              <label for="newRoomId">Room ID</label>
+              <input
+                id="newRoomId"
+                type="text"
+                [(ngModel)]="newRoomId"
+                name="newRoomId"
+                placeholder="Enter new room ID"
+                required
+                autocomplete="off"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="createPassword">Password (optional)</label>
+              <input
+                id="createPassword"
+                type="password"
+                [(ngModel)]="createPassword"
+                name="createPassword"
+                placeholder="Set a password for the room"
+                autocomplete="new-password"
+              />
+              <small class="hint">Leave empty for a public room</small>
+            </div>
+
+            @if (successMessage()) {
+              <div class="success-message" role="status">
+                {{ successMessage() }}
+              </div>
+            }
+
+            @if (createErrorMessage()) {
+              <div class="error-message" role="alert">
+                {{ createErrorMessage() }}
+              </div>
+            }
+
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="!socket.isConnected() || !newRoomId().trim() || isLoading()"
+            >
+              {{ isLoading() ? 'Creating...' : 'Create & Join Room' }}
+            </button>
+          </form>
+        }
 
         <div class="info">
           <h2>How it works</h2>
           <ol>
-            <li>Enter a room ID (or create a new one)</li>
+            <li>Create a new room or join an existing one</li>
+            <li>Set a password to make your room private (optional)</li>
             <li>Configure your camera and microphone</li>
-            <li>Join the room and start calling</li>
-            <li>Share the room ID with others to join</li>
+            <li>Share the room ID and password with others</li>
           </ol>
         </div>
       </div>
@@ -225,6 +324,68 @@ import { SocketService } from '../../services/socket';
       line-height: 1.8;
     }
 
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.5rem;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #0f3460;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border: none;
+      background: #1a1a2e;
+      color: #a0a0a0;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab:hover {
+      background: #0f3460;
+      color: #fff;
+    }
+
+    .tab.active {
+      background: #4ecca3;
+      color: #1a1a2e;
+    }
+
+    .tab:focus {
+      outline: 2px solid #4ecca3;
+      outline-offset: -2px;
+    }
+
+    .hint {
+      color: #666;
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    .error-message {
+      padding: 0.75rem;
+      background: rgba(233, 69, 96, 0.2);
+      border: 1px solid #e94560;
+      border-radius: 6px;
+      color: #e94560;
+      font-size: 0.875rem;
+      text-align: center;
+    }
+
+    .success-message {
+      padding: 0.75rem;
+      background: rgba(78, 204, 163, 0.2);
+      border: 1px solid #4ecca3;
+      border-radius: 6px;
+      color: #4ecca3;
+      font-size: 0.875rem;
+      text-align: center;
+    }
+
     @media (max-width: 480px) {
       .home-container {
         padding: 1rem;
@@ -240,16 +401,140 @@ import { SocketService } from '../../services/socket';
     }
   `,
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit, OnDestroy {
   readonly socket = inject(SocketService);
   private readonly router = inject(Router);
 
   readonly roomId = signal('');
+  readonly newRoomId = signal('');
+  readonly activeTab = signal<'join' | 'create'>('join');
+  readonly showPasswordInput = signal(false);
+  readonly errorMessage = signal('');
+  readonly createErrorMessage = signal('');
+  readonly successMessage = signal('');
+  readonly isLoading = signal(false);
+
+  joinPassword = '';
+  createPassword = '';
+
+  private subscriptions: Subscription[] = [];
+  private pendingRoomId = '';
+
+  ngOnInit(): void {
+    this.subscriptions.push(
+      this.socket.onJoinResult.subscribe(result => {
+        this.isLoading.set(false);
+        
+        if (result.success) {
+          // Clear any previous errors
+          this.errorMessage.set('');
+          this.showPasswordInput.set(false);
+          // Successfully joined, navigate to lobby
+          this.router.navigate(['/lobby', this.pendingRoomId]);
+        } else if (result.requiresPassword) {
+          this.showPasswordInput.set(true);
+          this.errorMessage.set('This room requires a password');
+        } else {
+          // Handle specific error messages
+          const errorMsg = this.getErrorMessage(result.error);
+          this.errorMessage.set(errorMsg);
+          
+          // Clear password input on wrong password
+          if (result.error?.includes('password')) {
+            this.joinPassword = '';
+          }
+        }
+      }),
+
+      this.socket.onRoomCreated.subscribe(result => {
+        this.isLoading.set(false);
+        this.createErrorMessage.set('');
+        this.successMessage.set('Room created successfully!');
+        
+        // Store password for auto-join
+        if (this.createPassword) {
+          sessionStorage.setItem('roomPassword', this.createPassword);
+        }
+        
+        // Navigate to lobby
+        setTimeout(() => {
+          this.router.navigate(['/lobby', result.roomId]);
+        }, 500);
+      }),
+
+      this.socket.onCreateRoomError.subscribe(result => {
+        this.isLoading.set(false);
+        this.successMessage.set('');
+        const errorMsg = this.getErrorMessage(result.error);
+        this.createErrorMessage.set(errorMsg);
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+  }
 
   joinRoom(): void {
     const room = this.roomId().trim();
-    if (room && this.socket.isConnected()) {
-      this.router.navigate(['/lobby', room]);
+    if (!room || !this.socket.isConnected()) return;
+
+    this.errorMessage.set('');
+    this.isLoading.set(true);
+    this.pendingRoomId = room;
+
+    // Store password if provided
+    if (this.joinPassword) {
+      sessionStorage.setItem('roomPassword', this.joinPassword);
     }
+
+    this.socket.joinRoom(room, this.joinPassword || undefined);
+  }
+
+  createRoom(): void {
+    const room = this.newRoomId().trim();
+    if (!room || !this.socket.isConnected()) return;
+
+    // Validate room ID format
+    if (room.length < 3) {
+      this.createErrorMessage.set('Room ID must be at least 3 characters');
+      return;
+    }
+    
+    if (!/^[a-zA-Z0-9-_]+$/.test(room)) {
+      this.createErrorMessage.set('Room ID can only contain letters, numbers, hyphens and underscores');
+      return;
+    }
+
+    this.createErrorMessage.set('');
+    this.successMessage.set('');
+    this.isLoading.set(true);
+    this.pendingRoomId = room;
+
+    this.socket.createRoom(room, this.createPassword || undefined);
+  }
+
+  private getErrorMessage(error?: string): string {
+    if (!error) return 'An unknown error occurred';
+    
+    // Map server errors to user-friendly messages
+    const errorMap: Record<string, string> = {
+      'Room already exists': 'This room ID is already taken. Please choose a different one.',
+      'Room does not exist': 'This room does not exist. Please check the Room ID or create a new room.',
+      'Invalid password': 'Incorrect password. Please try again.',
+      'Wrong password': 'Incorrect password. Please try again.',
+      'Password required': 'This room requires a password.',
+      'Room is full': 'This room is full. Please try again later.',
+      'Invalid room ID': 'Invalid room ID format.',
+    };
+
+    // Check if error matches any known error
+    for (const [key, message] of Object.entries(errorMap)) {
+      if (error.toLowerCase().includes(key.toLowerCase())) {
+        return message;
+      }
+    }
+
+    return error;
   }
 }

@@ -29,6 +29,9 @@ export class SocketService {
   private answer$ = new Subject<{ from: string; answer: RTCSessionDescriptionInit }>();
   private iceCandidate$ = new Subject<{ from: string; candidate: RTCIceCandidateInit }>();
   private chat$ = new Subject<ChatMessage>();
+  private roomCreated$ = new Subject<{ roomId: string; hasPassword: boolean }>();
+  private joinResult$ = new Subject<{ success: boolean; error?: string; requiresPassword?: boolean }>();
+  private createRoomError$ = new Subject<{ error: string }>();
 
   constructor() {
     if (!this.isBrowser) {
@@ -54,6 +57,9 @@ export class SocketService {
     this.socket.on('answer', (data: { from: string; answer: RTCSessionDescriptionInit }) => this.answer$.next(data));
     this.socket.on('ice-candidate', (data: { from: string; candidate: RTCIceCandidateInit }) => this.iceCandidate$.next(data));
     this.socket.on('chat', (msg: ChatMessage) => this.chat$.next(msg));
+    this.socket.on('room-created', (data: { roomId: string; hasPassword: boolean }) => this.roomCreated$.next(data));
+    this.socket.on('join-result', (data: { success: boolean; error?: string; requiresPassword?: boolean }) => this.joinResult$.next(data));
+    this.socket.on('create-room-error', (data: { error: string }) => this.createRoomError$.next(data));
   }
 
   get onRoomUsers(): Observable<string[]> {
@@ -84,8 +90,28 @@ export class SocketService {
     return this.chat$.asObservable();
   }
 
-  joinRoom(roomId: string): void {
-    this.socket?.emit('join-room', { roomId });
+  get onRoomCreated(): Observable<{ roomId: string; hasPassword: boolean }> {
+    return this.roomCreated$.asObservable();
+  }
+
+  get onJoinResult(): Observable<{ success: boolean; error?: string; requiresPassword?: boolean }> {
+    return this.joinResult$.asObservable();
+  }
+
+  get onCreateRoomError(): Observable<{ error: string }> {
+    return this.createRoomError$.asObservable();
+  }
+
+  createRoom(roomId: string, password?: string): void {
+    this.socket?.emit('create-room', { roomId, password });
+  }
+
+  joinRoom(roomId: string, password?: string): void {
+    this.socket?.emit('join-room', { roomId, password });
+  }
+
+  checkRoom(roomId: string): void {
+    this.socket?.emit('check-room', { roomId });
   }
 
   sendOffer(to: string, offer: RTCSessionDescriptionInit): void {

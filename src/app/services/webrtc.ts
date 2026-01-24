@@ -20,6 +20,7 @@ export class WebrtcService {
   private readonly remoteStreams = signal<Map<string, MediaStream[]>>(new Map());
   
   private localStreamValue: MediaStream | null = null;
+  private rawStreamValue: MediaStream | null = null; // Original stream from getUserMedia
   private screenStreamValue: MediaStream | null = null;
   private audioContext: AudioContext | null = null;
   
@@ -29,6 +30,16 @@ export class WebrtcService {
   readonly mediaReady = signal(false);
   readonly isVideoEnabled = signal(true);
   readonly isAudioEnabled = signal(true);
+  
+  // Voice Activity Detection
+  readonly isLocalSpeaking = signal(false);
+  readonly speakingPeers = signal<Set<string>>(new Set());
+  
+  private localAnalyser: AnalyserNode | null = null;
+  private localVadInterval: number | null = null;
+  private remoteAnalysers = new Map<string, { analyser: AnalyserNode; context: AudioContext; interval: number }>();
+  private readonly VAD_THRESHOLD = 30; // Audio level threshold for speaking detection
+  private readonly VAD_CHECK_INTERVAL = 100; // Check every 100ms
   
   readonly allRemoteStreams = computed(() => {
     const result: { peerId: string; stream: MediaStream }[] = [];
@@ -94,6 +105,9 @@ export class WebrtcService {
         constraints || defaultConstraints
       );
       
+      // Store raw stream to stop it later
+      this.rawStreamValue = rawStream;
+      
       // Process audio through Web Audio API for better echo control
       this.localStreamValue = await this.processAudioStream(rawStream);
       this.localStream.set(this.localStreamValue);
@@ -135,6 +149,15 @@ export class WebrtcService {
       highpassFilter.connect(compressor);
       compressor.connect(gainNode);
       gainNode.connect(destination);
+      
+      // Create analyser for voice activity detection
+      this.localAnalyser = this.audioContext.createAnalyser();
+      this.localAnalyser.fftSize = 256;
+      this.localAnalyser.smoothingTimeConstant = 0.5;
+      gainNode.connect(this.localAnalyser);
+      
+      // Start local VAD monitoring
+      this.startLocalVoiceActivityDetection();
       
       // Create new stream with processed audio and original video
       const processedStream = new MediaStream();
@@ -453,6 +476,9 @@ export class WebrtcService {
       pc.close();
     }
     
+    // Stop VAD for this peer
+    this.stopRemoteVoiceActivityDetection(peerId);
+    
     this.peers.update(peers => {
       const newPeers = new Map(peers);
       newPeers.delete(peerId);
@@ -528,8 +554,20 @@ export class WebrtcService {
   }
 
   stopAllMedia(): void {
+    // Stop all tracks from local stream
     this.localStreamValue?.getTracks().forEach(track => track.stop());
+    
+    // Stop raw stream tracks (original from getUserMedia) to fully release camera/mic
+    this.rawStreamValue?.getTracks().forEach(track => track.stop());
+    
+    // Stop screen sharing tracks
     this.screenStreamValue?.getTracks().forEach(track => track.stop());
+    
+    // Stop local VAD
+    this.stopLocalVoiceActivityDetection();
+    
+    // Stop all remote VAD
+    this.stopAllRemoteVoiceActivityDetection();
     
     // Close audio context
     if (this.audioContext) {
@@ -540,6 +578,7 @@ export class WebrtcService {
     this.peers().forEach(pc => pc.close());
     
     this.localStreamValue = null;
+    this.rawStreamValue = null;
     this.screenStreamValue = null;
     this.localStream.set(null);
     this.screenStream.set(null);
@@ -548,5 +587,109 @@ export class WebrtcService {
     this.remoteStreams.set(new Map());
     this.mediaReady.set(false);
     this.isScreenSharing.set(false);
+    this.isLocalSpeaking.set(false);
+    this.speakingPeers.set(new Set());
+  }
+  
+  private startLocalVoiceActivityDetection(): void {
+    if (!this.localAnalyser || !this.isBrowser) return;
+    
+    const dataArray = new Uint8Array(this.localAnalyser.frequencyBinCount);
+    
+    this.localVadInterval = window.setInterval(() => {
+      if (!this.localAnalyser) return;
+      
+      this.localAnalyser.getByteFrequencyData(dataArray);
+      const average = dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
+      
+      const isSpeaking = average > this.VAD_THRESHOLD && this.isAudioEnabled();
+      if (this.isLocalSpeaking() !== isSpeaking) {
+        this.isLocalSpeaking.set(isSpeaking);
+      }
+    }, this.VAD_CHECK_INTERVAL);
+  }
+  
+  private stopLocalVoiceActivityDetection(): void {
+    if (this.localVadInterval !== null) {
+      clearInterval(this.localVadInterval);
+      this.localVadInterval = null;
+    }
+    this.localAnalyser = null;
+    this.isLocalSpeaking.set(false);
+  }
+  
+  startRemoteVoiceActivityDetection(peerId: string, stream: MediaStream): void {
+    if (!this.isBrowser) return;
+    
+    // Skip if already monitoring this peer
+    if (this.remoteAnalysers.has(peerId)) return;
+    
+    // Check if stream has audio tracks
+    const audioTracks = stream.getAudioTracks();
+    if (audioTracks.length === 0) return;
+    
+    try {
+      const audioContext = new AudioContext();
+      const source = audioContext.createMediaStreamSource(stream);
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.5;
+      source.connect(analyser);
+      
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      
+      const interval = window.setInterval(() => {
+        analyser.getByteFrequencyData(dataArray);
+        const average = dataArray.reduce((sum, value) => sum + value, 0) / dataArray.length;
+        
+        const isSpeaking = average > this.VAD_THRESHOLD;
+        const currentSpeakers = this.speakingPeers();
+        const wasSpeaking = currentSpeakers.has(peerId);
+        
+        if (isSpeaking !== wasSpeaking) {
+          this.speakingPeers.update(peers => {
+            const newPeers = new Set(peers);
+            if (isSpeaking) {
+              newPeers.add(peerId);
+            } else {
+              newPeers.delete(peerId);
+            }
+            return newPeers;
+          });
+        }
+      }, this.VAD_CHECK_INTERVAL);
+      
+      this.remoteAnalysers.set(peerId, { analyser, context: audioContext, interval });
+    } catch (err) {
+      console.error('Error starting remote VAD for peer:', peerId, err);
+    }
+  }
+  
+  stopRemoteVoiceActivityDetection(peerId: string): void {
+    const vadData = this.remoteAnalysers.get(peerId);
+    if (vadData) {
+      clearInterval(vadData.interval);
+      vadData.context.close().catch(() => {});
+      this.remoteAnalysers.delete(peerId);
+      
+      this.speakingPeers.update(peers => {
+        const newPeers = new Set(peers);
+        newPeers.delete(peerId);
+        return newPeers;
+      });
+    }
+  }
+  
+  private stopAllRemoteVoiceActivityDetection(): void {
+    this.remoteAnalysers.forEach((vadData, peerId) => {
+      clearInterval(vadData.interval);
+      vadData.context.close().catch(() => {});
+    });
+    this.remoteAnalysers.clear();
+    this.speakingPeers.set(new Set());
+  }
+  
+  isPeerSpeaking(peerId: string): boolean {
+    return this.speakingPeers().has(peerId);
   }
 }

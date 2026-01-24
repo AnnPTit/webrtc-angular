@@ -47,10 +47,81 @@ interface DeviceInfo {
       </header>
 
       <main class="room-content">
-        <section class="videos-section" aria-label="Video streams">
-          <div class="videos-grid">
+        <section class="videos-section" [class.has-pinned]="pinnedVideo()" aria-label="Video streams">
+          <!-- Pinned Video View -->
+          @if (pinnedVideo()) {
+            <div class="pinned-container">
+              @if (pinnedVideo() === 'local' && webrtc.localStream()) {
+                <div class="video-container pinned-video" [class.speaking]="webrtc.isLocalSpeaking()">
+                  <video
+                    autoplay
+                    muted
+                    playsinline
+                    aria-label="Your video (pinned)"
+                    [srcObject]="webrtc.localStream()"
+                  ></video>
+                  <span class="video-label">You (Camera) - Pinned</span>
+                  <button
+                    type="button"
+                    class="btn-unpin"
+                    (click)="unpinVideo()"
+                    aria-label="Unpin video"
+                  >
+                    📌 Unpin
+                  </button>
+                </div>
+              }
+              @if (pinnedVideo() === 'local-screen' && webrtc.screenStream()) {
+                <div class="video-container pinned-video screen-video">
+                  <video
+                    autoplay
+                    playsinline
+                    aria-label="Your screen share (pinned)"
+                    [srcObject]="webrtc.screenStream()"
+                  ></video>
+                  <span class="video-label">You (Screen) - Pinned</span>
+                  <button
+                    type="button"
+                    class="btn-unpin"
+                    (click)="unpinVideo()"
+                    aria-label="Unpin video"
+                  >
+                    📌 Unpin
+                  </button>
+                </div>
+              }
+              @for (remote of webrtc.allRemoteStreams(); track remote.stream.id) {
+                @if (pinnedVideo() === remote.peerId + '-' + remote.stream.id) {
+                  <div class="video-container pinned-video" [class.speaking]="webrtc.isPeerSpeaking(remote.peerId)">
+                    <video
+                      autoplay
+                      playsinline
+                      [attr.aria-label]="'Video from ' + remote.peerId + ' (pinned)'"
+                      [srcObject]="remote.stream"
+                    ></video>
+                    <span class="video-label">{{ remote.peerId | slice: 0 : 8 }} - Pinned</span>
+                    <button
+                      type="button"
+                      class="btn-unpin"
+                      (click)="unpinVideo()"
+                      aria-label="Unpin video"
+                    >
+                      📌 Unpin
+                    </button>
+                  </div>
+                }
+              }
+            </div>
+          }
+
+          <!-- Thumbnails / Grid View -->
+          <div class="videos-grid" [class.thumbnail-mode]="pinnedVideo()">
             @if (webrtc.localStream()) {
-              <div class="video-container local-video">
+              <div 
+                class="video-container local-video" 
+                [class.speaking]="webrtc.isLocalSpeaking()"
+                [class.is-pinned]="pinnedVideo() === 'local'"
+              >
                 <video
                   autoplay
                   muted
@@ -59,11 +130,25 @@ interface DeviceInfo {
                   [srcObject]="webrtc.localStream()"
                 ></video>
                 <span class="video-label">You (Camera)</span>
+                @if (webrtc.isLocalSpeaking()) {
+                  <span class="speaking-indicator" aria-label="Speaking"></span>
+                }
+                <button
+                  type="button"
+                  class="btn-pin"
+                  (click)="pinVideo('local')"
+                  [attr.aria-label]="pinnedVideo() === 'local' ? 'Unpin video' : 'Pin video'"
+                >
+                  {{ pinnedVideo() === 'local' ? '📌' : '📍' }}
+                </button>
               </div>
             }
 
             @if (webrtc.screenStream()) {
-              <div class="video-container screen-video">
+              <div 
+                class="video-container screen-video"
+                [class.is-pinned]="pinnedVideo() === 'local-screen'"
+              >
                 <video
                   autoplay
                   playsinline
@@ -71,18 +156,42 @@ interface DeviceInfo {
                   [srcObject]="webrtc.screenStream()"
                 ></video>
                 <span class="video-label">You (Screen)</span>
+                <button
+                  type="button"
+                  class="btn-pin"
+                  (click)="pinVideo('local-screen')"
+                  [attr.aria-label]="pinnedVideo() === 'local-screen' ? 'Unpin video' : 'Pin video'"
+                >
+                  {{ pinnedVideo() === 'local-screen' ? '📌' : '📍' }}
+                </button>
               </div>
             }
 
             @for (remote of webrtc.allRemoteStreams(); track remote.stream.id) {
-              <div class="video-container remote-video">
+              <div 
+                class="video-container remote-video" 
+                [class.speaking]="webrtc.isPeerSpeaking(remote.peerId)"
+                [class.is-pinned]="pinnedVideo() === remote.peerId + '-' + remote.stream.id"
+              >
                 <video
                   autoplay
                   playsinline
                   [attr.aria-label]="'Video from ' + remote.peerId"
                   [srcObject]="remote.stream"
+                  (loadedmetadata)="onRemoteVideoLoaded(remote.peerId, remote.stream)"
                 ></video>
                 <span class="video-label">{{ remote.peerId | slice: 0 : 8 }}</span>
+                @if (webrtc.isPeerSpeaking(remote.peerId)) {
+                  <span class="speaking-indicator" aria-label="Speaking"></span>
+                }
+                <button
+                  type="button"
+                  class="btn-pin"
+                  (click)="pinVideo(remote.peerId + '-' + remote.stream.id)"
+                  [attr.aria-label]="pinnedVideo() === remote.peerId + '-' + remote.stream.id ? 'Unpin video' : 'Pin video'"
+                >
+                  {{ pinnedVideo() === remote.peerId + '-' + remote.stream.id ? '📌' : '📍' }}
+                </button>
               </div>
             }
           </div>
@@ -292,6 +401,25 @@ interface DeviceInfo {
       min-height: 0;
       display: flex;
       flex-direction: column;
+      gap: 1rem;
+    }
+
+    .videos-section.has-pinned {
+      flex-direction: row;
+    }
+
+    .pinned-container {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pinned-video {
+      width: 100%;
+      max-height: 100%;
+      aspect-ratio: 16 / 9;
     }
 
     .videos-grid {
@@ -301,12 +429,85 @@ interface DeviceInfo {
       flex: 1;
     }
 
+    .videos-grid.thumbnail-mode {
+      flex: 0 0 200px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      overflow-y: auto;
+      max-height: 100%;
+    }
+
+    .videos-grid.thumbnail-mode .video-container {
+      flex-shrink: 0;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+    }
+
+    .videos-grid.thumbnail-mode .video-container.is-pinned {
+      opacity: 0.5;
+    }
+
     .video-container {
       position: relative;
       background: #0f3460;
       border-radius: 8px;
       overflow: hidden;
       aspect-ratio: 16 / 9;
+    }
+
+    .video-container:hover .btn-pin {
+      opacity: 1;
+    }
+
+    .btn-pin {
+      position: absolute;
+      top: 0.5rem;
+      left: 0.5rem;
+      padding: 0.35rem 0.5rem;
+      background: rgba(0, 0, 0, 0.6);
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 0.875rem;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
+      z-index: 10;
+    }
+
+    .btn-pin:hover {
+      background: rgba(78, 204, 163, 0.8);
+    }
+
+    .btn-pin:focus {
+      opacity: 1;
+      outline: 2px solid #4ecca3;
+      outline-offset: 2px;
+    }
+
+    .btn-unpin {
+      position: absolute;
+      top: 0.75rem;
+      left: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid #4ecca3;
+      border-radius: 6px;
+      color: #4ecca3;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      z-index: 10;
+    }
+
+    .btn-unpin:hover {
+      background: rgba(78, 204, 163, 0.3);
+    }
+
+    .btn-unpin:focus {
+      outline: 2px solid #4ecca3;
+      outline-offset: 2px;
     }
 
     .video-container video {
@@ -330,10 +531,53 @@ interface DeviceInfo {
 
     .local-video {
       border: 2px solid #4ecca3;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
     .screen-video {
       border: 2px solid #e94560;
+    }
+
+    .video-container.speaking {
+      border-color: #4ecca3;
+      box-shadow: 0 0 0 3px rgba(78, 204, 163, 0.4), 0 0 20px rgba(78, 204, 163, 0.6);
+      animation: speaking-pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes speaking-pulse {
+      0%, 100% {
+        box-shadow: 0 0 0 3px rgba(78, 204, 163, 0.4), 0 0 15px rgba(78, 204, 163, 0.5);
+      }
+      50% {
+        box-shadow: 0 0 0 5px rgba(78, 204, 163, 0.5), 0 0 25px rgba(78, 204, 163, 0.7);
+      }
+    }
+
+    .speaking-indicator {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      width: 12px;
+      height: 12px;
+      background: #4ecca3;
+      border-radius: 50%;
+      animation: speaking-dot 0.8s ease-in-out infinite;
+    }
+
+    @keyframes speaking-dot {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.3);
+        opacity: 0.8;
+      }
+    }
+
+    .remote-video {
+      border: 2px solid transparent;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
     .chat-section {
@@ -652,6 +896,9 @@ export class RoomComponent implements OnInit, OnDestroy {
   readonly audioOutputDevices = signal<DeviceInfo[]>([]);
   readonly isSpeakerEnabled = signal(true);
   
+  // Pin video feature: 'local' | 'local-screen' | peerId | null
+  readonly pinnedVideo = signal<string | null>(null);
+  
   chatInput = '';
   selectedVideoDevice = '';
   selectedAudioInput = '';
@@ -686,19 +933,24 @@ export class RoomComponent implements OnInit, OnDestroy {
         // Store selected devices
         this.selectedVideoDevice = mediaSettings.videoDeviceId || '';
         this.selectedAudioInput = mediaSettings.audioDeviceId || '';
+        
+        // Get room password if exists
+        const roomPassword = mediaSettings.roomPassword || sessionStorage.getItem('roomPassword') || '';
+        
         // Clear the settings after use
         sessionStorage.removeItem('mediaSettings');
+        sessionStorage.removeItem('roomPassword');
+        
+        // Load available devices
+        await this.loadDevices();
+        
+        this.setupSocketListeners();
+        this.socket.joinRoom(roomIdParam, roomPassword || undefined);
       } else {
         // Fallback to default initialization (redirect to lobby)
         this.router.navigate(['/lobby', roomIdParam]);
         return;
       }
-      
-      // Load available devices
-      await this.loadDevices();
-      
-      this.setupSocketListeners();
-      this.socket.joinRoom(roomIdParam);
     } catch (error) {
       console.error('Failed to initialize media:', error);
       this.errorMessage.set('Failed to access camera/microphone. Please check permissions.');
@@ -861,5 +1113,23 @@ export class RoomComponent implements OnInit, OnDestroy {
   leaveRoom(): void {
     this.webrtc.stopAllMedia();
     this.router.navigate(['/']);
+  }
+
+  onRemoteVideoLoaded(peerId: string, stream: MediaStream): void {
+    // Start voice activity detection for the remote stream
+    this.webrtc.startRemoteVoiceActivityDetection(peerId, stream);
+  }
+
+  pinVideo(videoId: string): void {
+    if (this.pinnedVideo() === videoId) {
+      // Toggle off if already pinned
+      this.pinnedVideo.set(null);
+    } else {
+      this.pinnedVideo.set(videoId);
+    }
+  }
+
+  unpinVideo(): void {
+    this.pinnedVideo.set(null);
   }
 }

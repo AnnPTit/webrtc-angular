@@ -6,8 +6,6 @@ import {
   signal,
   inject,
   PLATFORM_ID,
-  viewChild,
-  ElementRef,
   effect,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -492,11 +490,14 @@ export class LobbyComponent implements OnInit, OnDestroy {
   async joinRoom(): Promise<void> {
     // Store the media stream settings in sessionStorage for the room component
     if (this.isBrowser) {
+      const roomPassword = sessionStorage.getItem('roomPassword') || '';
+      
       sessionStorage.setItem('mediaSettings', JSON.stringify({
         videoEnabled: this.isVideoEnabled(),
         audioEnabled: this.isAudioEnabled(),
         videoDeviceId: this.selectedVideoDevice,
         audioDeviceId: this.selectedAudioDevice,
+        roomPassword: roomPassword,
       }));
     }
 
