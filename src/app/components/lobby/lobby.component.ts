@@ -82,6 +82,18 @@ interface MediaDeviceInfo {
               </select>
             </div>
 
+            <div class="control-group">
+              <label for="displayName">Display Name</label>
+              <input
+                id="displayName"
+                type="text"
+                [(ngModel)]="displayName"
+                placeholder="Enter your display name"
+                maxlength="30"
+                aria-label="Enter your display name"
+              />
+            </div>
+
             <div class="toggle-controls">
               <button
                 type="button"
@@ -274,6 +286,29 @@ interface MediaDeviceInfo {
       cursor: not-allowed;
     }
 
+    input[type="text"] {
+      padding: 0.5rem;
+      background: #0f3460;
+      border: 1px solid #0f3460;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 0.9rem;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:hover {
+      border-color: #4ecca3;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #4ecca3;
+    }
+
+    input[type="text"]::placeholder {
+      color: #888;
+    }
+
     .toggle-controls {
       display: flex;
       gap: 0.75rem;
@@ -376,6 +411,10 @@ export class LobbyComponent implements OnInit, OnDestroy {
   readonly audioDevices = signal<MediaDeviceInfo[]>([]);
   readonly error = signal<string>('');
   readonly canJoin = signal(false);
+  
+  // Display name for the user
+  // TODO: Later, get this from login information when authentication is implemented
+  displayName = '';
 
   selectedVideoDevice = '';
   selectedAudioDevice = '';
@@ -385,6 +424,8 @@ export class LobbyComponent implements OnInit, OnDestroy {
   constructor() {
     effect(() => {
       // Enable join button if we have a preview stream
+      // Note: displayName is not a signal, so this effect won't trigger on its change
+      // The button will be enabled as soon as media is ready
       this.canJoin.set(!!this.previewStream());
     });
   }
@@ -492,12 +533,18 @@ export class LobbyComponent implements OnInit, OnDestroy {
     if (this.isBrowser) {
       const roomPassword = sessionStorage.getItem('roomPassword') || '';
       
+      // Get display name from input
+      // TODO: Later, replace this with user info from authentication
+      // const displayName = this.authService.currentUser()?.displayName || 'Anonymous';
+      const userDisplayName = this.displayName.trim() || 'Anonymous';
+      
       sessionStorage.setItem('mediaSettings', JSON.stringify({
         videoEnabled: this.isVideoEnabled(),
         audioEnabled: this.isAudioEnabled(),
         videoDeviceId: this.selectedVideoDevice,
         audioDeviceId: this.selectedAudioDevice,
         roomPassword: roomPassword,
+        displayName: userDisplayName,
       }));
     }
 

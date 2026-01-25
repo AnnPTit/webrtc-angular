@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { SlicePipe, isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { SocketService, ChatMessage } from '../../services/socket';
 import { WebrtcService } from '../../services/webrtc';
@@ -23,7 +23,7 @@ interface DeviceInfo {
 @Component({
   selector: 'app-room',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, SlicePipe, SrcObjectDirective],
+  imports: [FormsModule, SrcObjectDirective],
   template: `
     <div class="room-container">
       <header class="room-header">
@@ -60,7 +60,7 @@ interface DeviceInfo {
                     aria-label="Your video (pinned)"
                     [srcObject]="webrtc.localStream()"
                   ></video>
-                  <span class="video-label">You (Camera) - Pinned</span>
+                  <span class="video-label">{{ socket.localDisplayName() }} (Camera) - Pinned</span>
                   <button
                     type="button"
                     class="btn-unpin"
@@ -79,7 +79,7 @@ interface DeviceInfo {
                     aria-label="Your screen share (pinned)"
                     [srcObject]="webrtc.screenStream()"
                   ></video>
-                  <span class="video-label">You (Screen) - Pinned</span>
+                  <span class="video-label">{{ socket.localDisplayName() }} (Screen) - Pinned</span>
                   <button
                     type="button"
                     class="btn-unpin"
@@ -96,10 +96,10 @@ interface DeviceInfo {
                     <video
                       autoplay
                       playsinline
-                      [attr.aria-label]="'Video from ' + remote.peerId + ' (pinned)'"
+                      [attr.aria-label]="'Video from ' + socket.getDisplayName(remote.peerId) + ' (pinned)'"
                       [srcObject]="remote.stream"
                     ></video>
-                    <span class="video-label">{{ remote.peerId | slice: 0 : 8 }} - Pinned</span>
+                    <span class="video-label">{{ socket.getDisplayName(remote.peerId) }} - Pinned</span>
                     <button
                       type="button"
                       class="btn-unpin"
@@ -129,7 +129,7 @@ interface DeviceInfo {
                   aria-label="Your video"
                   [srcObject]="webrtc.localStream()"
                 ></video>
-                <span class="video-label">You (Camera)</span>
+                <span class="video-label">{{ socket.localDisplayName() }} (Camera)</span>
                 @if (webrtc.isLocalSpeaking()) {
                   <span class="speaking-indicator" aria-label="Speaking"></span>
                 }
@@ -155,7 +155,7 @@ interface DeviceInfo {
                   aria-label="Your screen share"
                   [srcObject]="webrtc.screenStream()"
                 ></video>
-                <span class="video-label">You (Screen)</span>
+                <span class="video-label">{{ socket.localDisplayName() }} (Screen)</span>
                 <button
                   type="button"
                   class="btn-pin"
@@ -176,11 +176,11 @@ interface DeviceInfo {
                 <video
                   autoplay
                   playsinline
-                  [attr.aria-label]="'Video from ' + remote.peerId"
+                  [attr.aria-label]="'Video from ' + socket.getDisplayName(remote.peerId)"
                   [srcObject]="remote.stream"
                   (loadedmetadata)="onRemoteVideoLoaded(remote.peerId, remote.stream)"
                 ></video>
-                <span class="video-label">{{ remote.peerId | slice: 0 : 8 }}</span>
+                <span class="video-label">{{ socket.getDisplayName(remote.peerId) }}</span>
                 @if (webrtc.isPeerSpeaking(remote.peerId)) {
                   <span class="speaking-indicator" aria-label="Speaking"></span>
                 }
@@ -208,7 +208,7 @@ interface DeviceInfo {
           >
             @for (msg of messages(); track $index) {
               <li class="chat-message" [class.own-message]="msg.from === socket.socketId()">
-                <strong>{{ msg.from === socket.socketId() ? 'You' : (msg.from | slice: 0 : 8) }}:</strong>
+                <strong>{{ msg.from === socket.socketId() ? socket.localDisplayName() : (msg.fromName || socket.getDisplayName(msg.from)) }}:</strong>
                 {{ msg.message }}
               </li>
             }
@@ -937,6 +937,11 @@ export class RoomComponent implements OnInit, OnDestroy {
         // Get room password if exists
         const roomPassword = mediaSettings.roomPassword || sessionStorage.getItem('roomPassword') || '';
         
+        // Get display name
+        // TODO: Later, replace this with user info from authentication
+        // const displayName = this.authService.currentUser()?.displayName || 'Anonymous';
+        const displayName = mediaSettings.displayName || 'Anonymous';
+        
         // Clear the settings after use
         sessionStorage.removeItem('mediaSettings');
         sessionStorage.removeItem('roomPassword');
@@ -945,7 +950,7 @@ export class RoomComponent implements OnInit, OnDestroy {
         await this.loadDevices();
         
         this.setupSocketListeners();
-        this.socket.joinRoom(roomIdParam, roomPassword || undefined);
+        this.socket.joinRoom(roomIdParam, roomPassword || undefined, displayName);
       } else {
         // Fallback to default initialization (redirect to lobby)
         this.router.navigate(['/lobby', roomIdParam]);
@@ -967,11 +972,11 @@ export class RoomComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.socket.onRoomUsers.subscribe(users => {
         console.log('Room users:', users);
-        users.forEach(id => this.webrtc.createOffer(id));
+        users.forEach(user => this.webrtc.createOffer(user.id));
       }),
 
-      this.socket.onUserJoined.subscribe(id => {
-        console.log('User joined:', id);
+      this.socket.onUserJoined.subscribe(user => {
+        console.log('User joined:', user.displayName, user.id);
       }),
 
       this.socket.onUserLeft.subscribe(id => {
