@@ -36,6 +36,18 @@
     }
   </div>
 
+  <!-- Subtitles/Captions Container -->
+  @if (subtitle.subtitlesEnabled() && subtitle.displaySubtitles().length > 0) {
+    <div class="subtitles-container" aria-live="polite" aria-label="Live captions">
+      @for (sub of subtitle.displaySubtitles(); track sub.id) {
+        <div class="subtitle-item" [class.is-final]="sub.isFinal">
+          <span class="subtitle-speaker">{{ sub.fromName }}:</span>
+          <span class="subtitle-text">{{ sub.text }}</span>
+        </div>
+      }
+    </div>
+  }
+
   <main class="room-content">
     <section class="videos-section" [class.has-pinned]="pinnedVideo()" aria-label="Video streams">
       <!-- Pinned Video View -->
@@ -325,6 +337,24 @@
       aria-label="Toggle chat"
     >
       {{ isChatVisible() ? '💬 Hide Chat' : '💬 Show Chat' }}
+    </button>
+
+    <button
+      type="button"
+      class="btn btn-captions"
+      [class.btn-active]="subtitle.isTranscribing()"
+      [disabled]="subtitle.isConnecting()"
+      (click)="toggleSubtitles()"
+      [attr.aria-pressed]="subtitle.isTranscribing()"
+      aria-label="Toggle live captions"
+    >
+      @if (subtitle.isConnecting()) {
+        🔄 Connecting...
+      } @else if (subtitle.isTranscribing()) {
+        📝 Captions On
+      } @else {
+        📝 Captions Off
+      }
     </button>
   </footer>
 

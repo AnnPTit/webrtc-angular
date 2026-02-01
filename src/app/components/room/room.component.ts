@@ -14,6 +14,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { SocketService, ChatMessage, Reaction } from '../../services/socket';
 import { WebrtcService } from '../../services/webrtc';
+import { SubtitleService } from '../../services/subtitle';
 import { SrcObjectDirective } from '../../directives/src-object.directive';
 
 interface DeviceInfo {
@@ -38,6 +39,7 @@ interface FloatingReaction {
 export class RoomComponent implements OnInit, OnDestroy {
   readonly socket = inject(SocketService);
   readonly webrtc = inject(WebrtcService);
+  readonly subtitle = inject(SubtitleService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
@@ -150,6 +152,9 @@ export class RoomComponent implements OnInit, OnDestroy {
       this.socket.leaveRoom(currentRoomId);
     }
     
+    // Stop transcription if active
+    this.subtitle.destroy();
+    
     this.subscriptions.forEach(sub => sub.unsubscribe());
     this.webrtc.stopAllMedia();
     if (this.timerInterval) {
@@ -205,6 +210,11 @@ export class RoomComponent implements OnInit, OnDestroy {
         // Skip if reaction is from self (already shown locally)
         if (reaction.from === this.socket.socketId()) return;
         this.showFloatingReaction(reaction.emoji, reaction.fromName);
+      }),
+
+      // Subscribe to subtitles
+      this.socket.onSubtitle.subscribe(subtitle => {
+        this.subtitle.handleSubtitle(subtitle);
       })
     );
   }
@@ -384,5 +394,11 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   unpinVideo(): void {
     this.pinnedVideo.set(null);
+  }
+
+  async toggleSubtitles(): Promise<void> {
+    // Get audio stream from local media
+    const localStream = this.webrtc.localStream();
+    await this.subtitle.toggleTranscription(localStream || undefined);
   }
 }

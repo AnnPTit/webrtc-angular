@@ -16,6 +16,14 @@ export interface Reaction {
   emoji: string;
 }
 
+export interface Subtitle {
+  type: 'partial' | 'final';
+  text: string;
+  from: string;
+  fromName: string;
+  timestamp: number;
+}
+
 export interface RoomUser {
   id: string;
   displayName: string;
@@ -53,6 +61,12 @@ export class SocketService {
   private joinResult$ = new Subject<{ success: boolean; error?: string; requiresPassword?: boolean; startTime?: number }>();
   private createRoomError$ = new Subject<{ error: string }>();
   private chatHistory$ = new Subject<ChatMessage[]>();
+  private subtitle$ = new Subject<Subtitle>();
+  private transcriptionStarted$ = new Subject<{ success: boolean; error?: string }>();
+  private transcriptionStopped$ = new Subject<{ success: boolean; error?: string }>();
+
+  // Store current room ID for transcription
+  private currentRoomId: string | null = null;
 
   constructor() {
     if (!this.isBrowser) {
@@ -123,6 +137,9 @@ export class SocketService {
     this.socket.on('join-result', (data: { success: boolean; error?: string; requiresPassword?: boolean; startTime?: number }) => this.joinResult$.next(data));
     this.socket.on('create-room-error', (data: { error: string }) => this.createRoomError$.next(data));
     this.socket.on('chat-history', (messages: ChatMessage[]) => this.chatHistory$.next(messages));
+    this.socket.on('subtitle', (data: Subtitle) => this.subtitle$.next(data));
+    this.socket.on('transcription-started', (data: { success: boolean; error?: string }) => this.transcriptionStarted$.next(data));
+    this.socket.on('transcription-stopped', (data: { success: boolean; error?: string }) => this.transcriptionStopped$.next(data));
   }
 
   // Helper method to get display name for a peer
@@ -178,6 +195,22 @@ export class SocketService {
     return this.chatHistory$.asObservable();
   }
 
+  get onSubtitle(): Observable<Subtitle> {
+    return this.subtitle$.asObservable();
+  }
+
+  get onTranscriptionStarted(): Observable<{ success: boolean; error?: string }> {
+    return this.transcriptionStarted$.asObservable();
+  }
+
+  get onTranscriptionStopped(): Observable<{ success: boolean; error?: string }> {
+    return this.transcriptionStopped$.asObservable();
+  }
+
+  getCurrentRoomId(): string | null {
+    return this.currentRoomId;
+  }
+
   createRoom(roomId: string, password?: string): void {
     this.socket?.emit('create-room', { roomId, password });
   }
@@ -187,6 +220,8 @@ export class SocketService {
     if (displayName) {
       this.localDisplayName.set(displayName);
     }
+    // Store current room ID
+    this.currentRoomId = roomId;
     this.socket?.emit('join-room', { roomId, password, displayName });
   }
 
@@ -215,10 +250,25 @@ export class SocketService {
   }
 
   leaveRoom(roomId: string): void {
+    this.currentRoomId = null;
     this.socket?.emit('leave-room', { roomId });
   }
 
+  // Transcription/Subtitle methods
+  startTranscription(roomId: string): void {
+    this.socket?.emit('start-transcription', { roomId });
+  }
+
+  stopTranscription(roomId: string): void {
+    this.socket?.emit('stop-transcription', { roomId });
+  }
+
+  sendAudioData(audioData: ArrayBuffer): void {
+    this.socket?.emit('audio-data', { audioData });
+  }
+
   disconnect(): void {
+    this.currentRoomId = null;
     this.socket?.disconnect();
   }
 }
