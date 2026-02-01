@@ -1,0 +1,146 @@
+<div class="home-container">
+  <div class="hero">
+    <h1>WebRTC Video Call</h1>
+    <p>Join a room to start a video call with others</p>
+  </div>
+
+  <div class="join-card">
+    <div class="connection-status">
+      <span
+        class="status-indicator"
+        [class.connected]="socket.isConnected()"
+        [attr.aria-label]="socket.isConnected() ? 'Connected to server' : 'Disconnected from server'"
+      ></span>
+      <span>{{ socket.isConnected() ? 'Connected' : 'Connecting...' }}</span>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs" role="tablist">
+      <button
+        type="button"
+        role="tab"
+        class="tab"
+        [class.active]="activeTab() === 'join'"
+        [attr.aria-selected]="activeTab() === 'join'"
+        (click)="activeTab.set('join')"
+      >
+        Join Room
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="tab"
+        [class.active]="activeTab() === 'create'"
+        [attr.aria-selected]="activeTab() === 'create'"
+        (click)="activeTab.set('create')"
+      >
+        Create Room
+      </button>
+    </div>
+
+    @if (activeTab() === 'join') {
+      <form (ngSubmit)="joinRoom()" class="join-form">
+        <div class="form-group">
+          <label for="roomId">Room ID</label>
+          <input
+            id="roomId"
+            type="text"
+            [(ngModel)]="roomId"
+            name="roomId"
+            placeholder="Enter room ID"
+            required
+            autocomplete="off"
+          />
+        </div>
+
+        @if (showPasswordInput()) {
+          <div class="form-group">
+            <label for="joinPassword">Password</label>
+            <input
+              id="joinPassword"
+              type="password"
+              [(ngModel)]="joinPassword"
+              name="joinPassword"
+              placeholder="Enter room password"
+              autocomplete="off"
+            />
+          </div>
+        }
+
+        @if (errorMessage()) {
+          <div class="error-message" role="alert">
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="!socket.isConnected() || !roomId().trim() || isLoading()"
+        >
+          {{ isLoading() ? 'Joining...' : 'Join Room' }}
+        </button>
+      </form>
+    }
+
+    @if (activeTab() === 'create') {
+      <form (ngSubmit)="createRoom()" class="join-form">
+        <div class="form-group">
+          <label for="newRoomId">Room ID</label>
+          <input
+            id="newRoomId"
+            type="text"
+            [(ngModel)]="newRoomId"
+            name="newRoomId"
+            placeholder="Enter new room ID"
+            required
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="createPassword">Password (optional)</label>
+          <input
+            id="createPassword"
+            type="password"
+            [(ngModel)]="createPassword"
+            name="createPassword"
+            placeholder="Set a password for the room"
+            autocomplete="new-password"
+          />
+          <small class="hint">Leave empty for a public room</small>
+        </div>
+
+        @if (successMessage()) {
+          <div class="success-message" role="status">
+            {{ successMessage() }}
+          </div>
+        }
+
+        @if (createErrorMessage()) {
+          <div class="error-message" role="alert">
+            {{ createErrorMessage() }}
+          </div>
+        }
+
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="!socket.isConnected() || !newRoomId().trim() || isLoading()"
+        >
+          {{ isLoading() ? 'Creating...' : 'Create & Join Room' }}
+        </button>
+      </form>
+    }
+
+    <div class="info">
+      <h2>How it works</h2>
+      <ol>
+        <li>Create a new room or join an existing one</li>
+        <li>Set a password to make your room private (optional)</li>
+        <li>Configure your camera and microphone</li>
+        <li>Share the room ID and password with others</li>
+      </ol>
+    </div>
+  </div>
+</div>

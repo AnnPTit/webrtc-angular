@@ -1,0 +1,123 @@
+<div class="lobby-container">
+  <header class="lobby-header">
+    <h1>Join Room: {{ roomId() }}</h1>
+  </header>
+
+  <main class="lobby-content">
+    <section class="preview-section" aria-label="Device setup">
+      <div class="video-preview-container">
+        @if (previewStream()) {
+          <video
+            #videoPreview
+            autoplay
+            muted
+            playsinline
+            aria-label="Camera preview"
+            [srcObject]="previewStream()"
+            [class.video-disabled]="!isVideoEnabled()"
+          ></video>
+        } @else {
+          <div class="video-placeholder">
+            <p>Camera preview will appear here</p>
+          </div>
+        }
+        @if (!isVideoEnabled()) {
+          <div class="video-off-overlay">
+            <span>Camera Off</span>
+          </div>
+        }
+      </div>
+
+      <div class="device-controls">
+        <div class="control-group">
+          <label for="cameraSelect">Camera</label>
+          <select
+            id="cameraSelect"
+            [(ngModel)]="selectedVideoDevice"
+            (change)="onDeviceChange()"
+            [disabled]="!isVideoEnabled()"
+          >
+            @for (device of videoDevices(); track device.deviceId) {
+              <option [value]="device.deviceId">{{ device.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="micSelect">Microphone</label>
+          <select
+            id="micSelect"
+            [(ngModel)]="selectedAudioDevice"
+            (change)="onDeviceChange()"
+            [disabled]="!isAudioEnabled()"
+          >
+            @for (device of audioDevices(); track device.deviceId) {
+              <option [value]="device.deviceId">{{ device.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="displayName">Display Name</label>
+          <input
+            id="displayName"
+            type="text"
+            [(ngModel)]="displayName"
+            placeholder="Enter your display name"
+            maxlength="30"
+            aria-label="Enter your display name"
+          />
+        </div>
+
+        <div class="toggle-controls">
+          <button
+            type="button"
+            class="btn"
+            [class.btn-active]="isVideoEnabled()"
+            (click)="toggleVideo()"
+            [attr.aria-pressed]="isVideoEnabled()"
+            aria-label="Toggle camera"
+          >
+            {{ isVideoEnabled() ? '📹 Camera On' : '📹 Camera Off' }}
+          </button>
+
+          <button
+            type="button"
+            class="btn"
+            [class.btn-active]="isAudioEnabled()"
+            (click)="toggleAudio()"
+            [attr.aria-pressed]="isAudioEnabled()"
+            aria-label="Toggle microphone"
+          >
+            {{ isAudioEnabled() ? '🎤 Mic On' : '🎤 Mic Off' }}
+          </button>
+        </div>
+      </div>
+
+      @if (error()) {
+        <div class="error-message" role="alert">
+          {{ error() }}
+        </div>
+      }
+    </section>
+  </main>
+
+  <footer class="lobby-footer">
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="goBack()"
+      aria-label="Go back to home"
+    >
+      Back
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="joinRoom()"
+      aria-label="Join room"
+    >
+      Join Room
+    </button>
+  </footer>
+</div>

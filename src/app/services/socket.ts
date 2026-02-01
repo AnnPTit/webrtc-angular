@@ -10,6 +10,12 @@ export interface ChatMessage {
   time: Date;
 }
 
+export interface Reaction {
+  from: string;
+  fromName: string;
+  emoji: string;
+}
+
 export interface RoomUser {
   id: string;
   displayName: string;
@@ -42,16 +48,18 @@ export class SocketService {
   private answer$ = new Subject<{ from: string; answer: RTCSessionDescriptionInit }>();
   private iceCandidate$ = new Subject<{ from: string; candidate: RTCIceCandidateInit }>();
   private chat$ = new Subject<ChatMessage>();
-  private roomCreated$ = new Subject<{ roomId: string; hasPassword: boolean }>();
-  private joinResult$ = new Subject<{ success: boolean; error?: string; requiresPassword?: boolean }>();
+  private reaction$ = new Subject<Reaction>();
+  private roomCreated$ = new Subject<{ roomId: string; hasPassword: boolean; startTime?: number }>();
+  private joinResult$ = new Subject<{ success: boolean; error?: string; requiresPassword?: boolean; startTime?: number }>();
   private createRoomError$ = new Subject<{ error: string }>();
+  private chatHistory$ = new Subject<ChatMessage[]>();
 
   constructor() {
     if (!this.isBrowser) {
       return;
     }
     
-    this.socket = io('https://tcnnxwg2-3000.asse.devtunnels.ms/');
+    this.socket = io('https://vm2dsxh1-3000.asse.devtunnels.ms/');
 
     this.socket.on('connect', () => {
       this.connected.set(true);
@@ -110,9 +118,11 @@ export class SocketService {
     this.socket.on('answer', (data: { from: string; answer: RTCSessionDescriptionInit }) => this.answer$.next(data));
     this.socket.on('ice-candidate', (data: { from: string; candidate: RTCIceCandidateInit }) => this.iceCandidate$.next(data));
     this.socket.on('chat', (msg: ChatMessage) => this.chat$.next(msg));
-    this.socket.on('room-created', (data: { roomId: string; hasPassword: boolean }) => this.roomCreated$.next(data));
-    this.socket.on('join-result', (data: { success: boolean; error?: string; requiresPassword?: boolean }) => this.joinResult$.next(data));
+    this.socket.on('reaction', (data: Reaction) => this.reaction$.next(data));
+    this.socket.on('room-created', (data: { roomId: string; hasPassword: boolean; startTime?: number }) => this.roomCreated$.next(data));
+    this.socket.on('join-result', (data: { success: boolean; error?: string; requiresPassword?: boolean; startTime?: number }) => this.joinResult$.next(data));
     this.socket.on('create-room-error', (data: { error: string }) => this.createRoomError$.next(data));
+    this.socket.on('chat-history', (messages: ChatMessage[]) => this.chatHistory$.next(messages));
   }
 
   // Helper method to get display name for a peer
@@ -148,16 +158,24 @@ export class SocketService {
     return this.chat$.asObservable();
   }
 
-  get onRoomCreated(): Observable<{ roomId: string; hasPassword: boolean }> {
+  get onReaction(): Observable<Reaction> {
+    return this.reaction$.asObservable();
+  }
+
+  get onRoomCreated(): Observable<{ roomId: string; hasPassword: boolean; startTime?: number }> {
     return this.roomCreated$.asObservable();
   }
 
-  get onJoinResult(): Observable<{ success: boolean; error?: string; requiresPassword?: boolean }> {
+  get onJoinResult(): Observable<{ success: boolean; error?: string; requiresPassword?: boolean; startTime?: number }> {
     return this.joinResult$.asObservable();
   }
 
   get onCreateRoomError(): Observable<{ error: string }> {
     return this.createRoomError$.asObservable();
+  }
+
+  get onChatHistory(): Observable<ChatMessage[]> {
+    return this.chatHistory$.asObservable();
   }
 
   createRoom(roomId: string, password?: string): void {
@@ -190,6 +208,14 @@ export class SocketService {
 
   sendChat(roomId: string, message: string): void {
     this.socket?.emit('chat', { roomId, message });
+  }
+
+  sendReaction(roomId: string, emoji: string): void {
+    this.socket?.emit('reaction', { roomId, emoji });
+  }
+
+  leaveRoom(roomId: string): void {
+    this.socket?.emit('leave-room', { roomId });
   }
 
   disconnect(): void {
