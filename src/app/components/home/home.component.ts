@@ -2,6 +2,7 @@ import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SocketService } from '../../services/socket';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -29,8 +30,17 @@ export class HomeComponent {
 
   constructor(
     private router: Router,
-    protected socket: SocketService
+    protected socket: SocketService,
+    protected authService: AuthService
   ) {}
+
+  get currentUser() {
+    return this.authService.getCurrentUser();
+  }
+
+  logout(): void {
+    this.authService.logout();
+  }
 
   joinRoom(): void {
     const roomId = this.roomId();
