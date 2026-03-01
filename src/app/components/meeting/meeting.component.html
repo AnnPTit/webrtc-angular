@@ -1,0 +1,172 @@
+<div class="meeting-container">
+  <div class="top-bar">
+    <a routerLink="/home" class="back-link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" />
+      </svg>
+      Quay lại Trang chủ
+    </a>
+    <div class="user-info">
+      @if (currentUser) {
+        <span class="user-name">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="user-icon">
+            <path d="M10 8a3 3 0 100-6 3 3 0 000 6zM3.465 14.493a1.23 1.23 0 00.41 1.412A9.957 9.957 0 0010 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 00-13.074.003z" />
+          </svg>
+          {{ currentUser.fullName || currentUser.username }}
+        </span>
+        <button class="btn-logout" (click)="logout()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M3 4.25A2.25 2.25 0 015.25 2h5.5A2.25 2.25 0 0113 4.25v2a.75.75 0 01-1.5 0v-2a.75.75 0 00-.75-.75h-5.5a.75.75 0 00-.75.75v11.5c0 .414.336.75.75.75h5.5a.75.75 0 00.75-.75v-2a.75.75 0 011.5 0v2A2.25 2.25 0 0110.75 18h-5.5A2.25 2.25 0 013 15.75V4.25z" clip-rule="evenodd" />
+            <path fill-rule="evenodd" d="M19 10a.75.75 0 00-.75-.75H8.704l1.048-.943a.75.75 0 10-1.004-1.114l-2.5 2.25a.75.75 0 000 1.114l2.5 2.25a.75.75 0 101.004-1.114l-1.048-.943h9.546A.75.75 0 0019 10z" clip-rule="evenodd" />
+          </svg>
+          Đăng xuất
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>Họp Trực Tuyến</h1>
+    <p>Tham gia hoặc tạo phòng họp video trực tuyến</p>
+  </div>
+
+  <div class="join-card">
+    <div class="connection-status">
+      <span
+        class="status-indicator"
+        [class.connected]="socket.isConnected()"
+        [attr.aria-label]="socket.isConnected() ? 'Đã kết nối server' : 'Đang kết nối server'"
+      ></span>
+      <span>{{ socket.isConnected() ? 'Đã kết nối' : 'Đang kết nối...' }}</span>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs" role="tablist">
+      <button
+        type="button"
+        role="tab"
+        class="tab"
+        [class.active]="activeTab() === 'join'"
+        [attr.aria-selected]="activeTab() === 'join'"
+        (click)="activeTab.set('join')"
+      >
+        Tham gia phòng
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="tab"
+        [class.active]="activeTab() === 'create'"
+        [attr.aria-selected]="activeTab() === 'create'"
+        (click)="activeTab.set('create')"
+      >
+        Tạo phòng mới
+      </button>
+    </div>
+
+    @if (activeTab() === 'join') {
+      <form (ngSubmit)="joinRoom()" class="join-form">
+        <div class="form-group">
+          <label for="roomId">Room ID</label>
+          <input
+            id="roomId"
+            type="text"
+            [(ngModel)]="roomId"
+            name="roomId"
+            placeholder="Nhập Room ID"
+            required
+            autocomplete="off"
+          />
+        </div>
+
+        @if (showPasswordInput()) {
+          <div class="form-group">
+            <label for="joinPassword">Mật khẩu</label>
+            <input
+              id="joinPassword"
+              type="password"
+              [(ngModel)]="joinPassword"
+              name="joinPassword"
+              placeholder="Nhập mật khẩu phòng"
+              autocomplete="off"
+            />
+          </div>
+        }
+
+        @if (errorMessage()) {
+          <div class="error-message" role="alert">
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="!socket.isConnected() || !roomId().trim() || isLoading()"
+        >
+          {{ isLoading() ? 'Đang tham gia...' : 'Tham gia phòng' }}
+        </button>
+      </form>
+    }
+
+    @if (activeTab() === 'create') {
+      <form (ngSubmit)="createRoom()" class="join-form">
+        <div class="form-group">
+          <label for="newRoomId">Room ID</label>
+          <input
+            id="newRoomId"
+            type="text"
+            [(ngModel)]="newRoomId"
+            name="newRoomId"
+            placeholder="Nhập Room ID mới"
+            required
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="createPassword">Mật khẩu (tùy chọn)</label>
+          <input
+            id="createPassword"
+            type="password"
+            [(ngModel)]="createPassword"
+            name="createPassword"
+            placeholder="Đặt mật khẩu cho phòng"
+            autocomplete="new-password"
+          />
+          <small class="hint">Để trống nếu muốn phòng công khai</small>
+        </div>
+
+        @if (successMessage()) {
+          <div class="success-message" role="status">
+            {{ successMessage() }}
+          </div>
+        }
+
+        @if (createErrorMessage()) {
+          <div class="error-message" role="alert">
+            {{ createErrorMessage() }}
+          </div>
+        }
+
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="!socket.isConnected() || !newRoomId().trim() || isLoading()"
+        >
+          {{ isLoading() ? 'Đang tạo...' : 'Tạo & Tham gia phòng' }}
+        </button>
+      </form>
+    }
+
+    <div class="info">
+      <h2>Hướng dẫn sử dụng</h2>
+      <ol>
+        <li>Tạo phòng mới hoặc tham gia phòng có sẵn</li>
+        <li>Đặt mật khẩu để phòng riêng tư (tùy chọn)</li>
+        <li>Cấu hình camera và microphone</li>
+        <li>Chia sẻ Room ID và mật khẩu cho người khác</li>
+      </ol>
+    </div>
+  </div>
+</div>

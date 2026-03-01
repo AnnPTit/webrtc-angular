@@ -20,6 +20,12 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'meeting',
+    loadComponent: () =>
+      import('./components/meeting/meeting.component').then(m => m.MeetingComponent),
+    canActivate: [authGuard],
+  },
+  {
     path: 'lobby/:roomId',
     loadComponent: () =>
       import('./components/lobby/lobby.component').then(m => m.LobbyComponent),

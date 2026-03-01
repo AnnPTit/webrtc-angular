@@ -73,7 +73,8 @@ export class SocketService {
       return;
     }
     
-    this.socket = io('https://vm2dsxh1-3000.asse.devtunnels.ms/');
+    // this.socket = io('https://vm2dsxh1-3000.asse.devtunnels.ms/');
+    this.socket = io('http://localhost:3000');
 
     this.socket.on('connect', () => {
       this.connected.set(true);

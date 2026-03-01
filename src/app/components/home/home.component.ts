@@ -1,38 +1,67 @@
-import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { SocketService } from '../../services/socket';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
-  imports: [FormsModule],
+  imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeComponent {
-  activeTab = signal<'join' | 'create'>('join');
-  
-  // Join room form
-  roomId = signal('');
-  joinPassword = signal('');
-  showPasswordInput = signal(false);
-  errorMessage = signal('');
-  
-  // Create room form
-  newRoomId = signal('');
-  createPassword = signal('');
-  createErrorMessage = signal('');
-  successMessage = signal('');
-  
-  isLoading = signal(false);
+  menuItems = [
+    {
+      id: 'meeting',
+      title: 'Họp Trực Tuyến',
+      description: 'Tham gia hoặc tạo phòng họp video trực tuyến với WebRTC',
+      icon: 'video',
+      route: '/meeting',
+      color: '#4ecca3'
+    },
+    {
+      id: 'courses',
+      title: 'Khóa Học',
+      description: 'Khám phá và tham gia các khóa học trực tuyến',
+      icon: 'book',
+      route: null,
+      color: '#45b7d1'
+    },
+    {
+      id: 'assignments',
+      title: 'Bài Tập',
+      description: 'Xem và nộp bài tập được giao',
+      icon: 'assignment',
+      route: null,
+      color: '#f093fb'
+    },
+    {
+      id: 'schedule',
+      title: 'Lịch Học',
+      description: 'Xem lịch học và sự kiện sắp tới',
+      icon: 'calendar',
+      route: null,
+      color: '#f5576c'
+    },
+    {
+      id: 'documents',
+      title: 'Tài Liệu',
+      description: 'Truy cập tài liệu học tập và thư viện',
+      icon: 'document',
+      route: null,
+      color: '#feca57'
+    },
+    {
+      id: 'grades',
+      title: 'Điểm Số',
+      description: 'Theo dõi kết quả học tập và điểm số',
+      icon: 'grade',
+      route: null,
+      color: '#ff6b6b'
+    }
+  ];
 
-  constructor(
-    private router: Router,
-    protected socket: SocketService,
-    protected authService: AuthService
-  ) {}
+  constructor(protected authService: AuthService) {}
 
   get currentUser() {
     return this.authService.getCurrentUser();
@@ -40,57 +69,5 @@ export class HomeComponent {
 
   logout(): void {
     this.authService.logout();
-  }
-
-  joinRoom(): void {
-    const roomId = this.roomId();
-
-    if (!roomId.trim()) {
-      this.errorMessage.set('Please enter Room ID');
-      return;
-    }
-
-    this.isLoading.set(true);
-    this.errorMessage.set('');
-
-    this.router.navigate(['/lobby', roomId.trim()], {
-      queryParams: { password: this.joinPassword() || undefined },
-    });
-  }
-
-  createRoom(): void {
-    const roomId = this.newRoomId();
-
-    if (!roomId.trim()) {
-      this.createErrorMessage.set('Please enter Room ID');
-      return;
-    }
-
-    this.isLoading.set(true);
-    this.createErrorMessage.set('');
-
-    this.successMessage.set(`Room created! ID: ${roomId}`);
-
-    setTimeout(() => {
-      this.router.navigate(['/lobby', roomId.trim()], {
-        queryParams: { 
-          password: this.createPassword() || undefined,
-          isCreator: true 
-        },
-      });
-    }, 1000);
-  }
-
-  private generateRoomId(): string {
-    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    const segments = [3, 4, 3];
-    return segments
-      .map((len) =>
-        Array.from(
-          { length: len },
-          () => chars[Math.floor(Math.random() * chars.length)]
-        ).join('')
-      )
-      .join('-');
   }
 }
