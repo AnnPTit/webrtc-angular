@@ -1,0 +1,14 @@
+.upload-container {
+  max-width: 400px;
+  margin: 20px auto;
+  padding: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+.form-group {
+  margin-bottom: 12px;
+}
+button {
+  padding: 8px 16px;
+  cursor: pointer;
+}

@@ -18,6 +18,28 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./components/home/home.component').then(m => m.HomeComponent),
     canActivate: [authGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
+    path: 'dashboard',
+    loadComponent: () =>
+      import('./components/lecturer-dashboard/lecturer-dashboard.component').then(m => m.LecturerDashboardComponent),
+    canActivate: [authGuard],
+    data: { roles: ['LECTURER'] }
+  },
+  {
+    path: 'dashboard/courses',
+    loadComponent: () =>
+      import('./components/courses/course-management.component').then(m => m.CourseManagementComponent),
+    canActivate: [authGuard],
+    data: { roles: ['LECTURER'] }
+  },
+  {
+    path: 'dashboard/videos/upload',
+    loadComponent: () =>
+      import('./components/videos/video-upload.component').then(m => m.VideoUploadComponent),
+    canActivate: [authGuard],
+    data: { roles: ['LECTURER'] }
   },
   {
     path: 'meeting',

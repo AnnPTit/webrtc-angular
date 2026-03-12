@@ -1,0 +1,112 @@
+/* Container layout */
+.course-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: #fff;
+}
+
+.course-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.btn-primary {
+  background-color: #45b7d1;
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  color: #1a1a2e;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background-color: #4ecca3;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  color: #1a1a2e;
+  cursor: pointer;
+}
+
+.course-body {
+  display: flex;
+  gap: 2rem;
+}
+
+.course-list {
+  flex: 1;
+}
+
+.course-list table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.course-list th,
+.course-list td {
+  padding: 0.75rem;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.course-list tr.selected {
+  background: rgba(69,183,209,0.2);
+}
+
+.course-form {
+  margin-top: 1.5rem;
+  background: rgba(22,33,62,0.6);
+  padding: 1rem;
+  border-radius: 12px;
+}
+
+.course-form label {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.course-form input,
+.course-form textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.form-actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.course-detail {
+  flex: 1;
+  background: rgba(22,33,62,0.6);
+  padding: 1rem;
+  border-radius: 12px;
+}
+
+.lesson-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0 0;
+}
+
+.lesson-list li {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.lesson-list button {
+  background: #feca57;
+  border: none;
+  border-radius: 4px;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}

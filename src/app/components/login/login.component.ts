@@ -51,7 +51,21 @@ export class LoginComponent {
     this.authService.login({ username, password }).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this.router.navigate([this.returnUrl]);
+        // after login, if returnUrl points to home but user is lecturer redirect to dashboard
+        const user = this.authService.getCurrentUser();
+        let target = this.returnUrl;
+        if (user?.role === 'LECTURER') {
+          // make sure lecturer never lands on student pages
+          if (target === '/home' || target === '/' || target.startsWith('/home')) {
+            target = '/dashboard';
+          }
+        } else if (user?.role === 'STUDENT') {
+          // any dashboard URL should send student to home instead
+          if (target === '/dashboard' || target.startsWith('/dashboard')) {
+            target = '/home';
+          }
+        }
+        this.router.navigate([target]);
       },
       error: (error) => {
         this.isLoading.set(false);
