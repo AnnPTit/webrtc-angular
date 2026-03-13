@@ -1,66 +1,94 @@
-<div class="course-container">
+<div class="dashboard-container">
   <!-- Header -->
-  <div class="course-header">
-    <h2>Quản lý khóa học</h2>
+  <header class="dashboard-header">
+    <h1 class="dashboard-title">Quản lý khóa học</h1>
     <button class="btn-primary" (click)="openNewCourseForm()">Thêm khóa học</button>
+  </header>
+
+  <!-- Search Bar -->
+  <div class="search-bar">
+    <input type="text" placeholder="Tìm kiếm khóa học..." class="search-input" />
   </div>
 
-  <div class="course-body">
-    <div class="course-list">
-      <table>
-        <thead>
-          <tr>
-            <th>Tiêu đề</th>
-            <th>Mô tả</th>
-            <th>Hành động</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (course of courses(); track course.id) {
-            <tr (click)="selectCourse(course)" [class.selected]="selectedCourse()?.id === course.id">
-              <td>{{ course.title }}</td>
-              <td>{{ course.description }}</td>
-              <td>
-                <button (click)="openEditCourse(course); $event.stopPropagation()">Sửa</button>
-                <button (click)="deleteCourse(course); $event.stopPropagation()">Xóa</button>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-
-      <!-- course form -->
-      @if (showCourseForm()) {
-        <div class="course-form">
-          <h3>{{ isEditing() ? 'Sửa khóa học' : 'Thêm khóa học' }}</h3>
-          <label>
-            Tiêu đề
-            <input [(ngModel)]="courseFormTitle" type="text" />
-          </label>
-          <label>
-            Mô tả
-            <textarea [(ngModel)]="courseFormDescription"></textarea>
-          </label>
-          <div class="form-actions">
-            <button class="btn-primary" (click)="saveCourse()">Lưu</button>
-            <button (click)="closeForm()">Hủy</button>
+  <!-- Main Content -->
+  <div class="dashboard-content">
+    <!-- Course Grid -->
+    <div class="course-grid">
+      @for (course of courses(); track course.id) {
+        <div class="course-card" (click)="selectCourse(course)" [class.selected]="selectedCourse()?.id === course.id">
+          <div class="card-header">
+            <h3 class="card-title">{{ course.title }}</h3>
+          </div>
+          <div class="card-body">
+            <p class="card-description">{{ course.description }}</p>
           </div>
         </div>
       }
     </div>
 
-    <div class="course-detail" *ngIf="selectedCourse()">
-      <h3>Bài học: {{ selectedCourse()?.title }}</h3>
-      <button class="btn-secondary" (click)="addLesson()">Thêm bài học</button>
-      <ul class="lesson-list">
-        @for (lesson of lessons(); track lesson.id) {
-          <li>
-            <span>{{ lesson.title }}</span>
-            <button (click)="uploadVideo()">Upload Video</button>
-            <button (click)="createAssignment()">Tạo bài tập</button>
-          </li>
-        }
-      </ul>
-    </div>
+    <!-- Course Form -->
+    @if (showCourseForm()) {
+      <div class="course-form-overlay">
+        <div class="course-form-card">
+          <h3>{{ isEditing() ? 'Sửa khóa học' : 'Thêm khóa học' }}</h3>
+          <form class="form">
+            <div class="form-group">
+              <label for="title">Tiêu đề</label>
+              <input id="title" [(ngModel)]="courseFormTitle" type="text" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label for="description">Mô tả</label>
+              <textarea id="description" [(ngModel)]="courseFormDescription" class="form-textarea"></textarea>
+            </div>
+            <div class="form-actions">
+              <button class="btn-primary" (click)="saveCourse()">Lưu</button>
+              <button class="btn-secondary" (click)="closeForm()">Hủy</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    <!-- Course Detail Sidebar -->
+    @if (selectedCourse()) {
+      <aside class="course-detail-sidebar">
+        <div class="detail-card">
+          <h3>Bài học: {{ selectedCourse()?.title }}</h3>
+          <button class="btn-secondary" (click)="addLesson()">Thêm bài học</button>
+          <ul class="lesson-list">
+            @for (lesson of lessons(); track lesson.id; let i = $index) {
+              <li class="lesson-item">
+                <span>{{ lesson.title }}</span>
+                <div class="lesson-actions">
+                  <button class="btn-outline" (click)="openEditLesson(i, lesson); $event.stopPropagation()">Sửa</button>
+                  <button class="btn-danger-outline" (click)="deleteLesson(i); $event.stopPropagation()">Xóa</button>
+                  <button class="btn-outline-lg" (click)="uploadVideo()">Upload Video</button>
+                  <button class="btn-outline-lg" (click)="createAssignment()">Tạo bài tập</button>
+                </div>
+              </li>
+            }
+          </ul>
+        </div>
+      </aside>
+    }
+
+    <!-- Lesson Form Modal -->
+    @if (showLessonForm()) {
+      <div class="course-form-overlay">
+        <div class="course-form-card">
+          <h3>{{ lessonEditingIndex !== null ? 'Sửa bài học' : 'Thêm bài học' }}</h3>
+          <form class="form">
+            <div class="form-group">
+              <label for="lesson-title">Tiêu đề bài học</label>
+              <input id="lesson-title" [(ngModel)]="lessonFormTitle" type="text" class="form-input" placeholder="Nhập tiêu đề bài học" />
+            </div>
+            <div class="form-actions">
+              <button class="btn-primary" (click)="saveLesson()" type="button">Lưu</button>
+              <button class="btn-secondary" (click)="closeLessonForm()" type="button">Hủy</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
   </div>
 </div>

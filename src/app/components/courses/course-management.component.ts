@@ -1,4 +1,4 @@
-import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
@@ -41,6 +41,21 @@ export class CourseManagementComponent {
   courseFormDescription = signal('');
   isEditing = signal(false);
 
+  // lesson form state
+  showLessonForm = signal(false);
+  lessonFormTitle = signal('');
+  lessonEditingIndex: number | null = null;
+
+  constructor() {
+    // Auto-select first course on init
+    effect(() => {
+      const allCourses = this.courses();
+      if (allCourses.length > 0 && !this.selectedCourse()) {
+        this.selectedCourse.set(allCourses[0]);
+      }
+    });
+  }
+
   selectCourse(course: Course) {
     this.selectedCourse.set(course);
   }
@@ -77,7 +92,46 @@ export class CourseManagementComponent {
   }
 
   addLesson() {
-    // stub for UI
+    this.showLessonForm.set(true);
+    this.lessonFormTitle.set('');
+    this.lessonEditingIndex = null;
+  }
+
+  openEditLesson(index: number, lesson: Lesson) {
+    this.showLessonForm.set(true);
+    this.lessonFormTitle.set(lesson.title);
+    this.lessonEditingIndex = index;
+  }
+
+  closeLessonForm() {
+    this.showLessonForm.set(false);
+    this.lessonFormTitle.set('');
+    this.lessonEditingIndex = null;
+  }
+
+  saveLesson() {
+    const title = this.lessonFormTitle().trim();
+    if (!title) return;
+
+    const currentLessons = this.lessons();
+    if (this.lessonEditingIndex !== null) {
+      // Edit existing lesson
+      currentLessons[this.lessonEditingIndex].title = title;
+      this.lessons.set([...currentLessons]);
+    } else {
+      // Add new lesson
+      const newLesson: Lesson = {
+        id: currentLessons.length > 0 ? Math.max(...currentLessons.map(l => l.id)) + 1 : 1,
+        title: title,
+      };
+      this.lessons.set([...currentLessons, newLesson]);
+    }
+    this.closeLessonForm();
+  }
+
+  deleteLesson(index: number) {
+    const currentLessons = this.lessons();
+    this.lessons.set(currentLessons.filter((_, i) => i !== index));
   }
 
   uploadVideo() {

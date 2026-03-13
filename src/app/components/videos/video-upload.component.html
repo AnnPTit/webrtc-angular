@@ -1,19 +1,27 @@
 <div class="upload-container">
-  <h2>Upload Video</h2>
-  <div class="form-group">
-    <label>Course ID</label>
-    <input type="number" [ngModel]="courseId()" (ngModelChange)="courseId.set($event)" />
+  <div class="upload-header">
+    <h2>Upload Video</h2>
+    <button class="btn-back" (click)="goBack()">← Back to Courses</button>
   </div>
-  <div class="form-group">
-    <label>Lesson ID</label>
-    <input type="number" [ngModel]="lessonId()" (ngModelChange)="lessonId.set($event)" />
-  </div>
-  <div class="form-group">
-    <label>Video file</label>
-    <input type="file" (change)="onFileSelected($event)" accept="video/*" />
-  </div>
-  <button (click)="upload()" [disabled]="!selectedFile()">Upload</button>
-  @if (uploadStatus()) {
-    <p>{{ uploadStatus() }}</p>
-  }
+  <form class="upload-form">
+    <div class="form-group">
+      <label for="course-id">Course ID</label>
+      <input id="course-id" type="number" name="courseId" placeholder="Nhập ID khóa học" [ngModel]="courseId()" (ngModelChange)="courseId.set($event)" />
+    </div>
+    <div class="form-group">
+      <label for="lesson-id">Lesson ID</label>
+      <input id="lesson-id" type="number" name="lessonId" placeholder="Nhập ID bài học" [ngModel]="lessonId()" (ngModelChange)="lessonId.set($event)" />
+    </div>
+    <div class="form-group">
+      <label for="video-file">Video file</label>
+      <input id="video-file" type="file" name="videoFile" (change)="onFileSelected($event)" accept="video/*" />
+    </div>
+    <button type="button" (click)="upload()" [disabled]="!selectedFile()">Upload</button>
+    @if (uploadStatus()) {
+      <div [class.status-success]="isSuccessStatus()" [class.status-error]="!isSuccessStatus()" class="status-message">
+        <span class="status-icon">{{ isSuccessStatus() ? '✓' : '✕' }}</span>
+        <span>{{ uploadStatus() }}</span>
+      </div>
+    }
+  </form>
 </div>
