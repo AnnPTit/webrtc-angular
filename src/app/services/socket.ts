@@ -2,6 +2,7 @@ import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core
 import { isPlatformBrowser } from '@angular/common';
 import { io, Socket } from 'socket.io-client';
 import { Subject, Observable, EMPTY } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface ChatMessage {
   from: string;
@@ -73,8 +74,7 @@ export class SocketService {
       return;
     }
     
-    // this.socket = io('https://vm2dsxh1-3000.asse.devtunnels.ms/');
-    this.socket = io('http://localhost:3000');
+    this.socket = io(environment.socket.url);
 
     this.socket.on('connect', () => {
       this.connected.set(true);

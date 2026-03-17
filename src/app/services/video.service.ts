@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface PresignRequest {
   courseId: number;
@@ -25,7 +26,7 @@ export interface VideoMetadataDto {
 
 @Injectable({ providedIn: 'root' })
 export class VideoService {
-  private readonly API_URL = 'http://localhost:8080/api/videos';
+  private readonly API_URL = `${environment.apiBaseUrl}${environment.apiEndpoints.videos}`;
 
   constructor(private http: HttpClient) {}
 

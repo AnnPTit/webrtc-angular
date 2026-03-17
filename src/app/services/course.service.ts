@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Course {
   id: number;
@@ -39,8 +40,8 @@ export interface Video {
 
 @Injectable({ providedIn: 'root' })
 export class CourseService {
-  private readonly API_URL = 'http://localhost:8080/api/courses';
-  private readonly LESSONS_API_URL = 'http://localhost:8080/api/lessons';
+  private readonly API_URL = `${environment.apiBaseUrl}${environment.apiEndpoints.courses}`;
+  private readonly LESSONS_API_URL = `${environment.apiBaseUrl}${environment.apiEndpoints.lessons}`;
 
   constructor(private http: HttpClient) {}
 
