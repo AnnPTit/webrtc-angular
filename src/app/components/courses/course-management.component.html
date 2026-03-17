@@ -1,6 +1,7 @@
 <div class="dashboard-container">
   <!-- Header -->
   <header class="dashboard-header">
+    <button class="btn-back" (click)="goBack()" title="Quay lại">← Quay lại</button>
     <h1 class="dashboard-title">Quản lý khóa học</h1>
     <button class="btn-primary" (click)="openNewCourseForm()" [disabled]="isLoading()">Thêm khóa học</button>
   </header>

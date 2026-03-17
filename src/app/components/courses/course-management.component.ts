@@ -1,6 +1,7 @@
 import { Component, signal, ChangeDetectionStrategy, effect, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { CourseService, type Course, type Lesson, type CreateLessonRequest, type Video } from '../../services/course.service';
 import { VideoService, type PresignRequest, type VideoMetadataDto } from '../../services/video.service';
 
@@ -15,6 +16,7 @@ import { VideoService, type PresignRequest, type VideoMetadataDto } from '../../
 export class CourseManagementComponent {
   private courseService = inject(CourseService);
   private videoService = inject(VideoService);
+  private router = inject(Router);
 
   courses = signal<Course[]>([]);
   selectedCourse = signal<Course | null>(null);
@@ -70,6 +72,10 @@ export class CourseManagementComponent {
         this.loadLessonsByCourse(course.id);
       }
     });
+  }
+
+  goBack() {
+    this.router.navigate(['/dashboard']);
   }
 
   loadCourses() {

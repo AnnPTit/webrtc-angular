@@ -137,6 +137,23 @@
   background-color: #35a366;
 }
 
+.btn-back {
+  background-color: transparent;
+  color: #4ecca3;
+  border: 1px solid #4ecca3;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+  background-color: #4ecca3;
+  color: #1a1a2e;
+}
+
 .btn-secondary {
   background-color: rgba(78, 204, 163, 0.3);
   color: #4ecca3;
