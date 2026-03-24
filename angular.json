@@ -17,7 +17,9 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
+            "outputPath": "dist/webrtc-angular",
             "browser": "src/main.ts",
+            "server": "src/server.ts",
             "tsConfig": "tsconfig.app.json",
             "assets": [
               {
