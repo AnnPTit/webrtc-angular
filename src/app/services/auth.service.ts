@@ -52,6 +52,8 @@ export class AuthService {
   ) {}
 
   login(credentials: LoginRequest): Observable<AuthResponse> {
+    console.log('ENV =', environment);
+    console.log('API_URL =', this.API_URL);
     return this.http.post<AuthResponse>(`${this.API_URL}/login`, credentials).pipe(
       tap((response) => this.handleAuthSuccess(response)),
       catchError(this.handleError)
