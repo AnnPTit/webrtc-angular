@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiBaseUrl: process.env['API_BASE_URL'] || 'https://web-rtc-be-production.up.railway.app',
+  apiBaseUrl: 'https://web-rtc-be-production.up.railway.app',
   apiEndpoints: {
     auth: '/api/auth',
     courses: '/api/courses',
@@ -8,6 +8,6 @@ export const environment = {
     videos: '/api/videos',
   },
   socket: {
-    url: process.env['SOCKET_URL'] || 'https://socket.example.com',
+    url: 'https://socket.example.com',
   },
 };
