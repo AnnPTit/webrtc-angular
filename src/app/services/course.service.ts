@@ -94,7 +94,7 @@ export class CourseService {
   }
 
  getSignedVideoUrl(objectKey: string): Observable<{ signedUrl: string }> {
-  return this.http.get<{ signedUrl: string }>(`${this.API_URL}/signed-url`, {
+  return this.http.get<{ signedUrl: string }>(`${environment.apiBaseUrl}${environment.apiEndpoints.videos}/signed-url`, {
     params: { key: objectKey },
   });
 }
