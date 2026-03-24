@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://web-rtc-be-production.up.railway.app',
+  apiBaseUrl: 'web-rtc-backend-production-0910.up.railway.app',
   apiEndpoints: {
     auth: '/api/auth',
     courses: '/api/courses',
