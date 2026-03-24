@@ -93,13 +93,13 @@ export class CourseService {
     return this.http.get<Video[]>(`${this.LESSONS_API_URL}/get-videos/course/${courseId}/lesson/${lessonId}`);
   }
 
-  getSignedVideoUrl(objectKey: string): Observable<{ signedUrl: string }> {
-    return this.http.get<{ signedUrl: string }>('http://localhost:8080/api/videos/signed-url', {
-      params: { key: objectKey },
-    });
-  }
+ getSignedVideoUrl(objectKey: string): Observable<{ signedUrl: string }> {
+  return this.http.get<{ signedUrl: string }>(`${this.API_URL}/signed-url`, {
+    params: { key: objectKey },
+  });
+}
 
   deleteVideo(videoId: number): Observable<void> {
-    return this.http.delete<void>(`http://localhost:8080/api/videos/${videoId}`);
+    return this.http.delete<void>(`${this.API_URL}/${videoId}`);
   }
 }
