@@ -8,6 +8,6 @@ export const environment = {
     videos: '/api/videos',
   },
   socket: {
-    url: 'https://socket.example.com',
+    url: 'https://webrtc-signaling-production-534f.up.railway.app',
   },
 };
