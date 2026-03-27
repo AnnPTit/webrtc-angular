@@ -3,12 +3,28 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, throwError, BehaviorSubject } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface LoginRequest {
   username: string;
   password: string;
+}
+
+export interface RegisterRequest {
+  fullName: string;
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  role: 'STUDENT' | 'LECTURER';
+}
+
+/** Wrapper response từ POST /api/auth/register */
+export interface RegisterApiResponse {
+  success: boolean;
+  message: string;
+  data: AuthResponse;
 }
 
 export interface AuthResponse {
@@ -56,6 +72,13 @@ export class AuthService {
     console.log('API_URL =', this.API_URL);
     return this.http.post<AuthResponse>(`${this.API_URL}/login`, credentials).pipe(
       tap((response) => this.handleAuthSuccess(response)),
+      catchError(this.handleError)
+    );
+  }
+
+  register(data: RegisterRequest): Observable<AuthResponse> {
+    return this.http.post<RegisterApiResponse>(`${this.API_URL}/register`, data).pipe(
+      map((response) => response.data),
       catchError(this.handleError)
     );
   }
@@ -120,16 +143,25 @@ export class AuthService {
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
-    let errorMessage = 'An error occurred';
+    let errorMessage = 'Đã xảy ra lỗi. Vui lòng thử lại.';
     if (error.error instanceof ErrorEvent) {
       errorMessage = error.error.message;
     } else {
-      if (error.status === 401) {
-        errorMessage = 'Invalid username or password';
-      } else if (error.status === 0) {
-        errorMessage = 'Cannot connect to server';
-      } else if (error.error?.message) {
-        errorMessage = error.error.message;
+      switch (error.status) {
+        case 0:
+          errorMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.';
+          break;
+        case 400:
+          errorMessage = error.error?.message || 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
+          break;
+        case 401:
+          errorMessage = 'Tên đăng nhập hoặc mật khẩu không đúng.';
+          break;
+        case 409:
+          errorMessage = error.error?.message || 'Tên đăng nhập hoặc email đã được sử dụng.';
+          break;
+        default:
+          errorMessage = error.error?.message || `Lỗi máy chủ (${error.status}).`;
       }
     }
     return throwError(() => new Error(errorMessage));
