@@ -614,7 +614,6 @@ button:disabled:hover {
   white-space: nowrap;
 }
 
-/* Responsive Design */
 @media (max-width: 968px) {
   .dashboard-content {
     flex-direction: column;
@@ -629,4 +628,361 @@ button:disabled:hover {
     min-width: auto;
     flex: 1;
   }
+}
+
+/* ─── Assignment Styles ────────────────────────────────────────── */
+
+/* View Assignments button (different accent) */
+.btn-view-assignments {
+  color: #64b5f6 !important;
+  border-color: #64b5f6 !important;
+}
+
+.btn-view-assignments:hover:not(:disabled) {
+  background-color: #64b5f6 !important;
+  color: #1a1a2e !important;
+}
+
+/* Assignment form card */
+.assignment-form-card {
+  max-width: 550px;
+}
+
+/* Assignment Panel (large overlay card) */
+.assignment-panel {
+  background: rgba(15, 52, 96, 0.95);
+  border: 1px solid rgba(78, 204, 163, 0.3);
+  border-radius: 16px;
+  padding: 30px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  animation: panelSlideIn 0.3s ease;
+}
+
+@keyframes panelSlideIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.assignment-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(78, 204, 163, 0.2);
+}
+
+.assignment-panel-header h3 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #fff;
+}
+
+.btn-close {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.2rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-close:hover {
+  background: rgba(255, 100, 100, 0.3);
+  border-color: #ff6b6b;
+  color: #ff6b6b;
+}
+
+/* Assignment list */
+.assignment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.assignment-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(78, 204, 163, 0.15);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.assignment-list-item:hover {
+  background: rgba(78, 204, 163, 0.1);
+  border-color: rgba(78, 204, 163, 0.4);
+  transform: translateX(4px);
+}
+
+.assignment-list-info {
+  flex: 1;
+}
+
+.assignment-list-title {
+  margin: 0 0 4px 0;
+  font-weight: 600;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.assignment-list-desc {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+}
+
+.no-assignments {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.4);
+  padding: 40px 20px;
+  font-size: 1rem;
+}
+
+/* Status badges */
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.status-pending {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+  border: 1px solid rgba(255, 193, 7, 0.4);
+}
+
+.status-processing {
+  background: rgba(100, 181, 246, 0.2);
+  color: #64b5f6;
+  border: 1px solid rgba(100, 181, 246, 0.4);
+  animation: statusPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.status-completed {
+  background: rgba(78, 204, 163, 0.2);
+  color: #4ecca3;
+  border: 1px solid rgba(78, 204, 163, 0.4);
+}
+
+.status-failed {
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 107, 107, 0.4);
+}
+
+/* Assignment detail */
+.assignment-detail {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.btn-back-small {
+  background: transparent;
+  border: none;
+  color: #64b5f6;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 6px 0;
+  margin-bottom: 12px;
+  transition: color 0.2s ease;
+}
+
+.btn-back-small:hover {
+  color: #90caf9;
+}
+
+.assignment-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.assignment-detail-header h4 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #fff;
+}
+
+.assignment-description {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+/* Processing indicator */
+.processing-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  gap: 12px;
+  color: #64b5f6;
+}
+
+.processing-indicator p {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.processing-hint {
+  color: rgba(255, 255, 255, 0.4) !important;
+  font-weight: 400 !important;
+  font-size: 0.85rem !important;
+}
+
+.spinner {
+  width: 44px;
+  height: 44px;
+  border: 4px solid rgba(100, 181, 246, 0.2);
+  border-top-color: #64b5f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Questions section */
+.questions-section {
+  margin-top: 24px;
+}
+
+.questions-heading {
+  margin: 0 0 16px 0;
+  font-size: 1.1rem;
+  color: #4ecca3;
+  font-weight: 700;
+}
+
+.question-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(78, 204, 163, 0.15);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  transition: border-color 0.2s ease;
+}
+
+.question-card:hover {
+  border-color: rgba(78, 204, 163, 0.3);
+}
+
+.question-number {
+  margin: 0 0 6px 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #4ecca3;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.question-text {
+  margin: 0 0 14px 0;
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+/* Options */
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.option-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s ease;
+}
+
+.option-item.correct {
+  background: rgba(78, 204, 163, 0.12);
+  border-color: rgba(78, 204, 163, 0.35);
+}
+
+.option-key {
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  min-width: 22px;
+  font-size: 0.9rem;
+}
+
+.option-item.correct .option-key {
+  color: #4ecca3;
+}
+
+.option-value {
+  flex: 1;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.option-item.correct .option-value {
+  color: #fff;
+  font-weight: 500;
+}
+
+.correct-badge {
+  color: #4ecca3;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-left: auto;
+}
+
+/* Scrollbar for assignment panel */
+.assignment-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.assignment-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.assignment-panel::-webkit-scrollbar-thumb {
+  background: rgba(78, 204, 163, 0.3);
+  border-radius: 3px;
+}
+
+.assignment-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(78, 204, 163, 0.5);
 }

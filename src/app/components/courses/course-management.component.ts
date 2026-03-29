@@ -1,9 +1,11 @@
-import { Component, signal, ChangeDetectionStrategy, effect, inject } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy, effect, inject, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CourseService, type Course, type Lesson, type CreateLessonRequest, type Video } from '../../services/course.service';
 import { VideoService, type PresignRequest, type VideoMetadataDto } from '../../services/video.service';
+import { AssignmentService, type AssignmentResponse, type CreateAssignmentRequest } from '../../services/assignment.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-course-management',
@@ -13,9 +15,10 @@ import { VideoService, type PresignRequest, type VideoMetadataDto } from '../../
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
 })
-export class CourseManagementComponent {
+export class CourseManagementComponent implements OnDestroy {
   private courseService = inject(CourseService);
   private videoService = inject(VideoService);
+  private assignmentService = inject(AssignmentService);
   private router = inject(Router);
 
   courses = signal<Course[]>([]);
@@ -52,6 +55,20 @@ export class CourseManagementComponent {
   videoLoading = signal(false);
   videoUploadProgress = signal(0);
   videoFile: File | null = null;
+
+  // assignment state
+  showAssignmentForm = signal(false);
+  assignmentFormTitle = signal('');
+  assignmentFormDescription = signal('');
+  assignmentLoading = signal(false);
+  selectedLessonForAssignment: Lesson | null = null;
+
+  // assignment list / detail state
+  showAssignmentPanel = signal(false);
+  assignments = signal<AssignmentResponse[]>([]);
+  assignmentsLoading = signal(false);
+  selectedAssignment = signal<AssignmentResponse | null>(null);
+  assignmentPollingId: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
     // Load courses on init
@@ -551,7 +568,160 @@ export class CourseManagementComponent {
     return this.signedVideoUrls().get(videoId) || '';
   }
 
-  createAssignment() {
-    // stub for UI
+  // ── Assignment: open form ─────────────────────────────────────
+
+  openAssignmentForm(lesson: Lesson) {
+    this.selectedLessonForAssignment = lesson;
+    this.showAssignmentForm.set(true);
+    this.assignmentFormTitle.set('');
+    this.assignmentFormDescription.set('');
+    this.errorMessage.set('');
+  }
+
+  closeAssignmentForm() {
+    this.showAssignmentForm.set(false);
+    this.selectedLessonForAssignment = null;
+    this.assignmentFormTitle.set('');
+    this.assignmentFormDescription.set('');
+  }
+
+  // ── Assignment: create (calls backend) ───────────────────────
+
+  submitCreateAssignment() {
+    const title = this.assignmentFormTitle().trim();
+    const lessonId = this.selectedLessonForAssignment?.id;
+
+    if (!title || !lessonId) {
+      this.errorMessage.set('Vui lòng nhập tiêu đề bài tập');
+      return;
+    }
+
+    this.assignmentLoading.set(true);
+    this.errorMessage.set('');
+
+    const request: CreateAssignmentRequest = {
+      lessonId,
+      title,
+      description: this.assignmentFormDescription().trim() || undefined,
+    };
+
+    this.assignmentService.createAssignment(request).subscribe({
+      next: (res) => {
+        console.log('Assignment created:', res.data);
+        this.assignmentLoading.set(false);
+        this.closeAssignmentForm();
+
+        // Start polling for status updates
+        this.selectedAssignment.set(res.data);
+        this.showAssignmentPanel.set(true);
+        this.startPollingAssignment(res.data.id);
+      },
+      error: (err) => {
+        console.error('Error creating assignment:', err);
+        this.errorMessage.set(err.error?.message || 'Lỗi tạo bài tập');
+        this.assignmentLoading.set(false);
+      },
+    });
+  }
+
+  // ── Assignment: poll for async processing ────────────────────
+
+  private startPollingAssignment(assignmentId: number) {
+    this.stopPollingAssignment();
+
+    this.assignmentPollingId = setInterval(() => {
+      this.assignmentService.getAssignmentById(assignmentId).subscribe({
+        next: (res) => {
+          this.selectedAssignment.set(res.data);
+
+          const status = res.data.statusProgress;
+          if (status === 'DONE' || status === 'FAILED') {
+            this.stopPollingAssignment();
+          }
+        },
+        error: (err) => {
+          console.error('Polling error:', err);
+          this.stopPollingAssignment();
+        },
+      });
+    }, 3000); // poll every 3 seconds
+  }
+
+  private stopPollingAssignment() {
+    if (this.assignmentPollingId) {
+      clearInterval(this.assignmentPollingId);
+      this.assignmentPollingId = null;
+    }
+  }
+
+  // ── Assignment: view all assignments for a lesson ────────────
+
+  viewAssignments(lessonId: number) {
+    this.assignmentsLoading.set(true);
+    this.showAssignmentPanel.set(true);
+    this.selectedAssignment.set(null);
+
+    this.assignmentService.getAssignmentsByLessonId(lessonId).subscribe({
+      next: (res) => {
+        this.assignments.set(res.data);
+        this.assignmentsLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading assignments:', err);
+        this.assignments.set([]);
+        this.assignmentsLoading.set(false);
+      },
+    });
+  }
+
+  selectAssignment(assignment: AssignmentResponse) {
+    this.selectedAssignment.set(assignment);
+
+    // If still processing, resume polling
+    const status = assignment.statusProgress;
+    if (status && status !== 'DONE' && status !== 'FAILED') {
+      this.startPollingAssignment(assignment.id);
+    }
+  }
+
+  closeAssignmentPanel() {
+    this.showAssignmentPanel.set(false);
+    this.selectedAssignment.set(null);
+    this.assignments.set([]);
+    this.stopPollingAssignment();
+  }
+
+  // ── Assignment helpers ───────────────────────────────────────
+
+  getStatusLabel(status: string): string {
+    const map: Record<string, string> = {
+      PENDING: 'Đang chờ',
+      TRANSCRIBING: 'Đang tách text...',
+      GENERATING: 'Đang tạo câu hỏi...',
+      DONE: 'Hoàn thành',
+      FAILED: 'Lỗi',
+    };
+    return map[status] || status;
+  }
+
+  getStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      PENDING: 'status-pending',
+      TRANSCRIBING: 'status-processing',
+      GENERATING: 'status-processing',
+      DONE: 'status-completed',
+      FAILED: 'status-failed',
+    };
+    return map[status] || '';
+  }
+
+  getOptionKeys(options: { [key: string]: string }): string[] {
+    return Object.keys(options).sort();
+  }
+
+  // ── Lifecycle ────────────────────────────────────────────────
+
+  ngOnDestroy() {
+    this.stopPollingAssignment();
   }
 }

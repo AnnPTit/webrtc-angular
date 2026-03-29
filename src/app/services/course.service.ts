@@ -38,6 +38,21 @@ export interface Video {
   uploadTime: string;
 }
 
+export interface TranscribeRequest {
+  videoUrl: string;
+}
+
+export interface TranscribeResponse {
+  status: string;
+  errorMessage: string;
+  text: string;
+}
+
+export interface ApiResponse<T> {
+  message: string;
+  data: T;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CourseService {
   private readonly API_URL = `${environment.apiBaseUrl}${environment.apiEndpoints.courses}`;
@@ -101,5 +116,10 @@ export class CourseService {
 
   deleteVideo(videoId: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${videoId}`);
+  }
+
+  transcribeFromUrl(request: TranscribeRequest): Observable<ApiResponse<TranscribeResponse>> {
+    const url = `${environment.apiBaseUrl}${environment.apiEndpoints.transcriptions}/transcribe-from-url`;
+    return this.http.post<ApiResponse<TranscribeResponse>>(url, request);
   }
 }

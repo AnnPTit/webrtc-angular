@@ -8,26 +8,22 @@
 
   <!-- Error Message -->
   @if (errorMessage()) {
-    <div class="error-message">
-      {{ errorMessage() }}
-    </div>
+  <div class="error-message">
+    {{ errorMessage() }}
+  </div>
   }
 
   <!-- Loading State -->
   @if (isLoading()) {
-    <div class="loading-indicator">
-      <p>Đang tải dữ liệu...</p>
-    </div>
+  <div class="loading-indicator">
+    <p>Đang tải dữ liệu...</p>
+  </div>
   }
 
   <!-- Search Bar -->
   <div class="search-bar">
-    <input 
-      type="text" 
-      placeholder="Tìm kiếm khóa học..." 
-      class="search-input"
-      [value]="searchQuery()"
-      (input)="onSearchChange($any($event.target).value)"/>
+    <input type="text" placeholder="Tìm kiếm khóa học..." class="search-input" [value]="searchQuery()"
+      (input)="onSearchChange($any($event.target).value)" />
   </div>
 
   <!-- Main Content -->
@@ -35,210 +31,320 @@
     <!-- Course Grid -->
     <div class="course-grid">
       @if (courses().length === 0) {
-        <p class="no-courses">Không tìm thấy khóa học nào</p>
+      <p class="no-courses">Không tìm thấy khóa học nào</p>
       } @else {
-        @for (course of courses(); track course.id) {
-          <div class="course-card" (click)="selectCourse(course)" [class.selected]="selectedCourse()?.id === course.id">
-            <div class="card-header">
-              <h3 class="card-title">{{ course.title }}</h3>
-            </div>
-            <div class="card-body">
-              <p class="card-description">{{ course.description }}</p>
-            </div>
-            <div class="card-actions">
-              <button class="btn-danger-outline" (click)="deleteCourse(course); $event.stopPropagation()" [disabled]="isLoading()">Xóa</button>
-              <button class="btn-outline" (click)="openEditCourse(course); $event.stopPropagation()" [disabled]="isLoading()">Sửa</button>
-            </div>
-          </div>
-        }
+      @for (course of courses(); track course.id) {
+      <div class="course-card" (click)="selectCourse(course)" [class.selected]="selectedCourse()?.id === course.id">
+        <div class="card-header">
+          <h3 class="card-title">{{ course.title }}</h3>
+        </div>
+        <div class="card-body">
+          <p class="card-description">{{ course.description }}</p>
+        </div>
+        <div class="card-actions">
+          <button class="btn-danger-outline" (click)="deleteCourse(course); $event.stopPropagation()"
+            [disabled]="isLoading()">Xóa</button>
+          <button class="btn-outline" (click)="openEditCourse(course); $event.stopPropagation()"
+            [disabled]="isLoading()">Sửa</button>
+        </div>
+      </div>
+      }
       }
     </div>
 
     <!-- Course Form -->
     @if (showCourseForm()) {
-      <div class="course-form-overlay">
-        <div class="course-form-card">
-          <h3>{{ isEditing() ? 'Sửa khóa học' : 'Thêm khóa học' }}</h3>
-          <form class="form">
-            <div class="form-group">
-              <label for="title">Tiêu đề</label>
-              <input 
-                id="title" 
-                [value]="courseFormTitle()"
-                (input)="courseFormTitle.set($any($event.target).value)"
-                type="text" 
-                class="form-input"
-                [disabled]="isLoading()" />
-            </div>
-            <div class="form-group">
-              <label for="description">Mô tả</label>
-              <textarea 
-                id="description" 
-                [value]="courseFormDescription()"
-                (input)="courseFormDescription.set($any($event.target).value)"
-                class="form-textarea"
-                [disabled]="isLoading()"></textarea>
-            </div>
-            <div class="form-actions">
-              <button class="btn-primary" (click)="saveCourse()" type="button" [disabled]="isLoading()">
-                {{ isLoading() ? 'Đang xử lý...' : 'Lưu' }}
-              </button>
-              <button class="btn-secondary" (click)="closeForm()" type="button" [disabled]="isLoading()">Hủy</button>
-            </div>
-          </form>
-        </div>
+    <div class="course-form-overlay">
+      <div class="course-form-card">
+        <h3>{{ isEditing() ? 'Sửa khóa học' : 'Thêm khóa học' }}</h3>
+        <form class="form">
+          <div class="form-group">
+            <label for="title">Tiêu đề</label>
+            <input id="title" [value]="courseFormTitle()" (input)="courseFormTitle.set($any($event.target).value)"
+              type="text" class="form-input" [disabled]="isLoading()" />
+          </div>
+          <div class="form-group">
+            <label for="description">Mô tả</label>
+            <textarea id="description" [value]="courseFormDescription()"
+              (input)="courseFormDescription.set($any($event.target).value)" class="form-textarea"
+              [disabled]="isLoading()"></textarea>
+          </div>
+          <div class="form-actions">
+            <button class="btn-primary" (click)="saveCourse()" type="button" [disabled]="isLoading()">
+              {{ isLoading() ? 'Đang xử lý...' : 'Lưu' }}
+            </button>
+            <button class="btn-secondary" (click)="closeForm()" type="button" [disabled]="isLoading()">Hủy</button>
+          </div>
+        </form>
       </div>
+    </div>
     }
 
     <!-- Course Detail Sidebar -->
     @if (selectedCourse()) {
-      <aside class="course-detail-sidebar">
-        <div class="detail-card">
-          <h3>Bài học: {{ selectedCourse()?.title }}</h3>
-          <button class="btn-secondary" (click)="addLesson()" [disabled]="lessonLoading()">Thêm bài học</button>
-          @if (lessonLoading()) {
-            <p class="loading-text">Đang tải bài học...</p>
-          }
-          <ul class="lesson-list">
-            @for (lesson of lessons(); track lesson.id) {
-              <li class="lesson-item">
-                <div class="lesson-content">
-                  <p class="lesson-title">{{ lesson.title }}</p>
-                  <p class="lesson-description">{{ lesson.description }}</p>
-                </div>
-                <div class="lesson-actions">
-                  <button class="btn-outline" (click)="openEditLesson(lesson); $event.stopPropagation()" [disabled]="lessonLoading()">Sửa</button>
-                  <button class="btn-danger-outline" (click)="deleteLesson(lesson); $event.stopPropagation()" [disabled]="lessonLoading()">Xóa</button>
-                  <button class="btn-outline-lg" (click)="openVideoUploadForm(lesson); $event.stopPropagation()" [disabled]="lessonLoading()">Upload Video</button>
-                  <button class="btn-video-toggle" (click)="toggleLessonVideos(lesson); $event.stopPropagation()" [disabled]="lessonVideosLoading()" [class.active]="expandedLessonId === lesson.id">
-                    {{ expandedLessonId === lesson.id ? 'Ẩn Video' : 'Xem Video' }}
-                  </button>
-                  <button class="btn-outline-lg" (click)="createAssignment()" [disabled]="lessonLoading()">Tạo bài tập</button>
-                </div>
+    <aside class="course-detail-sidebar">
+      <div class="detail-card">
+        <h3>Bài học: {{ selectedCourse()?.title }}</h3>
+        <button class="btn-secondary" (click)="addLesson()" [disabled]="lessonLoading()">Thêm bài học</button>
+        @if (lessonLoading()) {
+        <p class="loading-text">Đang tải bài học...</p>
+        }
+        <ul class="lesson-list">
+          @for (lesson of lessons(); track lesson.id) {
+          <li class="lesson-item">
+            <div class="lesson-content">
+              <p class="lesson-title">{{ lesson.title }}</p>
+              <p class="lesson-description">{{ lesson.description }}</p>
+            </div>
+            <div class="lesson-actions">
+              <button class="btn-outline" (click)="openEditLesson(lesson); $event.stopPropagation()"
+                [disabled]="lessonLoading()">Sửa</button>
+              <button class="btn-danger-outline" (click)="deleteLesson(lesson); $event.stopPropagation()"
+                [disabled]="lessonLoading()">Xóa</button>
+              <button class="btn-outline-lg" (click)="openVideoUploadForm(lesson); $event.stopPropagation()"
+                [disabled]="lessonLoading()">Upload Video</button>
+              <button class="btn-video-toggle" (click)="toggleLessonVideos(lesson); $event.stopPropagation()"
+                [disabled]="lessonVideosLoading()" [class.active]="expandedLessonId === lesson.id">
+                {{ expandedLessonId === lesson.id ? 'Ẩn Video' : 'Xem Video' }}
+              </button>
+              <button class="btn-outline-lg" (click)="openAssignmentForm(lesson); $event.stopPropagation()"
+                [disabled]="lessonLoading()">Tạo bài tập</button>
+              <button class="btn-outline-lg btn-view-assignments" (click)="viewAssignments(lesson.id); $event.stopPropagation()"
+                [disabled]="lessonLoading()">Xem bài tập</button>
+            </div>
 
-                <!-- Videos Section -->
-                @if (expandedLessonId === lesson.id) {
-                  <div class="lesson-videos-section">
-                    @if (lessonVideosLoading()) {
-                      <p class="loading-text">Đang tải video...</p>
-                    } @else if (videos().length === 0) {
-                      <p class="no-videos">Không có video nào</p>
-                    } @else {
-                      <div class="videos-container">
-                        @for (video of videos(); track video.id) {
-                          <div class="video-item">
-                            <div class="video-player">
-                              <video
-                                controls
-                                preload="metadata"
-                                width="600"
-                                [src]="signedVideoUrls().get(video.id)">
-                              </video>
-                            </div>
-                            <div class="video-info">
-                              <p class="video-name">{{ video.originalFileName }}</p>
-                              <p class="video-meta">{{ (video.fileSize / 1024 / 1024).toFixed(2) }} MB • {{ video.uploadTime | date: 'short' }}</p>
-                            </div>
-                            <button class="btn-danger-outline btn-delete-video" (click)="deleteVideo(video); $event.stopPropagation()" [disabled]="lessonVideosLoading()">Xóa</button>
-                          </div>
-                        }
-                      </div>
-                    }
+            <!-- Videos Section -->
+            @if (expandedLessonId === lesson.id) {
+            <div class="lesson-videos-section">
+              @if (lessonVideosLoading()) {
+              <p class="loading-text">Đang tải video...</p>
+              } @else if (videos().length === 0) {
+              <p class="no-videos">Không có video nào</p>
+              } @else {
+              <div class="videos-container">
+                @for (video of videos(); track video.id) {
+                <div class="video-item">
+                  <div class="video-player">
+                    <video controls preload="metadata" width="600" [src]="signedVideoUrls().get(video.id)">
+                    </video>
                   </div>
+                  <div class="video-info">
+                    <p class="video-name">{{ video.originalFileName }}</p>
+                    <p class="video-meta">{{ (video.fileSize / 1024 / 1024).toFixed(2) }} MB • {{ video.uploadTime |
+                      date: 'short' }}</p>
+                  </div>
+                  <button class="btn-danger-outline btn-delete-video"
+                    (click)="deleteVideo(video); $event.stopPropagation()"
+                    [disabled]="lessonVideosLoading()">Xóa</button>
+                </div>
                 }
-              </li>
+              </div>
+              }
+            </div>
             }
-          </ul>
-        </div>
-      </aside>
+          </li>
+          }
+        </ul>
+      </div>
+    </aside>
     }
 
     <!-- Lesson Form Modal -->
     @if (showLessonForm()) {
-      <div class="course-form-overlay">
-        <div class="course-form-card">
-          <h3>{{ lessonEditingId !== null ? 'Sửa bài học' : 'Thêm bài học' }}</h3>
-          <form class="form">
-            <div class="form-group">
-              <label for="lesson-title">Tiêu đề bài học</label>
-              <input 
-                id="lesson-title" 
-                [value]="lessonFormTitle()"
-                (input)="lessonFormTitle.set($any($event.target).value)"
-                type="text" 
-                class="form-input" 
-                placeholder="Nhập tiêu đề bài học"
-                [disabled]="lessonLoading()" />
-            </div>
-            <div class="form-group">
-              <label for="lesson-description">Mô tả bài học</label>
-              <textarea 
-                id="lesson-description" 
-                [value]="lessonFormDescription()"
-                (input)="lessonFormDescription.set($any($event.target).value)"
-                class="form-textarea" 
-                placeholder="Nhập mô tả bài học"
-                [disabled]="lessonLoading()"></textarea>
-            </div>
-            <div class="form-actions">
-              <button class="btn-primary" (click)="saveLesson()" type="button" [disabled]="lessonLoading()">
-                {{ lessonLoading() ? 'Đang xử lý...' : 'Lưu' }}
-              </button>
-              <button class="btn-secondary" (click)="closeLessonForm()" type="button" [disabled]="lessonLoading()">Hủy</button>
-            </div>
-          </form>
-        </div>
+    <div class="course-form-overlay">
+      <div class="course-form-card">
+        <h3>{{ lessonEditingId !== null ? 'Sửa bài học' : 'Thêm bài học' }}</h3>
+        <form class="form">
+          <div class="form-group">
+            <label for="lesson-title">Tiêu đề bài học</label>
+            <input id="lesson-title" [value]="lessonFormTitle()"
+              (input)="lessonFormTitle.set($any($event.target).value)" type="text" class="form-input"
+              placeholder="Nhập tiêu đề bài học" [disabled]="lessonLoading()" />
+          </div>
+          <div class="form-group">
+            <label for="lesson-description">Mô tả bài học</label>
+            <textarea id="lesson-description" [value]="lessonFormDescription()"
+              (input)="lessonFormDescription.set($any($event.target).value)" class="form-textarea"
+              placeholder="Nhập mô tả bài học" [disabled]="lessonLoading()"></textarea>
+          </div>
+          <div class="form-actions">
+            <button class="btn-primary" (click)="saveLesson()" type="button" [disabled]="lessonLoading()">
+              {{ lessonLoading() ? 'Đang xử lý...' : 'Lưu' }}
+            </button>
+            <button class="btn-secondary" (click)="closeLessonForm()" type="button"
+              [disabled]="lessonLoading()">Hủy</button>
+          </div>
+        </form>
       </div>
+    </div>
     }
 
     <!-- Video Upload Form Modal -->
     @if (showVideoUploadForm()) {
-      <div class="course-form-overlay">
-        <div class="course-form-card video-upload-card">
-          <h3>Upload Video - {{ selectedLessonForVideo?.title }}</h3>
-          <form class="form">
-            <div class="form-group">
-              <label for="video-file">Chọn file video</label>
-              <input 
-                id="video-file" 
-                type="file" 
-                accept="video/*"
-                (change)="onVideoFileSelected($event)"
-                class="form-file-input"
-                [disabled]="videoLoading()" />
-              @if (videoFile) {
-                <p class="file-info">{{ videoFile.name }} ({{ (videoFile.size / 1024 / 1024).toFixed(2) }} MB)</p>
-              }
-            </div>
-
-            @if (videoLoading()) {
-              <div class="progress-container">
-                <p class="progress-label">Đang upload: {{ videoUploadProgress().toFixed(0) }}%</p>
-                <div class="progress-bar">
-                  <div class="progress-fill" [style.width.%]="videoUploadProgress()"></div>
-                </div>
-              </div>
+    <div class="course-form-overlay">
+      <div class="course-form-card video-upload-card">
+        <h3>Upload Video - {{ selectedLessonForVideo?.title }}</h3>
+        <form class="form">
+          <div class="form-group">
+            <label for="video-file">Chọn file video</label>
+            <input id="video-file" type="file" accept="video/*" (change)="onVideoFileSelected($event)"
+              class="form-file-input" [disabled]="videoLoading()" />
+            @if (videoFile) {
+            <p class="file-info">{{ videoFile.name }} ({{ (videoFile.size / 1024 / 1024).toFixed(2) }} MB)</p>
             }
+          </div>
 
-            <div class="form-actions">
-              <button 
-                class="btn-primary" 
-                (click)="submitVideoUpload()" 
-                type="button" 
-                [disabled]="videoLoading() || !videoFile">
-                {{ videoLoading() ? 'Đang upload...' : 'Upload' }}
-              </button>
-              <button 
-                class="btn-secondary" 
-                (click)="closeVideoUploadForm()" 
-                type="button" 
-                [disabled]="videoLoading()">
-                Hủy
-              </button>
+          @if (videoLoading()) {
+          <div class="progress-container">
+            <p class="progress-label">Đang upload: {{ videoUploadProgress().toFixed(0) }}%</p>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="videoUploadProgress()"></div>
             </div>
-          </form>
-        </div>
+          </div>
+          }
+
+          <div class="form-actions">
+            <button class="btn-primary" (click)="submitVideoUpload()" type="button"
+              [disabled]="videoLoading() || !videoFile">
+              {{ videoLoading() ? 'Đang upload...' : 'Upload' }}
+            </button>
+            <button class="btn-secondary" (click)="closeVideoUploadForm()" type="button" [disabled]="videoLoading()">
+              Hủy
+            </button>
+          </div>
+        </form>
       </div>
+    </div>
+    }
+
+    <!-- Assignment Form Modal -->
+    @if (showAssignmentForm()) {
+    <div class="course-form-overlay">
+      <div class="course-form-card assignment-form-card">
+        <h3>Tạo bài tập - {{ selectedLessonForAssignment?.title }}</h3>
+        <form class="form">
+          <div class="form-group">
+            <label for="assignment-title">Tiêu đề bài tập</label>
+            <input id="assignment-title" [value]="assignmentFormTitle()"
+              (input)="assignmentFormTitle.set($any($event.target).value)" type="text" class="form-input"
+              placeholder="Nhập tiêu đề bài tập" [disabled]="assignmentLoading()" />
+          </div>
+          <div class="form-group">
+            <label for="assignment-description">Mô tả (tuỳ chọn)</label>
+            <textarea id="assignment-description" [value]="assignmentFormDescription()"
+              (input)="assignmentFormDescription.set($any($event.target).value)" class="form-textarea"
+              placeholder="Nhập mô tả bài tập" [disabled]="assignmentLoading()"></textarea>
+          </div>
+          <div class="form-actions">
+            <button class="btn-primary" (click)="submitCreateAssignment()" type="button"
+              [disabled]="assignmentLoading()">
+              {{ assignmentLoading() ? 'Đang tạo...' : 'Tạo bài tập' }}
+            </button>
+            <button class="btn-secondary" (click)="closeAssignmentForm()" type="button"
+              [disabled]="assignmentLoading()">Hủy</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    }
+
+    <!-- Assignment Panel (full overlay) -->
+    @if (showAssignmentPanel()) {
+    <div class="course-form-overlay">
+      <div class="assignment-panel">
+        <div class="assignment-panel-header">
+          <h3>Bài tập</h3>
+          <button class="btn-close" (click)="closeAssignmentPanel()">✕</button>
+        </div>
+
+        @if (assignmentsLoading()) {
+          <div class="loading-indicator">Đang tải bài tập...</div>
+        }
+
+        <!-- Assignment list (when viewing all) -->
+        @if (!selectedAssignment() && assignments().length > 0) {
+        <div class="assignment-list">
+          @for (a of assignments(); track a.id) {
+          <div class="assignment-list-item" (click)="selectAssignment(a)">
+            <div class="assignment-list-info">
+              <p class="assignment-list-title">{{ a.title }}</p>
+              <p class="assignment-list-desc">{{ a.description }}</p>
+            </div>
+            <span class="status-badge" [ngClass]="getStatusClass(a.statusProgress)">
+              {{ getStatusLabel(a.statusProgress) }}
+            </span>
+          </div>
+          }
+        </div>
+        }
+
+        @if (!selectedAssignment() && !assignmentsLoading() && assignments().length === 0) {
+          <p class="no-assignments">Chưa có bài tập nào cho bài học này</p>
+        }
+
+        <!-- Selected assignment detail -->
+        @if (selectedAssignment(); as assignment) {
+        <div class="assignment-detail">
+          @if (assignments().length > 0) {
+            <button class="btn-back-small" (click)="selectedAssignment.set(null)">
+              ← Quay lại danh sách
+            </button>
+          }
+
+          <div class="assignment-detail-header">
+            <h4>{{ assignment.title }}</h4>
+            <span class="status-badge" [ngClass]="getStatusClass(assignment.statusProgress)">
+              {{ getStatusLabel(assignment.statusProgress) }}
+            </span>
+          </div>
+
+          @if (assignment.description) {
+            <p class="assignment-description">{{ assignment.description }}</p>
+          }
+
+          <!-- Processing status -->
+          @if (assignment.statusProgress !== 'DONE' && assignment.statusProgress !== 'FAILED') {
+          <div class="processing-indicator">
+            <div class="spinner"></div>
+            <p>{{ getStatusLabel(assignment.statusProgress) }}</p>
+            <p class="processing-hint">Hệ thống đang xử lý tự động, vui lòng chờ...</p>
+          </div>
+          }
+
+          <!-- Error -->
+          @if (assignment.statusProgress === 'FAILED') {
+          <div class="error-message">
+            {{ assignment.errorMessage || 'Đã xảy ra lỗi khi xử lý bài tập' }}
+          </div>
+          }
+
+          <!-- Questions -->
+          @if (assignment.statusProgress === 'DONE' && assignment.questions.length) {
+          <div class="questions-section">
+            <h5 class="questions-heading">Câu hỏi ({{ assignment.questions.length }})</h5>
+            @for (q of assignment.questions; track $index) {
+            <div class="question-card">
+              <p class="question-number">Câu {{ $index + 1 }}</p>
+              <p class="question-text">{{ q.question }}</p>
+              <div class="options-list">
+                @for (key of getOptionKeys(q.options); track key) {
+                <div class="option-item" [class.correct]="key === q.answer">
+                  <span class="option-key">{{ key }}.</span>
+                  <span class="option-value">{{ q.options[key] }}</span>
+                  @if (key === q.answer) {
+                    <span class="correct-badge">✓</span>
+                  }
+                </div>
+                }
+              </div>
+            </div>
+            }
+          </div>
+          }
+        </div>
+        }
+      </div>
+    </div>
     }
   </div>
 </div>
