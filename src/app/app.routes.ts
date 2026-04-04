@@ -66,6 +66,20 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'courses',
+    loadComponent: () =>
+      import('./components/course-list/course-list.component').then(m => m.CourseListComponent),
+    canActivate: [authGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
+    path: 'learn/:courseId',
+    loadComponent: () =>
+      import('./components/course-learning/course-learning.component').then(m => m.CourseLearningComponent),
+    canActivate: [authGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
     path: '**',
     redirectTo: 'login',
   },

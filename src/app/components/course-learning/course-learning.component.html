@@ -1,0 +1,334 @@
+<div class="cl-layout" [class.sidebar-hidden]="!sidebarOpen" [class.mobile-sidebar-open]="mobileSidebarOpen">
+
+  <!-- Mobile Overlay -->
+  <div class="cl-mobile-overlay" (click)="closeMobileOverlay()"></div>
+
+  <!-- ═══════════════════════════════════════════
+       SIDEBAR — Lesson List
+       ═══════════════════════════════════════════ -->
+  <aside class="cl-sidebar" id="cl-sidebar">
+    <!-- Sidebar Header -->
+    <div class="cl-sidebar-header">
+      <button class="cl-back-btn" (click)="goBackToCourses()" title="Quay lại">
+        <span>←</span>
+      </button>
+      <div class="cl-sidebar-title">{{ courseInfo.title }}</div>
+    </div>
+
+    <!-- Progress -->
+    <div class="cl-sidebar-progress">
+      <div class="cl-progress-info">
+        <span class="cl-progress-label">Tiến độ khóa học</span>
+        <span class="cl-progress-value">{{ completedLessonsCount }}/{{ sidebarLessons.length }}</span>
+      </div>
+      <div class="cl-progress-bar">
+        <div class="cl-progress-fill" [style.width.%]="progressPercent"></div>
+      </div>
+    </div>
+
+    <!-- Lesson List -->
+    <nav class="cl-sidebar-lessons" id="cl-lesson-list">
+      @for (lesson of sidebarLessons; track lesson.id; let i = $index) {
+        <button
+          class="cl-sidebar-lesson"
+          [class.active]="currentLesson?.id === lesson.id"
+          [class.completed]="lesson.status === 'completed'"
+          (click)="selectLesson(lesson.id)"
+          [id]="'sidebar-lesson-' + lesson.id">
+          <span class="cl-lesson-number">
+            @if (lesson.status === 'completed') {
+              <span class="cl-check-icon">✓</span>
+            } @else {
+              {{ i + 1 }}
+            }
+          </span>
+          <span class="cl-lesson-name">{{ lesson.title }}</span>
+          @if (lesson.duration) {
+            <span class="cl-lesson-dur">{{ lesson.duration }}</span>
+          }
+        </button>
+      }
+    </nav>
+  </aside>
+
+  <!-- ═══════════════════════════════════════════
+       MAIN CONTENT
+       ═══════════════════════════════════════════ -->
+  <main class="cl-main">
+    <!-- Top Bar -->
+    <header class="cl-topbar">
+      <div class="cl-topbar-left">
+        <button class="cl-menu-btn" (click)="toggleSidebar()" title="Menu">
+          <span class="cl-menu-icon">☰</span>
+        </button>
+        <div class="cl-topbar-breadcrumb">
+          <a class="cl-topbar-link" (click)="goBackToCourses()">Khóa học</a>
+          <span class="cl-topbar-sep">›</span>
+          <span class="cl-topbar-course">{{ courseInfo.title }}</span>
+        </div>
+      </div>
+      <div class="cl-topbar-right">
+        <div class="cl-topbar-progress-pill">
+          <span class="cl-pill-icon">📊</span>
+          <span>{{ progressPercent }}%</span>
+        </div>
+        <div class="cl-user-avatar">{{ userInitials }}</div>
+      </div>
+    </header>
+
+    <!-- Scrollable Content -->
+    <div class="cl-scroll-container" id="lesson-scroll-container">
+
+      <!-- ─── LOADING STATE ─── -->
+      @if (loadingCourse) {
+        <div class="cl-state-container">
+          <div class="cl-spinner"></div>
+          <p class="cl-state-text">Đang tải khóa học...</p>
+        </div>
+      }
+
+      <!-- ─── ERROR STATE ─── -->
+      @if (errorMessage && !loadingCourse) {
+        <div class="cl-state-container">
+          <span class="cl-state-icon">⚠️</span>
+          <p class="cl-state-text cl-error-text">{{ errorMessage }}</p>
+          <button class="cl-action-btn" (click)="goBackToCourses()">← Quay lại</button>
+        </div>
+      }
+
+      <!-- ─── EMPTY STATE ─── -->
+      @if (!loadingCourse && !errorMessage && sidebarLessons.length === 0) {
+        <div class="cl-state-container">
+          <span class="cl-state-icon">📭</span>
+          <h3 class="cl-state-title">Chưa có bài học</h3>
+          <p class="cl-state-text">Khóa học này chưa có bài học nào. Vui lòng quay lại sau.</p>
+          <button class="cl-action-btn" (click)="goBackToCourses()">← Quay lại</button>
+        </div>
+      }
+
+      <!-- ─── LESSON LOADING ─── -->
+      @if (loadingLesson && !loadingCourse) {
+        <div class="cl-state-container">
+          <div class="cl-spinner"></div>
+          <p class="cl-state-text">Đang tải bài học...</p>
+        </div>
+      }
+
+      <!-- ═══════════════════════════════════════════
+           LESSON CONTENT (Video + Quiz)
+           ═══════════════════════════════════════════ -->
+      @if (currentLesson && !loadingLesson && !loadingCourse && !errorMessage) {
+        <!-- ─── LESSON HEADER ─── -->
+        <div class="cl-lesson-hero">
+          <div class="cl-lesson-hero-inner">
+            <div class="cl-lesson-badge">
+              <span>📖</span>
+              <span>Bài {{ currentLessonIndex + 1 }}/{{ sidebarLessons.length }}</span>
+            </div>
+            <h1 class="cl-lesson-title" id="lesson-title">{{ currentLesson.title }}</h1>
+            <p class="cl-lesson-desc">{{ currentLesson.description }}</p>
+            @if (currentLesson.duration) {
+              <div class="cl-lesson-meta-row">
+                <span class="cl-meta-chip"><span>⏱</span> {{ currentLesson.duration }}</span>
+                <span class="cl-meta-chip"><span>📝</span> {{ totalQuestions }} câu hỏi</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════
+             SECTION 1 — VIDEO
+             ════════════════════════════════════ -->
+        <section class="cl-section" id="video-section">
+          <div class="cl-section-header">
+            <span class="cl-section-icon">🎬</span>
+            <h2 class="cl-section-title">Video bài giảng</h2>
+          </div>
+
+          <div class="cl-video-wrapper">
+            <video
+              class="cl-video-player"
+              [src]="currentLesson.videoUrl"
+              controls
+              controlsList="nodownload"
+              (timeupdate)="onVideoTimeUpdate($event)"
+              (ended)="onVideoEnded()"
+              id="lesson-video-player">
+            </video>
+          </div>
+
+          <!-- Video Progress -->
+          <div class="cl-video-progress">
+            <div class="cl-video-progress-bar">
+              <div class="cl-video-progress-fill" [style.width.%]="videoWatchPercent"></div>
+            </div>
+            <div class="cl-video-progress-info">
+              <span>Đã xem: {{ videoWatchPercent }}%</span>
+              @if (videoWatched) {
+                <span class="cl-video-done">✓ Đã hoàn thành video</span>
+              }
+            </div>
+          </div>
+
+          @if (currentLesson.videoDescription) {
+            <div class="cl-video-desc-card">
+              <p>{{ currentLesson.videoDescription }}</p>
+            </div>
+          }
+        </section>
+
+        <!-- ════════════════════════════════════
+             SECTION 2 — EXERCISES / QUIZ
+             ════════════════════════════════════ -->
+        <section class="cl-section" id="quiz-section">
+          <div class="cl-section-header">
+            <span class="cl-section-icon">📝</span>
+            <h2 class="cl-section-title">Bài tập trắc nghiệm</h2>
+            @if (!loadingQuiz && totalQuestions > 0) {
+              <div class="cl-quiz-counter">
+                {{ answeredCount }}/{{ totalQuestions }} đã trả lời
+              </div>
+            }
+          </div>
+
+          <!-- Quiz Loading -->
+          @if (loadingQuiz) {
+            <div class="cl-quiz-loading">
+              <div class="cl-spinner cl-spinner-sm"></div>
+              <span>Đang tải bài tập...</span>
+            </div>
+          }
+
+          <!-- No Quiz Available -->
+          @if (!loadingQuiz && totalQuestions === 0) {
+            <div class="cl-no-quiz">
+              <span class="cl-no-quiz-icon">📋</span>
+              <p class="cl-no-quiz-text">Bài học này chưa có bài tập trắc nghiệm.</p>
+            </div>
+          }
+
+          <!-- Questions -->
+          @if (!loadingQuiz && totalQuestions > 0) {
+            @for (question of currentLesson.quiz; track question.id; let qi = $index) {
+              <div class="cl-question-card"
+                [class.submitted]="quizSubmitted"
+                [class.correct-answer]="quizSubmitted && question.selectedAnswer === question.correctAnswer"
+                [class.wrong-answer]="quizSubmitted && question.selectedAnswer !== question.correctAnswer"
+                [id]="'question-' + question.id">
+
+                <div class="cl-question-header">
+                  <span class="cl-question-num">Câu {{ qi + 1 }}</span>
+                  @if (quizSubmitted) {
+                    @if (question.selectedAnswer === question.correctAnswer) {
+                      <span class="cl-badge-correct">✓ Đúng</span>
+                    } @else {
+                      <span class="cl-badge-wrong">✗ Sai</span>
+                    }
+                  }
+                </div>
+
+                <p class="cl-question-text">{{ question.question }}</p>
+
+                <div class="cl-options">
+                  @for (option of question.options; track $index; let oi = $index) {
+                    <button
+                      class="cl-option"
+                      [class.selected]="question.selectedAnswer === oi && !quizSubmitted"
+                      [class.correct]="quizSubmitted && oi === question.correctAnswer"
+                      [class.incorrect]="quizSubmitted && question.selectedAnswer === oi && oi !== question.correctAnswer"
+                      [class.disabled]="quizSubmitted"
+                      (click)="selectAnswer(question, oi)"
+                      [id]="'q' + question.id + '-opt' + oi">
+                      <span class="cl-option-letter">
+                        @if (quizSubmitted && oi === question.correctAnswer) {
+                          ✓
+                        } @else if (quizSubmitted && question.selectedAnswer === oi && oi !== question.correctAnswer) {
+                          ✗
+                        } @else {
+                          {{ ['A', 'B', 'C', 'D'][oi] }}
+                        }
+                      </span>
+                      <span class="cl-option-text">{{ option }}</span>
+                    </button>
+                  }
+                </div>
+
+                <!-- Explanation (shown after submit) -->
+                @if (quizSubmitted) {
+                  <div class="cl-explanation">
+                    <span class="cl-explanation-icon">💡</span>
+                    <div>
+                      <div class="cl-explanation-label">Giải thích</div>
+                      <div class="cl-explanation-text">{{ question.explanation }}</div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          }
+
+          <!-- Submit Button -->
+          @if (!quizSubmitted && !loadingQuiz && totalQuestions > 0) {
+            <div class="cl-quiz-submit-area">
+              <button
+                class="cl-submit-btn"
+                [disabled]="!allQuestionsAnswered"
+                (click)="submitQuiz()"
+                id="submit-quiz-btn">
+                <span>📝</span>
+                <span>Nộp bài</span>
+              </button>
+              @if (!allQuestionsAnswered) {
+                <p class="cl-submit-hint">Vui lòng trả lời tất cả {{ totalQuestions }} câu hỏi trước khi nộp bài.</p>
+              }
+            </div>
+          }
+
+          <!-- Results Summary -->
+          @if (quizSubmitted) {
+            <div class="cl-results-card" [class.perfect]="isPerfectScore">
+              <div class="cl-results-emoji">{{ isPerfectScore ? '🎉' : (scorePercent >= 70 ? '🌟' : '💪') }}</div>
+              <h3 class="cl-results-title">
+                {{ isPerfectScore ? 'Hoàn hảo!' : (scorePercent >= 70 ? 'Tuyệt vời!' : 'Cố gắng hơn nhé!') }}
+              </h3>
+              <div class="cl-results-score">
+                <span class="cl-score-num">{{ quizScore }}</span>
+                <span class="cl-score-sep">/</span>
+                <span class="cl-score-total">{{ totalQuestions }}</span>
+              </div>
+              <div class="cl-results-percent">{{ scorePercent }}% chính xác</div>
+
+              <div class="cl-results-bar">
+                <div class="cl-results-bar-fill"
+                  [style.width.%]="scorePercent"
+                  [class.high]="scorePercent >= 70"
+                  [class.low]="scorePercent < 70"></div>
+              </div>
+
+              @if (canGoNext) {
+                <button class="cl-next-lesson-btn" (click)="goToNextLesson()" id="next-lesson-btn">
+                  Bài tiếp theo →
+                </button>
+              } @else {
+                <button class="cl-next-lesson-btn" (click)="goBackToCourses()" id="back-to-courses-btn">
+                  🏠 Về danh sách khóa học
+                </button>
+              }
+            </div>
+          }
+        </section>
+
+        <!-- ─── BOTTOM NAV ─── -->
+        <div class="cl-bottom-nav" id="bottom-nav">
+          <button class="cl-nav-btn" [disabled]="!canGoPrev" (click)="goToPrevLesson()">
+            ← Bài trước
+          </button>
+          <span class="cl-nav-indicator">{{ currentLessonIndex + 1 }} / {{ sidebarLessons.length }}</span>
+          <button class="cl-nav-btn cl-nav-next" [disabled]="!canGoNext" (click)="goToNextLesson()">
+            Bài tiếp →
+          </button>
+        </div>
+      }
+    </div>
+  </main>
+</div>

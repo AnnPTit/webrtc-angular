@@ -24,7 +24,7 @@ export class HomeComponent {
       title: 'Khóa Học',
       description: 'Khám phá và tham gia các khóa học trực tuyến',
       icon: 'book',
-      route: null,
+      route: '/courses',
       color: '#45b7d1'
     },
     {

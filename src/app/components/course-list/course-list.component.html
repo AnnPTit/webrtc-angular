@@ -1,0 +1,81 @@
+<div class="course-list-container">
+  <!-- Header -->
+  <header class="cl-header">
+    <div class="cl-header-left">
+      <a routerLink="/home" class="cl-back-btn" title="Về trang chủ">
+        <span class="cl-back-icon">←</span>
+      </a>
+      <div class="cl-logo">
+        <span class="cl-logo-icon">📚</span>
+        <span class="cl-logo-text">Khóa Học</span>
+      </div>
+    </div>
+    <div class="cl-header-right">
+      @if (currentUser) {
+        <div class="cl-user-info">
+          <div class="cl-user-avatar">{{ userInitials }}</div>
+          <span class="cl-user-name">{{ currentUser.fullName || currentUser.username }}</span>
+        </div>
+      }
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="cl-main">
+    <div class="cl-page-header">
+      <h1 class="cl-page-title">Danh sách khóa học</h1>
+      <p class="cl-page-subtitle">Chọn một khóa học để bắt đầu hành trình học tập của bạn</p>
+    </div>
+
+    <!-- Loading State -->
+    @if (loading) {
+      <div class="cl-loading">
+        <div class="cl-loading-spinner">
+          <div class="cl-spinner"></div>
+        </div>
+        <p class="cl-loading-text">Đang tải danh sách khóa học...</p>
+      </div>
+    }
+
+    <!-- Error State -->
+    @if (error && !loading) {
+      <div class="cl-error">
+        <span class="cl-error-icon">⚠️</span>
+        <p class="cl-error-text">{{ error }}</p>
+        <button class="cl-retry-btn" (click)="loadCourses()">
+          🔄 Thử lại
+        </button>
+      </div>
+    }
+
+    <!-- Empty State -->
+    @if (!loading && !error && courses.length === 0) {
+      <div class="cl-empty">
+        <span class="cl-empty-icon">📭</span>
+        <h3 class="cl-empty-title">Chưa có khóa học nào</h3>
+        <p class="cl-empty-text">Hiện tại chưa có khóa học nào được tạo. Vui lòng quay lại sau.</p>
+      </div>
+    }
+
+    <!-- Course Grid -->
+    @if (!loading && !error && courses.length > 0) {
+      <div class="cl-course-grid">
+        @for (course of courses; track course.id; let i = $index) {
+          <a [routerLink]="['/learn', course.id]" class="cl-course-card" [id]="'course-card-' + course.id">
+            <div class="cl-card-accent" [style.background]="getCourseGradient(i)">
+              <span class="cl-card-icon">{{ getCourseIcon(i) }}</span>
+            </div>
+            <div class="cl-card-body">
+              <h3 class="cl-card-title">{{ course.title }}</h3>
+              <p class="cl-card-description">{{ course.description || 'Chưa có mô tả' }}</p>
+              <div class="cl-card-footer">
+                <span class="cl-card-badge">Khóa học #{{ course.id }}</span>
+                <span class="cl-card-arrow">→</span>
+              </div>
+            </div>
+          </a>
+        }
+      </div>
+    }
+  </main>
+</div>
