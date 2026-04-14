@@ -1,0 +1,304 @@
+<div class="qs-container">
+  <!-- ═══════════════════════════════════════════
+       HEADER
+       ═══════════════════════════════════════════ -->
+  <header class="qs-header">
+    <div class="qs-header-left">
+      <button class="qs-back-btn" (click)="goBack()" title="Quay lại">
+        <span>←</span>
+      </button>
+      <div>
+        <h1 class="qs-title">Thống kê học tập</h1>
+        <p class="qs-subtitle">Theo dõi tiến bộ và kết quả của bạn</p>
+      </div>
+    </div>
+    <div class="qs-header-right">
+      <button class="qs-courses-btn" (click)="goToCourses()">
+        <span>📚</span> Khóa học
+      </button>
+      <div class="qs-user-avatar">{{ userInitials }}</div>
+    </div>
+  </header>
+
+  <!-- ─── LOADING STATE ─── -->
+  @if (loadingStats) {
+    <div class="qs-state-container">
+      <div class="qs-spinner"></div>
+      <p class="qs-state-text">Đang tải thống kê...</p>
+    </div>
+  }
+
+  <!-- ─── ERROR STATE ─── -->
+  @if (errorMessage && !loadingStats) {
+    <div class="qs-state-container">
+      <span class="qs-state-icon">⚠️</span>
+      <p class="qs-state-text qs-error-text">{{ errorMessage }}</p>
+      <button class="qs-action-btn" (click)="goBack()">← Quay lại</button>
+    </div>
+  }
+
+  <!-- ═══════════════════════════════════════════
+       CONTENT
+       ═══════════════════════════════════════════ -->
+  @if (!loadingStats && !errorMessage && userStats) {
+    <div class="qs-content">
+
+      <!-- ════════════════════════════════════
+           OVERVIEW CARDS
+           ════════════════════════════════════ -->
+      <div class="qs-overview-grid">
+        <!-- Total Attempts -->
+        <div class="qs-card qs-card-attempts">
+          <div class="qs-card-icon">🎯</div>
+          <div class="qs-card-body">
+            <div class="qs-card-value">{{ userStats.totalAttempts }}</div>
+            <div class="qs-card-label">Lần làm bài</div>
+          </div>
+        </div>
+
+        <!-- Average Score -->
+        <div class="qs-card qs-card-average">
+          <div class="qs-card-icon">📊</div>
+          <div class="qs-card-body">
+            <div class="qs-card-value">{{ userStats.averageScore !== null ? (userStats.averageScore | number:'1.1-1') : '—' }}%</div>
+            <div class="qs-card-label">Điểm trung bình</div>
+            <div class="qs-card-badge" [ngClass]="scoreLabelClass">{{ scoreLabel }}</div>
+          </div>
+        </div>
+
+        <!-- Highest Score -->
+        <div class="qs-card qs-card-highest">
+          <div class="qs-card-icon">🏆</div>
+          <div class="qs-card-body">
+            <div class="qs-card-value">{{ userStats.highestScore !== null ? (userStats.highestScore | number:'1.0-0') : '—' }}%</div>
+            <div class="qs-card-label">Điểm cao nhất</div>
+          </div>
+        </div>
+
+        <!-- Lowest Score -->
+        <div class="qs-card qs-card-lowest">
+          <div class="qs-card-icon">📉</div>
+          <div class="qs-card-body">
+            <div class="qs-card-value">{{ userStats.lowestScore !== null ? (userStats.lowestScore | number:'1.0-0') : '—' }}%</div>
+            <div class="qs-card-label">Điểm thấp nhất</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════
+           PROGRESS CHART
+           ════════════════════════════════════ -->
+      @if (userStats.progressHistory && userStats.progressHistory.length > 0) {
+        <div class="qs-section">
+          <div class="qs-section-header">
+            <div class="qs-section-title-group">
+              <span class="qs-section-icon">📈</span>
+              <h2 class="qs-section-title">Biểu đồ tiến bộ</h2>
+            </div>
+            <div class="qs-trend-badge" [ngClass]="improvementTrend">
+              <span>{{ trendIcon }}</span>
+              <span>{{ trendText }}</span>
+            </div>
+          </div>
+
+          <div class="qs-chart-container">
+            <!-- SVG Line Chart -->
+            <svg class="qs-chart" viewBox="0 0 100 50" preserveAspectRatio="none">
+              <!-- Grid lines -->
+              <line x1="2" y1="14" x2="98" y2="14" class="qs-chart-grid" />
+              <line x1="2" y1="26" x2="98" y2="26" class="qs-chart-grid" />
+              <line x1="2" y1="38" x2="98" y2="38" class="qs-chart-grid" />
+
+              <!-- Area fill -->
+              <polygon [attr.points]="progressChartAreaPoints" class="qs-chart-area" />
+
+              <!-- Line -->
+              <polyline [attr.points]="progressChartPoints" class="qs-chart-line" />
+
+              <!-- Data points -->
+              @for (point of userStats.progressHistory.slice().reverse(); track point.resultId; let pi = $index) {
+                <circle
+                  [attr.cx]="2 + (userStats.progressHistory.length === 1 ? 48 : (pi / (userStats.progressHistory.length - 1)) * 96)"
+                  [attr.cy]="2 + 46 - (point.score / 100) * 46"
+                  r="1.2"
+                  class="qs-chart-dot" />
+              }
+            </svg>
+
+            <!-- Y-axis labels -->
+            <div class="qs-chart-y-labels">
+              <span>100%</span>
+              <span>75%</span>
+              <span>50%</span>
+              <span>25%</span>
+            </div>
+
+            <!-- X-axis labels -->
+            <div class="qs-chart-x-labels">
+              @if (userStats.progressHistory.length > 0) {
+                <span>{{ formatShortDate(userStats.progressHistory[userStats.progressHistory.length - 1].completedAt) }}</span>
+                <span>{{ formatShortDate(userStats.progressHistory[0].completedAt) }}</span>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ════════════════════════════════════
+           PROGRESS HISTORY (DATE FILTER)
+           ════════════════════════════════════ -->
+      <div class="qs-section">
+        <div class="qs-section-header">
+          <div class="qs-section-title-group">
+            <span class="qs-section-icon">📅</span>
+            <h2 class="qs-section-title">Tiến bộ theo thời gian</h2>
+          </div>
+        </div>
+
+        <!-- Date Range Filter -->
+        <div class="qs-filter-row">
+          <div class="qs-filter-field">
+            <label>Từ ngày</label>
+            <input type="date" [(ngModel)]="dateFrom" class="qs-date-input" />
+          </div>
+          <div class="qs-filter-field">
+            <label>Đến ngày</label>
+            <input type="date" [(ngModel)]="dateTo" class="qs-date-input" />
+          </div>
+          <button class="qs-filter-btn" (click)="loadProgress()" [disabled]="loadingProgress">
+            @if (loadingProgress) {
+              <div class="qs-spinner qs-spinner-sm"></div>
+            } @else {
+              <span>🔍</span>
+            }
+            <span>Tìm kiếm</span>
+          </button>
+        </div>
+
+        <!-- Results Table -->
+        @if (recentResults.length > 0) {
+          <div class="qs-table-wrap">
+            <table class="qs-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Bài tập</th>
+                  <th>Điểm</th>
+                  <th>Đúng/Tổng</th>
+                  <th>Thời gian</th>
+                  <th>Ngày làm</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (result of recentResults; track result.id; let ri = $index) {
+                  <tr [class.expanded]="selectedResult?.id === result.id">
+                    <td>
+                      <span class="qs-row-num">{{ ri + 1 }}</span>
+                    </td>
+                    <td>
+                      <div class="qs-assignment-name">{{ result.assignmentTitle }}</div>
+                    </td>
+                    <td>
+                      <span class="qs-score-pill" [ngClass]="scoreColor(result.score)">
+                        {{ result.score }}%
+                      </span>
+                    </td>
+                    <td>{{ result.correctCount }}/{{ result.totalQuestions }}</td>
+                    <td>{{ formatDuration(result.durationSeconds) }}</td>
+                    <td>{{ formatDate(result.completedAt) }}</td>
+                    <td>
+                      <button class="qs-detail-btn" (click)="viewResult(result)">
+                        {{ selectedResult?.id === result.id ? '▲' : '▼' }}
+                      </button>
+                    </td>
+                  </tr>
+
+                  <!-- Expanded Detail Row -->
+                  @if (selectedResult?.id === result.id && result.answerDetails && result.answerDetails.length > 0) {
+                    <tr class="qs-detail-row">
+                      <td colspan="7">
+                        <div class="qs-detail-content">
+                          <h4 class="qs-detail-title">Chi tiết câu trả lời</h4>
+                          <div class="qs-answers-grid">
+                            @for (answer of result.answerDetails; track answer.questionId; let ai = $index) {
+                              <div class="qs-answer-card" [class.correct]="answer.isCorrect" [class.wrong]="!answer.isCorrect">
+                                <div class="qs-answer-header">
+                                  <span class="qs-answer-num">Câu {{ ai + 1 }}</span>
+                                  @if (answer.isCorrect) {
+                                    <span class="qs-answer-badge correct">✓</span>
+                                  } @else {
+                                    <span class="qs-answer-badge wrong">✗</span>
+                                  }
+                                </div>
+                                <p class="qs-answer-question">{{ answer.questionText }}</p>
+                                <div class="qs-answer-info">
+                                  <span>Đã chọn: <strong>{{ answer.selectedAnswer || '—' }}</strong></span>
+                                  @if (!answer.isCorrect) {
+                                    <span>Đáp án: <strong class="qs-correct-answer">{{ answer.correctAnswer }}</strong></span>
+                                  }
+                                </div>
+                              </div>
+                            }
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        @if (!loadingProgress && recentResults.length === 0) {
+          <div class="qs-empty">
+            <span class="qs-empty-icon">📭</span>
+            <p>Không có kết quả trong khoảng thời gian này.</p>
+          </div>
+        }
+      </div>
+
+      <!-- ════════════════════════════════════
+           RECENT ACTIVITY
+           ════════════════════════════════════ -->
+      @if (userStats.progressHistory && userStats.progressHistory.length > 0) {
+        <div class="qs-section">
+          <div class="qs-section-header">
+            <div class="qs-section-title-group">
+              <span class="qs-section-icon">🕐</span>
+              <h2 class="qs-section-title">Hoạt động gần đây</h2>
+            </div>
+          </div>
+
+          <div class="qs-activity-list">
+            @for (point of userStats.progressHistory.slice(0, 10); track point.resultId) {
+              <div class="qs-activity-item">
+                <div class="qs-activity-score" [ngClass]="scoreColor(point.score)">
+                  {{ point.score }}%
+                </div>
+                <div class="qs-activity-info">
+                  <div class="qs-activity-name">{{ point.assignmentTitle }}</div>
+                  <div class="qs-activity-meta">
+                    {{ point.correctCount }}/{{ point.totalQuestions }} đúng · {{ formatDate(point.completedAt) }}
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+    </div>
+  }
+
+  <!-- Empty Stats State -->
+  @if (!loadingStats && !errorMessage && !userStats) {
+    <div class="qs-state-container">
+      <span class="qs-state-icon">📭</span>
+      <h3 class="qs-state-title">Chưa có dữ liệu</h3>
+      <p class="qs-state-text">Bạn chưa làm bài tập nào. Hãy bắt đầu học và làm bài tập!</p>
+      <button class="qs-action-btn" (click)="goToCourses()">📚 Xem khóa học</button>
+    </div>
+  }
+</div>

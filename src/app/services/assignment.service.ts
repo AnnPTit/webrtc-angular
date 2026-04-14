@@ -12,6 +12,7 @@ export interface CreateAssignmentRequest {
 }
 
 export interface QuestionDTO {
+  questionId?: number;
   question: string;
   options: { [key: string]: string };
   answer: string;

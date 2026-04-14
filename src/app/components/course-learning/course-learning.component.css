@@ -1172,4 +1172,281 @@
     width: 100%;
     justify-content: center;
   }
+
+  .cl-results-actions {
+    flex-direction: column;
+  }
+
+  .cl-retry-btn,
+  .cl-history-btn,
+  .cl-next-lesson-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .cl-history-table-wrap {
+    font-size: 12px;
+  }
+}
+
+/* ================================================================
+   STATS BUTTON (Top Bar)
+   ================================================================ */
+.cl-stats-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--purple-soft);
+  color: var(--purple);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  white-space: nowrap;
+}
+
+.cl-stats-btn:hover {
+  background: rgba(167, 139, 250, 0.2);
+  border-color: rgba(167, 139, 250, 0.35);
+}
+
+/* ================================================================
+   SUBMIT LOADING SPINNER (extra small)
+   ================================================================ */
+.cl-spinner-xs {
+  width: 18px;
+  height: 18px;
+  border-width: 2px;
+}
+
+/* ================================================================
+   SUBMIT ERROR
+   ================================================================ */
+.cl-submit-error {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--red-soft);
+  color: var(--red);
+  border: 1px solid var(--red-border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  animation: fade-in-up 0.3s var(--ease);
+}
+
+/* ================================================================
+   RESULTS DURATION
+   ================================================================ */
+.cl-results-duration {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+/* ================================================================
+   RESULTS ACTION BUTTONS
+   ================================================================ */
+.cl-results-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.cl-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 24px;
+  background: var(--amber-soft);
+  color: var(--amber);
+  border: 1px solid rgba(245, 166, 35, 0.2);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+}
+
+.cl-retry-btn:hover {
+  background: rgba(245, 166, 35, 0.18);
+  border-color: rgba(245, 166, 35, 0.35);
+  transform: translateY(-1px);
+}
+
+.cl-history-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 24px;
+  background: var(--purple-soft);
+  color: var(--purple);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+}
+
+.cl-history-btn:hover {
+  background: rgba(167, 139, 250, 0.2);
+  border-color: rgba(167, 139, 250, 0.35);
+  transform: translateY(-1px);
+}
+
+/* ================================================================
+   HISTORY SECTION
+   ================================================================ */
+.cl-history-section {
+  margin-top: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  animation: fade-in-up 0.3s var(--ease);
+}
+
+.cl-history-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.cl-history-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.cl-history-empty {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.cl-history-empty p {
+  margin: 0;
+}
+
+.cl-history-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+}
+
+.cl-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.cl-history-table thead th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  background: var(--bg-input);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.cl-history-table tbody td {
+  padding: 10px 14px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.cl-history-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.cl-history-table tbody tr:hover {
+  background: var(--bg-card-hover);
+}
+
+.cl-history-table tbody tr.current {
+  background: var(--accent-soft);
+}
+
+.cl-history-table tbody tr.current td {
+  color: var(--text-primary);
+}
+
+.cl-history-attempt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cl-history-score {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 99px;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.cl-history-score.high {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.cl-history-score.medium {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.cl-history-score.low {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+/* ================================================================
+   RESPONSIVE — History
+   ================================================================ */
+@media (max-width: 768px) {
+  .cl-history-section {
+    padding: 16px;
+  }
+
+  .cl-results-actions {
+    flex-direction: column;
+  }
+
+  .cl-retry-btn,
+  .cl-history-btn,
+  .cl-next-lesson-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .cl-stats-btn span:last-child {
+    display: none;
+  }
 }

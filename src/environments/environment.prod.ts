@@ -8,6 +8,7 @@ export const environment = {
     videos: '/api/videos',
     transcriptions: '/api/transcriptions',
     assignments: '/api/assignments',
+    quizResults: '/api/quiz-results',
   },
   socket: {
     url: 'https://webrtc-signaling-production-534f.up.railway.app',

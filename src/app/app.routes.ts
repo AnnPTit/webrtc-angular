@@ -73,6 +73,13 @@ export const routes: Routes = [
     data: { roles: ['STUDENT'] }
   },
   {
+    path: 'quiz-stats',
+    loadComponent: () =>
+      import('./components/quiz-stats/quiz-stats.component').then(m => m.QuizStatsComponent),
+    canActivate: [authGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
     path: 'learn/:courseId',
     loadComponent: () =>
       import('./components/course-learning/course-learning.component').then(m => m.CourseLearningComponent),

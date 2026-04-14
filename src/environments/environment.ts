@@ -11,6 +11,7 @@ export const environment = {
     videos: '/api/videos',
     transcriptions: '/api/transcriptions',
     assignments: '/api/assignments',
+    quizResults: '/api/quiz-results',
   },
   socket: {
     url: 'http://localhost:3000',

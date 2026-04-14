@@ -68,8 +68,12 @@
         </div>
       </div>
       <div class="cl-topbar-right">
+        <button class="cl-stats-btn" (click)="goToStats()" title="Thống kê">
+          <span>📊</span>
+          <span>Thống kê</span>
+        </button>
         <div class="cl-topbar-progress-pill">
-          <span class="cl-pill-icon">📊</span>
+          <span class="cl-pill-icon">📈</span>
           <span>{{ progressPercent }}%</span>
         </div>
         <div class="cl-user-avatar">{{ userInitials }}</div>
@@ -236,7 +240,7 @@
                       [class.selected]="question.selectedAnswer === oi && !quizSubmitted"
                       [class.correct]="quizSubmitted && oi === question.correctAnswer"
                       [class.incorrect]="quizSubmitted && question.selectedAnswer === oi && oi !== question.correctAnswer"
-                      [class.disabled]="quizSubmitted"
+                      [class.disabled]="quizSubmitted || submittingQuiz"
                       (click)="selectAnswer(question, oi)"
                       [id]="'q' + question.id + '-opt' + oi">
                       <span class="cl-option-letter">
@@ -270,13 +274,25 @@
           <!-- Submit Button -->
           @if (!quizSubmitted && !loadingQuiz && totalQuestions > 0) {
             <div class="cl-quiz-submit-area">
+              <!-- Submit Error -->
+              @if (submitError) {
+                <div class="cl-submit-error">
+                  <span>⚠️</span> {{ submitError }}
+                </div>
+              }
+
               <button
                 class="cl-submit-btn"
-                [disabled]="!allQuestionsAnswered"
+                [disabled]="!allQuestionsAnswered || submittingQuiz"
                 (click)="submitQuiz()"
                 id="submit-quiz-btn">
-                <span>📝</span>
-                <span>Nộp bài</span>
+                @if (submittingQuiz) {
+                  <div class="cl-spinner cl-spinner-xs"></div>
+                  <span>Đang nộp bài...</span>
+                } @else {
+                  <span>📝</span>
+                  <span>Nộp bài</span>
+                }
               </button>
               @if (!allQuestionsAnswered) {
                 <p class="cl-submit-hint">Vui lòng trả lời tất cả {{ totalQuestions }} câu hỏi trước khi nộp bài.</p>
@@ -286,7 +302,7 @@
 
           <!-- Results Summary -->
           @if (quizSubmitted) {
-            <div class="cl-results-card" [class.perfect]="isPerfectScore">
+            <div class="cl-results-card" [class.perfect]="isPerfectScore" id="quiz-results">
               <div class="cl-results-emoji">{{ isPerfectScore ? '🎉' : (scorePercent >= 70 ? '🌟' : '💪') }}</div>
               <h3 class="cl-results-title">
                 {{ isPerfectScore ? 'Hoàn hảo!' : (scorePercent >= 70 ? 'Tuyệt vời!' : 'Cố gắng hơn nhé!') }}
@@ -298,6 +314,13 @@
               </div>
               <div class="cl-results-percent">{{ scorePercent }}% chính xác</div>
 
+              <!-- Duration -->
+              @if (quizDurationSeconds > 0) {
+                <div class="cl-results-duration">
+                  <span>⏱</span> Thời gian: {{ formattedDuration }}
+                </div>
+              }
+
               <div class="cl-results-bar">
                 <div class="cl-results-bar-fill"
                   [style.width.%]="scorePercent"
@@ -305,16 +328,88 @@
                   [class.low]="scorePercent < 70"></div>
               </div>
 
-              @if (canGoNext) {
-                <button class="cl-next-lesson-btn" (click)="goToNextLesson()" id="next-lesson-btn">
-                  Bài tiếp theo →
+              <!-- Action Buttons -->
+              <div class="cl-results-actions">
+                <button class="cl-retry-btn" (click)="retryQuiz()" id="retry-quiz-btn">
+                  <span>🔄</span> Làm lại
                 </button>
-              } @else {
-                <button class="cl-next-lesson-btn" (click)="goBackToCourses()" id="back-to-courses-btn">
-                  🏠 Về danh sách khóa học
+
+                <button class="cl-history-btn" (click)="toggleHistory()" id="toggle-history-btn">
+                  <span>📜</span> {{ showHistory ? 'Ẩn lịch sử' : 'Xem lịch sử' }}
                 </button>
-              }
+
+                @if (canGoNext) {
+                  <button class="cl-next-lesson-btn" (click)="goToNextLesson()" id="next-lesson-btn">
+                    Bài tiếp theo →
+                  </button>
+                } @else {
+                  <button class="cl-next-lesson-btn" (click)="goBackToCourses()" id="back-to-courses-btn">
+                    🏠 Về danh sách khóa học
+                  </button>
+                }
+              </div>
             </div>
+
+            <!-- ════════════════════════════════════
+                 QUIZ HISTORY
+                 ════════════════════════════════════ -->
+            @if (showHistory) {
+              <div class="cl-history-section" id="quiz-history">
+                <div class="cl-history-header">
+                  <span class="cl-section-icon">📜</span>
+                  <h3 class="cl-history-title">Lịch sử làm bài</h3>
+                </div>
+
+                @if (loadingHistory) {
+                  <div class="cl-quiz-loading">
+                    <div class="cl-spinner cl-spinner-sm"></div>
+                    <span>Đang tải lịch sử...</span>
+                  </div>
+                }
+
+                @if (!loadingHistory && quizHistory.length === 0) {
+                  <div class="cl-history-empty">
+                    <p>Chưa có lịch sử làm bài.</p>
+                  </div>
+                }
+
+                @if (!loadingHistory && quizHistory.length > 0) {
+                  <div class="cl-history-table-wrap">
+                    <table class="cl-history-table">
+                      <thead>
+                        <tr>
+                          <th>Lần</th>
+                          <th>Điểm</th>
+                          <th>Đúng/Tổng</th>
+                          <th>Thời gian</th>
+                          <th>Ngày làm</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (record of quizHistory; track record.id; let ri = $index) {
+                          <tr [class.current]="record.id === serverResult?.id">
+                            <td>
+                              <span class="cl-history-attempt">{{ quizHistory.length - ri }}</span>
+                            </td>
+                            <td>
+                              <span class="cl-history-score"
+                                [class.high]="record.score >= 80"
+                                [class.medium]="record.score >= 50 && record.score < 80"
+                                [class.low]="record.score < 50">
+                                {{ record.score }}%
+                              </span>
+                            </td>
+                            <td>{{ record.correctCount }}/{{ record.totalQuestions }}</td>
+                            <td>{{ formatDuration(record.durationSeconds) }}</td>
+                            <td>{{ formatDate(record.completedAt) }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                }
+              </div>
+            }
           }
         </section>
 

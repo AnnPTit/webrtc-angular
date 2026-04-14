@@ -6,8 +6,10 @@ export type LessonStatus = 'not-started' | 'in-progress' | 'completed';
 
 export interface QuizQuestion {
   id: number;
+  dbId?: number;           // Database ID of the question (for API submission)
   question: string;
   options: string[];
+  optionKeys?: string[];   // Original keys (A, B, C, D) to map back when submitting
   correctAnswer: number;
   explanation: string;
   // Runtime state
@@ -24,6 +26,7 @@ export interface LessonData {
   duration: string;
   status: LessonStatus;
   quiz: QuizQuestion[];
+  assignmentId?: number;   // Assignment ID for quiz submission
 }
 
 export interface CourseInfo {

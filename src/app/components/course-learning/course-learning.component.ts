@@ -5,6 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CourseService, Lesson as ApiLesson } from '../../services/course.service';
 import { AssignmentService, QuestionDTO } from '../../services/assignment.service';
+import { QuizResultService, QuizResultResponse, SubmitQuizRequest, AnswerItem } from '../../services/quiz-result.service';
 import {
   CourseInfo,
   LessonData,
@@ -36,6 +37,15 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
 
   // ── Quiz ──
   quizSubmitted = false;
+  submittingQuiz = false;
+  quizStartTime = 0;
+  serverResult: QuizResultResponse | null = null;
+  submitError: string | null = null;
+
+  // ── Quiz History ──
+  quizHistory: QuizResultResponse[] = [];
+  showHistory = false;
+  loadingHistory = false;
 
   // ── UI ──
   sidebarOpen = true;
@@ -49,6 +59,7 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private courseService: CourseService,
     private assignmentService: AssignmentService,
+    private quizResultService: QuizResultService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -127,7 +138,7 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
 
     this.loadingLesson = true;
     this.loadingQuiz = false;
-    this.quizSubmitted = false;
+    this.resetQuizState();
     this.videoWatchPercent = 0;
     this.videoWatched = false;
 
@@ -210,6 +221,11 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
             (a) => a.questions && a.questions.length > 0,
           ) || assignments[0];
 
+          // Save assignmentId for quiz submission
+          if (this.currentLesson) {
+            this.currentLesson.assignmentId = assignment.id;
+          }
+
           if (assignment.title) {
             // Use assignment title/description if available
             this.currentLesson.description = assignment.description || this.currentLesson.description;
@@ -217,6 +233,8 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
 
           if (assignment.questions && assignment.questions.length > 0) {
             this.currentLesson.quiz = this.convertApiQuestions(assignment.questions);
+            // Start the quiz timer
+            this.quizStartTime = Date.now();
           }
         }
 
@@ -235,6 +253,7 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
   /**
    * Converts API QuestionDTO[] (options as key-value map, answer as letter)
    * to component QuizQuestion[] (options as string[], correctAnswer as index).
+   * Also stores dbId and optionKeys for API submission.
    */
   private convertApiQuestions(apiQuestions: QuestionDTO[]): QuizQuestion[] {
     return apiQuestions.map((q, index) => {
@@ -245,8 +264,10 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
 
       return {
         id: index + 1,
+        dbId: q.questionId,
         question: q.question,
         options,
+        optionKeys: keys,
         correctAnswer: correctAnswer >= 0 ? correctAnswer : 0,
         explanation: `Đáp án đúng: ${q.answer}. ${q.options[q.answer] || ''}`,
         selectedAnswer: undefined,
@@ -279,7 +300,7 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
   // ═══════════════════════════════════════════
 
   selectAnswer(question: QuizQuestion, answerIndex: number): void {
-    if (this.quizSubmitted) return;
+    if (this.quizSubmitted || this.submittingQuiz) return;
     question.selectedAnswer = answerIndex;
     question.isAnswered = true;
   }
@@ -298,6 +319,8 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
   }
 
   get quizScore(): number {
+    // Prefer server result
+    if (this.serverResult) return this.serverResult.correctCount;
     if (!this.currentLesson?.quiz) return 0;
     return this.currentLesson.quiz.filter(
       (q) => q.selectedAnswer === q.correctAnswer,
@@ -305,6 +328,8 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
   }
 
   get scorePercent(): number {
+    // Prefer server result
+    if (this.serverResult) return Math.round(this.serverResult.score);
     if (this.totalQuestions === 0) return 0;
     return Math.round((this.quizScore / this.totalQuestions) * 100);
   }
@@ -313,9 +338,103 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
     return this.quizScore === this.totalQuestions;
   }
 
+  get quizDurationSeconds(): number {
+    if (this.serverResult?.durationSeconds) return this.serverResult.durationSeconds;
+    if (this.quizStartTime > 0) {
+      return Math.round((Date.now() - this.quizStartTime) / 1000);
+    }
+    return 0;
+  }
+
+  get formattedDuration(): string {
+    const secs = this.quizDurationSeconds;
+    const mins = Math.floor(secs / 60);
+    const remSecs = secs % 60;
+    if (mins > 0) {
+      return `${mins} phút ${remSecs} giây`;
+    }
+    return `${secs} giây`;
+  }
+
+  /**
+   * Submit quiz to backend API.
+   * Builds the request with userId, assignmentId, duration, and answers.
+   */
   submitQuiz(): void {
-    if (!this.allQuestionsAnswered) return;
+    if (!this.allQuestionsAnswered || this.submittingQuiz) return;
+
+    const user = this.authService.getCurrentUser();
+    const assignmentId = this.currentLesson?.assignmentId;
+
+    // If we don't have user or assignmentId, fall back to local grading
+    if (!user?.userId || !assignmentId) {
+      this.submitQuizLocally();
+      return;
+    }
+
+    this.submittingQuiz = true;
+    this.submitError = null;
+
+    // Calculate duration
+    const durationSeconds = this.quizStartTime > 0
+      ? Math.round((Date.now() - this.quizStartTime) / 1000)
+      : undefined;
+
+    // Build answers array
+    const answers: AnswerItem[] = (this.currentLesson?.quiz || []).map((q) => {
+      let selectedAnswer: string | null = null;
+      if (q.isAnswered && q.selectedAnswer !== undefined && q.optionKeys) {
+        selectedAnswer = q.optionKeys[q.selectedAnswer] || null;
+      }
+      return {
+        questionId: q.dbId || q.id,
+        selectedAnswer,
+      };
+    });
+
+    const request: SubmitQuizRequest = {
+      userId: user.userId,
+      assignmentId,
+      durationSeconds,
+      answers,
+    };
+
+    this.quizResultService.submitQuiz(request).subscribe({
+      next: (result) => {
+        this.serverResult = result;
+        this.quizSubmitted = true;
+        this.submittingQuiz = false;
+
+        // Update answer correctness from server
+        this.applyServerResults(result);
+
+        // Mark lesson as completed in sidebar
+        const sidebarItem = this.sidebarLessons.find(
+          (l) => l.id === this.currentLesson?.id,
+        );
+        if (sidebarItem) {
+          sidebarItem.status = 'completed';
+        }
+
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Failed to submit quiz:', err);
+        this.submittingQuiz = false;
+        this.submitError = 'Không thể nộp bài. Vui lòng thử lại.';
+        // Fall back to local grading on error
+        this.submitQuizLocally();
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  /**
+   * Fallback: grade quiz locally when API is unavailable
+   */
+  private submitQuizLocally(): void {
     this.quizSubmitted = true;
+    this.submittingQuiz = false;
 
     // Mark lesson as completed in sidebar
     const sidebarItem = this.sidebarLessons.find(
@@ -324,6 +443,113 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
     if (sidebarItem) {
       sidebarItem.status = 'completed';
     }
+  }
+
+  /**
+   * Apply server answer results back to the local quiz questions.
+   * Updates correctAnswer from server response for accurate display.
+   */
+  private applyServerResults(result: QuizResultResponse): void {
+    if (!this.currentLesson?.quiz || !result.answerDetails) return;
+
+    for (const detail of result.answerDetails) {
+      const question = this.currentLesson.quiz.find((q) => q.dbId === detail.questionId);
+      if (question && question.optionKeys) {
+        // Update correct answer from server
+        const correctIndex = question.optionKeys.indexOf(detail.correctAnswer);
+        if (correctIndex >= 0) {
+          question.correctAnswer = correctIndex;
+        }
+
+        // Update explanation with server info
+        question.explanation = `Đáp án đúng: ${detail.correctAnswer}. ${detail.questionText || ''}`;
+      }
+    }
+  }
+
+  /**
+   * Retry quiz — reset all state and allow user to retake.
+   */
+  retryQuiz(): void {
+    this.resetQuizState();
+
+    // Reset all question answers
+    if (this.currentLesson?.quiz) {
+      for (const q of this.currentLesson.quiz) {
+        q.selectedAnswer = undefined;
+        q.isAnswered = false;
+      }
+    }
+
+    // Restart timer
+    this.quizStartTime = Date.now();
+    this.cdr.markForCheck();
+
+    // Scroll to quiz section
+    setTimeout(() => {
+      const el = document.getElementById('quiz-section');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
+
+  private resetQuizState(): void {
+    this.quizSubmitted = false;
+    this.submittingQuiz = false;
+    this.serverResult = null;
+    this.submitError = null;
+    this.quizHistory = [];
+    this.showHistory = false;
+    this.loadingHistory = false;
+  }
+
+  // ═══════════════════════════════════════════
+  //  QUIZ HISTORY
+  // ═══════════════════════════════════════════
+
+  toggleHistory(): void {
+    if (this.showHistory) {
+      this.showHistory = false;
+      return;
+    }
+
+    const user = this.authService.getCurrentUser();
+    const assignmentId = this.currentLesson?.assignmentId;
+    if (!user?.userId || !assignmentId) return;
+
+    this.showHistory = true;
+    this.loadingHistory = true;
+
+    this.quizResultService.getHistory(user.userId, assignmentId).subscribe({
+      next: (history) => {
+        this.quizHistory = history;
+        this.loadingHistory = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Failed to load quiz history:', err);
+        this.loadingHistory = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  formatDate(isoDate: string): string {
+    const date = new Date(isoDate);
+    return date.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  formatDuration(seconds: number | null): string {
+    if (!seconds) return '—';
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    if (mins > 0) return `${mins}p ${secs}s`;
+    return `${secs}s`;
   }
 
   // ═══════════════════════════════════════════
@@ -358,6 +584,10 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
 
   goBackToCourses(): void {
     this.router.navigate(['/courses']);
+  }
+
+  goToStats(): void {
+    this.router.navigate(['/quiz-stats']);
   }
 
   // ═══════════════════════════════════════════
