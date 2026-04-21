@@ -1,0 +1,235 @@
+<div class="review-container">
+  <!-- ═══════ TOAST ═══════ -->
+  @if (toastMessage) {
+    <div class="toast" [class]="'toast-' + toastType" (click)="dismissToast()">
+      {{ toastMessage }}
+    </div>
+  }
+
+  <!-- ═══════ HEADER ═══════ -->
+  <header class="header">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" />
+        </svg>
+      </button>
+      <div class="header-title">
+        <h1>🧠 Ôn Tập Từ Vựng</h1>
+        <p>Luyện tập ghi nhớ từ đã học</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="score-display">
+        <span class="score-correct">✅ {{ totalCorrect }}</span>
+        <span class="score-sep">/</span>
+        <span class="score-total">{{ totalAnswered }}</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════ MODE SELECTOR ═══════ -->
+  @if (!isLoading && !errorMessage && reviewWords.length > 0) {
+    <div class="mode-selector">
+      <button class="mode-btn" [class.active]="mode === 'flashcard'" (click)="switchMode('flashcard')">
+        🃏 Flashcard
+      </button>
+      <button class="mode-btn" [class.active]="mode === 'multiple-choice'" (click)="switchMode('multiple-choice')">
+        📝 Trắc Nghiệm
+      </button>
+      <button class="mode-btn" [class.active]="mode === 'fill-blank'" (click)="switchMode('fill-blank')">
+        ✏️ Điền Từ
+      </button>
+    </div>
+  }
+
+  <!-- ═══════ LOADING ═══════ -->
+  @if (isLoading) {
+    <div class="main-content">
+      <div class="loading-card">
+        <div class="spinner-large"></div>
+        <p>Đang tải từ vựng ôn tập...</p>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════ ERROR / EMPTY ═══════ -->
+  @if (!isLoading && errorMessage) {
+    <div class="main-content">
+      <div class="empty-card">
+        <span class="empty-icon">📭</span>
+        <h3>{{ errorMessage }}</h3>
+        <button class="btn-primary" (click)="goToLearn()">📚 Học từ mới</button>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════ QUIZ FINISHED ═══════ -->
+  @if (quizFinished) {
+    <div class="main-content">
+      <div class="result-card">
+        <div class="result-emoji">
+          @if (scorePercent >= 80) { 🏆 }
+          @else if (scorePercent >= 60) { 🌟 }
+          @else if (scorePercent >= 40) { 💪 }
+          @else { 📖 }
+        </div>
+        <h2>Kết Quả Ôn Tập</h2>
+        <div class="result-score">
+          <span class="result-value">{{ scorePercent }}%</span>
+          <span class="result-label">
+            @if (scorePercent >= 80) { Xuất sắc! }
+            @else if (scorePercent >= 60) { Tốt lắm! }
+            @else if (scorePercent >= 40) { Khá tốt! }
+            @else { Cần cố gắng thêm! }
+          </span>
+        </div>
+        <div class="result-detail">
+          <span>Đúng: {{ totalCorrect }} / {{ totalAnswered }}</span>
+        </div>
+        <div class="result-actions">
+          <button class="btn-primary" (click)="resetQuiz()">🔄 Làm lại</button>
+          <button class="btn-secondary" (click)="goToLearn()">📚 Học thêm</button>
+          <button class="btn-secondary" (click)="goToStats()">📊 Xem thống kê</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════ ACTIVE QUIZ ═══════ -->
+  @if (!isLoading && !errorMessage && reviewWords.length > 0 && !quizFinished && currentWord) {
+    <div class="main-content">
+      <!-- Progress Bar -->
+      <div class="quiz-progress">
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="progressPercent"></div>
+        </div>
+        <span class="progress-text">{{ currentIndex + 1 }} / {{ reviewWords.length }}</span>
+      </div>
+
+      <!-- ═══ FLASHCARD MODE ═══ -->
+      @if (mode === 'flashcard') {
+        <div class="flashcard-zone">
+          <div class="flashcard" [class.flipped]="isFlipped" (click)="flipCard()">
+            <div class="flashcard-front">
+              <button class="btn-speak" (click)="playPronunciation(); $event.stopPropagation()">🔊</button>
+              <h2 class="flashcard-word">{{ currentWord.word }}</h2>
+              <p class="flashcard-ipa">{{ currentWord.ipa }}</p>
+              <span class="flashcard-type">{{ currentWord.wordType }}</span>
+              <div class="flashcard-hint">Nhấn để lật thẻ</div>
+            </div>
+            <div class="flashcard-back">
+              <p class="flashcard-meaning-vi">🇻🇳 {{ currentWord.meaningVi }}</p>
+              <p class="flashcard-meaning-en">📖 {{ currentWord.meaningEn }}</p>
+              <hr class="flashcard-divider" />
+              <p class="flashcard-example">💬 {{ currentWord.exampleSentence }}</p>
+              <p class="flashcard-example-vi">→ {{ currentWord.exampleVi }}</p>
+              <div class="flashcard-hint">Nhấn để lật lại</div>
+            </div>
+          </div>
+
+          <div class="flashcard-actions">
+            <button class="btn-dont-know" (click)="flashcardDidntKnow()">
+              ❌ Chưa nhớ
+            </button>
+            <button class="btn-know" (click)="flashcardKnew()">
+              ✅ Đã nhớ
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- ═══ MULTIPLE CHOICE MODE ═══ -->
+      @if (mode === 'multiple-choice') {
+        <div class="mc-zone">
+          <div class="mc-question-card">
+            <button class="btn-speak" (click)="playPronunciation()">🔊</button>
+            <h2 class="mc-word">{{ currentWord.word }}</h2>
+            <p class="mc-ipa">{{ currentWord.ipa }}</p>
+            <p class="mc-prompt">Chọn nghĩa tiếng Việt đúng:</p>
+          </div>
+
+          <div class="mc-options">
+            @for (option of mcOptions; track option.text; let i = $index) {
+              <button class="mc-option"
+                      [class.selected]="option.selected"
+                      [class.correct]="mcAnswered && option.isCorrect"
+                      [class.wrong]="mcAnswered && option.selected && !option.isCorrect"
+                      [disabled]="mcAnswered"
+                      (click)="selectMCOption(option)">
+                <span class="mc-option-letter">{{ ['A', 'B', 'C', 'D'][i] }}</span>
+                <span class="mc-option-text">{{ option.text }}</span>
+                @if (mcAnswered && option.isCorrect) {
+                  <span class="mc-option-icon">✅</span>
+                }
+                @if (mcAnswered && option.selected && !option.isCorrect) {
+                  <span class="mc-option-icon">❌</span>
+                }
+              </button>
+            }
+          </div>
+
+          @if (mcAnswered) {
+            <div class="mc-next">
+              <button class="btn-primary" (click)="nextQuestion()">
+                @if (currentIndex < reviewWords.length - 1) {
+                  Câu tiếp theo →
+                } @else {
+                  Xem kết quả →
+                }
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ═══ FILL BLANK MODE ═══ -->
+      @if (mode === 'fill-blank') {
+        <div class="fill-zone">
+          <div class="fill-question-card">
+            <p class="fill-prompt">Nhập từ tiếng Anh cho nghĩa sau:</p>
+            <h2 class="fill-meaning">🇻🇳 {{ currentWord.meaningVi }}</h2>
+            <p class="fill-hint-text">📖 {{ currentWord.meaningEn }}</p>
+          </div>
+
+          <div class="fill-input-container">
+            <input type="text"
+                   class="fill-input"
+                   [(ngModel)]="fillAnswer"
+                   [class.correct]="fillSubmitted && fillCorrect"
+                   [class.wrong]="fillSubmitted && !fillCorrect"
+                   [disabled]="fillSubmitted"
+                   placeholder="Nhập từ tiếng Anh..."
+                   (keyup.enter)="submitFillAnswer()" />
+
+            @if (!fillSubmitted) {
+              <button class="btn-primary" (click)="submitFillAnswer()" [disabled]="!fillAnswer.trim()">
+                Kiểm tra
+              </button>
+            }
+          </div>
+
+          @if (fillSubmitted) {
+            <div class="fill-result" [class.correct]="fillCorrect" [class.wrong]="!fillCorrect">
+              @if (fillCorrect) {
+                <span>🎉 Chính xác!</span>
+              } @else {
+                <span>Đáp án đúng: <strong>{{ currentWord.word }}</strong></span>
+              }
+            </div>
+
+            <div class="fill-next">
+              <button class="btn-primary" (click)="nextQuestion()">
+                @if (currentIndex < reviewWords.length - 1) {
+                  Câu tiếp theo →
+                } @else {
+                  Xem kết quả →
+                }
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

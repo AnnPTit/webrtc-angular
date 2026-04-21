@@ -1,0 +1,527 @@
+<div class="history-container">
+  <!-- ═══════ TOAST ═══════ -->
+  @if (toastMessage) {
+    <div class="toast" [class]="'toast-' + toastType" (click)="dismissToast()">
+      {{ toastMessage }}
+    </div>
+  }
+
+  <!-- ═══════ HEADER ═══════ -->
+  <header class="header">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()" id="btn-history-back">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" />
+        </svg>
+      </button>
+      <div class="header-title">
+        <h1>📅 Lịch Sử Học Tập</h1>
+        <p>Theo dõi tiến trình hàng ngày</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn-nav" (click)="goToLearn()" id="btn-go-learn">📚 Học tiếp</button>
+      <button class="btn-nav" (click)="goToStats()" id="btn-go-stats">📊 Thống kê</button>
+      <button class="btn-nav accent" (click)="goToReview()" id="btn-go-review">🧠 Ôn tập</button>
+    </div>
+  </header>
+
+  <!-- ═══════ GOAL + STREAK BANNER ═══════ -->
+  @if (!isLoading && !errorMessage) {
+    <div class="goal-banner">
+      <div class="goal-banner-inner">
+        <!-- Today's Progress -->
+        <div class="goal-today">
+          <div class="goal-ring-container">
+            <svg class="goal-ring" viewBox="0 0 100 100">
+              <circle class="goal-ring-bg" cx="50" cy="50" r="42" />
+              <circle class="goal-ring-fill"
+                      cx="50" cy="50" r="42"
+                      [style.stroke-dasharray]="(goalProgress / 100) * 264 + ' 264'"
+                      [class.completed]="goalReached" />
+            </svg>
+            <div class="goal-ring-text">
+              <span class="goal-ring-value">{{ todayLearnedCount }}</span>
+              <span class="goal-ring-label">/ {{ dailyGoal.wordsPerDay }}</span>
+            </div>
+          </div>
+          <div class="goal-info">
+            <h3>Mục tiêu hôm nay</h3>
+            <p class="goal-status" [class.completed]="goalReached">
+              @if (goalReached) {
+                🎉 Đã hoàn thành mục tiêu!
+              } @else {
+                Còn {{ dailyGoal.wordsPerDay - todayLearnedCount }} từ nữa
+              }
+            </p>
+            <div class="goal-bar-track">
+              <div class="goal-bar-fill" [style.width.%]="goalProgress" [class.completed]="goalReached"></div>
+            </div>
+            <button class="btn-set-goal" (click)="openGoalModal()" id="btn-set-goal">
+              ⚙️ Đặt mục tiêu
+            </button>
+          </div>
+        </div>
+
+        <!-- Streak -->
+        <div class="streak-card">
+          <div class="streak-fire" [class.active]="dailyGoal.streakDays > 0">🔥</div>
+          <div class="streak-value">{{ dailyGoal.streakDays }}</div>
+          <div class="streak-label">Ngày liên tiếp</div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="quick-stat-cards">
+          <div class="quick-stat">
+            <span class="quick-stat-value">{{ todayTotalCount }}</span>
+            <span class="quick-stat-label">Từ hôm nay</span>
+          </div>
+          <div class="quick-stat">
+            <span class="quick-stat-value">{{ totalLearnedAllTime }}</span>
+            <span class="quick-stat-label">Tổng đã học</span>
+          </div>
+          <div class="quick-stat">
+            <span class="quick-stat-value">{{ dailySessions.length }}</span>
+            <span class="quick-stat-label">Ngày hoạt động</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════ TAB SWITCHER ═══════ -->
+  @if (!isLoading && !errorMessage) {
+    <div class="tab-switcher">
+      <button class="tab-btn" [class.active]="activeTab === 'history'" (click)="activeTab = 'history'" id="tab-history">
+        📅 Lịch sử theo ngày
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'statistics'" (click)="activeTab = 'statistics'" id="tab-statistics">
+        📈 Thống kê tổng hợp
+      </button>
+    </div>
+  }
+
+  <!-- ═══════ LOADING ═══════ -->
+  @if (isLoading) {
+    <div class="main-content">
+      <div class="loading-section">
+        @for (i of [1,2,3,4,5]; track i) {
+          <div class="skeleton-session">
+            <div class="skeleton skeleton-date"></div>
+            <div class="skeleton-row">
+              <div class="skeleton skeleton-stat-sm"></div>
+              <div class="skeleton skeleton-stat-sm"></div>
+              <div class="skeleton skeleton-stat-sm"></div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ═══════ ERROR ═══════ -->
+  @if (!isLoading && errorMessage) {
+    <div class="main-content">
+      <div class="error-card">
+        <span class="error-icon">⚠️</span>
+        <p>{{ errorMessage }}</p>
+        <button class="btn-primary" (click)="goToLearn()">📚 Bắt đầu học</button>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════ EMPTY STATE ═══════ -->
+  @if (!isLoading && !errorMessage && dailySessions.length === 0) {
+    <div class="main-content">
+      <div class="empty-card">
+        <span class="empty-icon">📭</span>
+        <h3>Chưa có lịch sử học tập</h3>
+        <p>Hãy bắt đầu học từ vựng để theo dõi tiến trình!</p>
+        <button class="btn-primary" (click)="goToLearn()">📚 Học từ mới ngay</button>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════ HISTORY TAB ═══════ -->
+  @if (!isLoading && !errorMessage && dailySessions.length > 0 && activeTab === 'history') {
+    <div class="main-content">
+      <!-- Date Sessions List -->
+      <div class="sessions-list">
+        @for (session of dailySessions; track trackByDate($index, session)) {
+          <div class="session-card" [class.expanded]="isExpanded(session.date)">
+            <!-- Session Header (clickable) -->
+            <button class="session-header" (click)="toggleDate(session.date)" [id]="'session-' + session.date">
+              <div class="session-date-section">
+                <span class="session-date-icon">📅</span>
+                <div class="session-date-info">
+                  <span class="session-date-text">{{ session.displayDate }}</span>
+                  <span class="session-date-key">{{ session.date }}</span>
+                </div>
+              </div>
+
+              <div class="session-stats">
+                <div class="session-stat">
+                  <span class="session-stat-value">{{ session.totalWords }}</span>
+                  <span class="session-stat-label">Tổng từ</span>
+                </div>
+                <div class="session-stat">
+                  <span class="session-stat-value">{{ session.learnedWords }}</span>
+                  <span class="session-stat-label">Đã học</span>
+                </div>
+                <div class="session-stat">
+                  <span class="session-stat-value">{{ session.completionPercent }}%</span>
+                  <span class="session-stat-label">Tiến độ</span>
+                </div>
+                <span class="session-status" [class]="getStatusClass(session)">
+                  {{ getStatusLabel(session) }}
+                </span>
+              </div>
+
+              <div class="session-progress-mini">
+                <div class="session-progress-fill" [style.width.%]="session.completionPercent"></div>
+              </div>
+
+              <svg class="session-chevron" [class.rotated]="isExpanded(session.date)"
+                   xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+              </svg>
+            </button>
+
+            <!-- Expanded Content -->
+            @if (isExpanded(session.date)) {
+              <div class="session-body">
+                <!-- Review Actions -->
+                <div class="review-actions">
+                  <button class="btn-review" (click)="startReview('flashcard', session); $event.stopPropagation()">
+                    🃏 Flashcard
+                  </button>
+                  <button class="btn-review" (click)="startReview('quiz', session); $event.stopPropagation()">
+                    📝 Trắc nghiệm
+                  </button>
+                  <button class="btn-review" (click)="startReview('practice', session); $event.stopPropagation()">
+                    ✏️ Luyện tập
+                  </button>
+                </div>
+
+                <!-- In-Component Review Mode -->
+                @if (reviewMode && expandedDate === session.date) {
+                  <div class="review-panel">
+                    <div class="review-panel-header">
+                      <h4>
+                        @if (reviewMode === 'flashcard') { 🃏 Flashcard }
+                        @else if (reviewMode === 'quiz') { 📝 Trắc Nghiệm }
+                        @else { ✏️ Luyện Tập }
+                      </h4>
+                      <button class="btn-close-review" (click)="closeReview()">✕</button>
+                    </div>
+
+                    @if (!reviewFinished) {
+                      <!-- Progress -->
+                      <div class="review-progress">
+                        <div class="progress-bar">
+                          <div class="progress-fill" [style.width.%]="reviewProgress"></div>
+                        </div>
+                        <span class="progress-text">{{ reviewIndex + 1 }} / {{ reviewWords.length }}</span>
+                      </div>
+
+                      @if (currentReviewWord) {
+                        <!-- FLASHCARD -->
+                        @if (reviewMode === 'flashcard') {
+                          <div class="mini-flashcard" [class.flipped]="reviewFlipped" (click)="flipReviewCard()">
+                            @if (!reviewFlipped) {
+                              <div class="mini-fc-front">
+                                <button class="btn-speak-sm" (click)="playWord(currentReviewWord); $event.stopPropagation()">🔊</button>
+                                <h3>{{ currentReviewWord.word }}</h3>
+                                <p class="fc-ipa">{{ currentReviewWord.ipa }}</p>
+                                <span class="fc-type">{{ currentReviewWord.wordType }}</span>
+                                <p class="fc-hint">Nhấn để lật</p>
+                              </div>
+                            } @else {
+                              <div class="mini-fc-back">
+                                <p class="fc-meaning-vi">🇻🇳 {{ currentReviewWord.meaningVi }}</p>
+                                <p class="fc-meaning-en">📖 {{ currentReviewWord.meaningEn }}</p>
+                                <hr class="fc-divider" />
+                                <p class="fc-example">💬 {{ currentReviewWord.exampleSentence }}</p>
+                                <p class="fc-example-vi">→ {{ currentReviewWord.exampleVi }}</p>
+                              </div>
+                            }
+                          </div>
+                          <div class="fc-actions">
+                            <button class="btn-dont-know" (click)="flashcardDidntKnow()">❌ Chưa nhớ</button>
+                            <button class="btn-know" (click)="flashcardKnew()">✅ Đã nhớ</button>
+                          </div>
+                        }
+
+                        <!-- QUIZ -->
+                        @if (reviewMode === 'quiz') {
+                          <div class="quiz-section">
+                            <div class="quiz-question">
+                              <button class="btn-speak-sm" (click)="playWord(currentReviewWord)">🔊</button>
+                              <h3>{{ currentReviewWord.word }}</h3>
+                              <p class="quiz-ipa">{{ currentReviewWord.ipa }}</p>
+                              <p class="quiz-prompt">Chọn nghĩa đúng:</p>
+                            </div>
+                            <div class="quiz-options">
+                              @for (opt of quizOptions; track opt.text; let i = $index) {
+                                <button class="quiz-opt"
+                                        [class.selected]="opt.selected"
+                                        [class.correct]="quizAnswered && opt.correct"
+                                        [class.wrong]="quizAnswered && opt.selected && !opt.correct"
+                                        [disabled]="quizAnswered"
+                                        (click)="selectQuizOption(opt)">
+                                  <span class="quiz-opt-letter">{{ ['A','B','C','D'][i] }}</span>
+                                  <span>{{ opt.text }}</span>
+                                  @if (quizAnswered && opt.correct) { <span class="quiz-opt-icon">✅</span> }
+                                  @if (quizAnswered && opt.selected && !opt.correct) { <span class="quiz-opt-icon">❌</span> }
+                                </button>
+                              }
+                            </div>
+                            @if (quizAnswered) {
+                              <button class="btn-next" (click)="nextReviewCard()">
+                                {{ reviewIndex < reviewWords.length - 1 ? 'Tiếp theo →' : 'Xem kết quả →' }}
+                              </button>
+                            }
+                          </div>
+                        }
+
+                        <!-- PRACTICE -->
+                        @if (reviewMode === 'practice') {
+                          <div class="practice-section">
+                            <div class="practice-question">
+                              <p class="practice-prompt">Nhập từ tiếng Anh:</p>
+                              <h3 class="practice-meaning">🇻🇳 {{ currentReviewWord.meaningVi }}</h3>
+                              <p class="practice-hint">📖 {{ currentReviewWord.meaningEn }}</p>
+                            </div>
+                            <div class="practice-input-row">
+                              <input type="text"
+                                     class="practice-input"
+                                     [(ngModel)]="practiceAnswer"
+                                     [class.correct]="practiceSubmitted && practiceCorrect"
+                                     [class.wrong]="practiceSubmitted && !practiceCorrect"
+                                     [disabled]="practiceSubmitted"
+                                     placeholder="Nhập từ..."
+                                     (keyup.enter)="submitPracticeAnswer()" />
+                              @if (!practiceSubmitted) {
+                                <button class="btn-check" (click)="submitPracticeAnswer()" [disabled]="!practiceAnswer.trim()">Kiểm tra</button>
+                              }
+                            </div>
+                            @if (practiceSubmitted) {
+                              <div class="practice-result" [class.correct]="practiceCorrect" [class.wrong]="!practiceCorrect">
+                                @if (practiceCorrect) {
+                                  🎉 Chính xác!
+                                } @else {
+                                  Đáp án: <strong>{{ currentReviewWord.word }}</strong>
+                                }
+                              </div>
+                              <button class="btn-next" (click)="nextReviewCard()">
+                                {{ reviewIndex < reviewWords.length - 1 ? 'Tiếp theo →' : 'Xem kết quả →' }}
+                              </button>
+                            }
+                          </div>
+                        }
+                      }
+                    } @else {
+                      <!-- Review Finished -->
+                      <div class="review-result">
+                        <div class="result-emoji">
+                          @if (reviewScorePercent >= 80) { 🏆 }
+                          @else if (reviewScorePercent >= 60) { 🌟 }
+                          @else if (reviewScorePercent >= 40) { 💪 }
+                          @else { 📖 }
+                        </div>
+                        <h4>Kết quả</h4>
+                        <div class="result-score-display">
+                          <span class="result-big">{{ reviewScorePercent }}%</span>
+                          <span class="result-detail">Đúng: {{ reviewScore }} / {{ reviewAnswered }}</span>
+                        </div>
+                        <div class="result-btns">
+                          <button class="btn-primary" (click)="restartReview()">🔄 Làm lại</button>
+                          <button class="btn-secondary" (click)="closeReview()">Đóng</button>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- Word List -->
+                @if (!reviewMode || expandedDate !== session.date) {
+                  <div class="word-list">
+                    <div class="word-list-header">
+                      <span>Từ vựng</span>
+                      <span>Nghĩa</span>
+                      <span>Loại</span>
+                      <span>Trạng thái</span>
+                    </div>
+                    @for (word of session.words; track trackByWordId($index, word)) {
+                      <div class="word-row" [class.learned]="word.learned">
+                        <div class="word-cell word-cell-main">
+                          <button class="btn-speak-xs" (click)="playWord(word); $event.stopPropagation()">🔊</button>
+                          <span class="word-text">{{ word.word }}</span>
+                        </div>
+                        <div class="word-cell word-cell-meaning">{{ word.meaningVi }}</div>
+                        <div class="word-cell">
+                          <span class="type-badge" [class]="getWordTypeBadgeClass(word.wordType)">{{ word.wordType }}</span>
+                        </div>
+                        <div class="word-cell">
+                          @if (word.learned) {
+                            <span class="learned-badge">✅ Đã học</span>
+                          } @else {
+                            <span class="unlearned-badge">⏳ Chưa học</span>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ═══════ STATISTICS TAB ═══════ -->
+  @if (!isLoading && !errorMessage && dailySessions.length > 0 && activeTab === 'statistics') {
+    <div class="main-content">
+      <div class="stats-dashboard">
+        <!-- Overview Cards -->
+        <div class="overview-grid">
+          <div class="overview-card ov-learned">
+            <span class="ov-icon">📗</span>
+            <span class="ov-value">{{ totalLearnedAllTime }}</span>
+            <span class="ov-label">Tổng đã học</span>
+          </div>
+          <div class="overview-card ov-studied">
+            <span class="ov-icon">📚</span>
+            <span class="ov-value">{{ totalStudiedAllTime }}</span>
+            <span class="ov-label">Tổng đã tiếp cận</span>
+          </div>
+          <div class="overview-card ov-rate">
+            <span class="ov-icon">🎯</span>
+            <span class="ov-value">{{ overallCompletionRate }}%</span>
+            <span class="ov-label">Tỉ lệ hoàn thành</span>
+          </div>
+          <div class="overview-card ov-streak">
+            <span class="ov-icon">🔥</span>
+            <span class="ov-value">{{ dailyGoal.streakDays }}</span>
+            <span class="ov-label">Chuỗi ngày</span>
+          </div>
+        </div>
+
+        <!-- Weekly Progress -->
+        <div class="chart-card">
+          <h3>📊 Tiến trình theo tuần</h3>
+          <div class="bar-chart">
+            @for (week of weeklyStats; track week.weekLabel) {
+              <div class="bar-group">
+                <div class="bar-labels">
+                  <span class="bar-main-label">{{ week.weekLabel }}</span>
+                  <span class="bar-sub-label">{{ week.wordsCreated }} từ · {{ week.wordsLearned }} đã học</span>
+                </div>
+                <div class="bar-tracks">
+                  <div class="bar-track">
+                    <div class="bar-fill bar-created" [style.width.%]="(week.wordsCreated / maxWeeklyWords) * 100"></div>
+                  </div>
+                  <div class="bar-track">
+                    <div class="bar-fill bar-learned" [style.width.%]="(week.wordsLearned / maxWeeklyLearned) * 100"></div>
+                  </div>
+                </div>
+                <div class="bar-goal-rate">
+                  <span class="goal-rate-badge">{{ week.goalCompletionRate }}%</span>
+                  <span class="goal-rate-label">mục tiêu</span>
+                </div>
+              </div>
+            }
+          </div>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-dot created"></span> Tạo mới</span>
+            <span class="legend-item"><span class="legend-dot learned"></span> Đã học</span>
+          </div>
+        </div>
+
+        <!-- Monthly Progress -->
+        <div class="chart-card">
+          <h3>📆 Tiến trình theo tháng</h3>
+          <div class="bar-chart">
+            @for (month of monthlyStats; track month.weekLabel) {
+              <div class="bar-group">
+                <div class="bar-labels">
+                  <span class="bar-main-label">{{ month.weekLabel }}</span>
+                  <span class="bar-sub-label">{{ month.wordsCreated }} từ · {{ month.wordsLearned }} đã học</span>
+                </div>
+                <div class="bar-tracks">
+                  <div class="bar-track">
+                    <div class="bar-fill bar-created" [style.width.%]="(month.wordsCreated / maxMonthlyWords) * 100"></div>
+                  </div>
+                  <div class="bar-track">
+                    <div class="bar-fill bar-learned" [style.width.%]="(month.wordsLearned / maxMonthlyLearned) * 100"></div>
+                  </div>
+                </div>
+                <div class="bar-goal-rate">
+                  <span class="goal-rate-badge">{{ month.goalCompletionRate }}%</span>
+                  <span class="goal-rate-label">mục tiêu</span>
+                </div>
+              </div>
+            }
+          </div>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-dot created"></span> Tạo mới</span>
+            <span class="legend-item"><span class="legend-dot learned"></span> Đã học</span>
+          </div>
+        </div>
+
+        <!-- Goal Completion Rate Ring -->
+        <div class="chart-card chart-card-sm">
+          <h3>🎯 Tỉ Lệ Hoàn Thành Mục Tiêu</h3>
+          <div class="completion-ring-container">
+            <svg class="completion-ring" viewBox="0 0 120 120">
+              <circle class="ring-bg" cx="60" cy="60" r="50" />
+              <circle class="ring-fill" cx="60" cy="60" r="50"
+                      [style.stroke-dasharray]="(overallCompletionRate / 100) * 314 + ' 314'"
+                      [style.stroke]="overallCompletionRate >= 70 ? '#4ecca3' : overallCompletionRate >= 40 ? '#feca57' : '#f5576c'" />
+            </svg>
+            <div class="ring-center-text">
+              <span class="ring-value">{{ overallCompletionRate }}%</span>
+              <span class="ring-label">
+                @if (overallCompletionRate >= 80) { Xuất sắc }
+                @else if (overallCompletionRate >= 60) { Tốt }
+                @else if (overallCompletionRate >= 40) { Khá }
+                @else if (overallCompletionRate > 0) { Cần cố gắng }
+                @else { Chưa có }
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════ GOAL MODAL ═══════ -->
+  @if (showGoalModal) {
+    <div class="modal-overlay" (click)="closeGoalModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <h3>🎯 Đặt Mục Tiêu Hàng Ngày</h3>
+        <p class="modal-desc">Đặt số từ bạn muốn học mỗi ngày</p>
+
+        <div class="modal-input-group">
+          <label>Số từ / ngày</label>
+          <input type="number" [(ngModel)]="goalInput" min="1" max="100" class="modal-input" id="input-goal" />
+        </div>
+
+        <div class="modal-presets">
+          @for (n of [5, 10, 15, 20, 30]; track n) {
+            <button class="preset-btn" [class.active]="goalInput === n" (click)="goalInput = n">
+              {{ n }}
+            </button>
+          }
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-secondary" (click)="closeGoalModal()">Hủy</button>
+          <button class="btn-primary" (click)="saveGoal()" id="btn-save-goal">💾 Lưu mục tiêu</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

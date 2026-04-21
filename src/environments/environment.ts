@@ -12,6 +12,7 @@ export const environment = {
     transcriptions: '/api/transcriptions',
     assignments: '/api/assignments',
     quizResults: '/api/quiz-results',
+    vocabulary: '/api/vocabulary',
   },
   socket: {
     url: 'http://localhost:3000',

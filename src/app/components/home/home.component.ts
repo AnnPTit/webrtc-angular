@@ -28,6 +28,14 @@ export class HomeComponent {
       color: '#45b7d1'
     },
     {
+      id: 'vocabulary',
+      title: 'Từ Vựng AI',
+      description: 'Học từ vựng tiếng Anh thông minh với trí tuệ nhân tạo',
+      icon: 'vocabulary',
+      route: '/vocabulary',
+      color: '#a78bfa'
+    },
+    {
       id: 'assignments',
       title: 'Bài Tập',
       description: 'Xem và nộp bài tập được giao',

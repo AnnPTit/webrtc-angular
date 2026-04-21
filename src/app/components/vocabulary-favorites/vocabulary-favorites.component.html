@@ -1,0 +1,129 @@
+<div class="favorites-container">
+  <!-- ═══════ TOAST ═══════ -->
+  @if (toastMessage) {
+    <div class="toast" [class]="'toast-' + toastType" (click)="dismissToast()">{{ toastMessage }}</div>
+  }
+
+  <!-- ═══════ HEADER ═══════ -->
+  <header class="header">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" />
+        </svg>
+      </button>
+      <div class="header-title">
+        <h1>❤️ Từ Vựng Yêu Thích</h1>
+        <p>{{ favorites.length }} từ đã lưu</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn-nav" (click)="goToLearn()">📚 Học thêm</button>
+      <button class="btn-nav accent" (click)="goToReview()">🧠 Ôn tập</button>
+    </div>
+  </header>
+
+  <!-- ═══════ SEARCH ═══════ -->
+  @if (!isLoading && favorites.length > 0) {
+    <div class="search-section">
+      <div class="search-box">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="search-icon">
+          <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+        </svg>
+        <input type="text"
+               placeholder="Tìm kiếm từ vựng..."
+               [(ngModel)]="searchQuery"
+               (input)="filterFavorites()" />
+      </div>
+    </div>
+  }
+
+  <!-- ═══════ LOADING ═══════ -->
+  @if (isLoading) {
+    <div class="main-content">
+      <div class="words-grid">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="word-card skeleton-card">
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text short"></div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ═══════ ERROR ═══════ -->
+  @if (!isLoading && errorMessage) {
+    <div class="main-content">
+      <div class="empty-card">
+        <span class="empty-icon">⚠️</span>
+        <p>{{ errorMessage }}</p>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════ EMPTY ═══════ -->
+  @if (!isLoading && !errorMessage && favorites.length === 0) {
+    <div class="main-content">
+      <div class="empty-card">
+        <span class="empty-icon">💝</span>
+        <h3>Chưa có từ yêu thích</h3>
+        <p>Khi học từ vựng, nhấn ❤️ để thêm vào danh sách yêu thích!</p>
+        <button class="btn-primary" (click)="goToLearn()">📚 Học từ mới</button>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════ FILTERED EMPTY ═══════ -->
+  @if (!isLoading && favorites.length > 0 && filteredFavorites.length === 0) {
+    <div class="main-content">
+      <div class="empty-card small">
+        <span>🔍</span>
+        <p>Không tìm thấy từ nào phù hợp với "{{ searchQuery }}"</p>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════ FAVORITES LIST ═══════ -->
+  @if (!isLoading && filteredFavorites.length > 0) {
+    <div class="main-content">
+      <div class="words-grid">
+        @for (word of filteredFavorites; track word.id) {
+          <div class="word-card" [class.learned]="word.learned">
+            <div class="card-top">
+              <div class="word-main">
+                <h3>{{ word.word }}</h3>
+                <button class="btn-speak" (click)="playPronunciation(word)">🔊</button>
+              </div>
+              <div class="word-meta">
+                <span class="ipa">{{ word.ipa }}</span>
+                <span class="type-badge" [class]="getWordTypeBadgeClass(word.wordType)">{{ word.wordType }}</span>
+                <span class="topic-tag">{{ word.topic }}</span>
+              </div>
+            </div>
+
+            <div class="card-meanings">
+              <p class="meaning-en">📖 {{ word.meaningEn }}</p>
+              <p class="meaning-vi">🇻🇳 {{ word.meaningVi }}</p>
+            </div>
+
+            <div class="card-example">
+              <p class="example-en">💬 {{ word.exampleSentence }}</p>
+              <p class="example-vi">→ {{ word.exampleVi }}</p>
+            </div>
+
+            <div class="card-actions">
+              <button class="action-btn" [class.active]="word.learned" (click)="toggleLearned(word)">
+                {{ word.learned ? '✅ Đã học' : '☐ Học xong' }}
+              </button>
+              <button class="action-btn remove" (click)="removeFavorite(word)">
+                💔 Bỏ yêu thích
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

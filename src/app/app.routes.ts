@@ -87,6 +87,41 @@ export const routes: Routes = [
     data: { roles: ['STUDENT'] }
   },
   {
+    path: 'vocabulary',
+    loadComponent: () =>
+      import('./components/vocabulary-learning/vocabulary-learning.component').then(m => m.VocabularyLearningComponent),
+    canActivate: [authGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
+    path: 'vocabulary/stats',
+    loadComponent: () =>
+      import('./components/vocabulary-stats/vocabulary-stats.component').then(m => m.VocabularyStatsComponent),
+    canActivate: [authGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
+    path: 'vocabulary/review',
+    loadComponent: () =>
+      import('./components/vocabulary-review/vocabulary-review.component').then(m => m.VocabularyReviewComponent),
+    canActivate: [authGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
+    path: 'vocabulary/favorites',
+    loadComponent: () =>
+      import('./components/vocabulary-favorites/vocabulary-favorites.component').then(m => m.VocabularyFavoritesComponent),
+    canActivate: [authGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
+    path: 'vocabulary/history',
+    loadComponent: () =>
+      import('./components/vocabulary-history/vocabulary-history.component').then(m => m.VocabularyHistoryComponent),
+    canActivate: [authGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
     path: '**',
     redirectTo: 'login',
   },

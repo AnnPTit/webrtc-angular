@@ -1,0 +1,190 @@
+<div class="stats-container">
+  <!-- ═══════ HEADER ═══════ -->
+  <header class="header">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" />
+        </svg>
+      </button>
+      <div class="header-title">
+        <h1>📊 Thống Kê Học Tập</h1>
+        <p>Theo dõi tiến trình học từ vựng</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn-nav" (click)="goToLearn()">📚 Học tiếp</button>
+      <button class="btn-nav accent" (click)="goToReview()">🔄 Ôn tập</button>
+    </div>
+  </header>
+
+  <!-- ═══════ LOADING ═══════ -->
+  @if (isLoading) {
+    <div class="main-content">
+      <div class="stats-grid">
+        @for (i of [1,2,3,4]; track i) {
+          <div class="stat-card">
+            <div class="skeleton skeleton-icon"></div>
+            <div class="skeleton skeleton-value"></div>
+            <div class="skeleton skeleton-label"></div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ═══════ ERROR ═══════ -->
+  @if (errorMessage && !isLoading) {
+    <div class="main-content">
+      <div class="error-card">
+        <span>⚠️</span>
+        <p>{{ errorMessage }}</p>
+        <button class="btn-retry" (click)="goToLearn()">Quay lại học</button>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════ MAIN CONTENT ═══════ -->
+  @if (!isLoading && !errorMessage && stats) {
+    <div class="main-content">
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card stat-learned">
+          <div class="stat-icon">📗</div>
+          <div class="stat-value">{{ stats.totalWordsLearned }}</div>
+          <div class="stat-label">Đã Học</div>
+          <div class="stat-sublabel">{{ learnedPercentage }}% hoàn thành</div>
+          <div class="stat-progress">
+            <div class="stat-progress-fill" [style.width.%]="learnedPercentage"></div>
+          </div>
+        </div>
+
+        <div class="stat-card stat-favorites">
+          <div class="stat-icon">❤️</div>
+          <div class="stat-value">{{ stats.totalFavorites }}</div>
+          <div class="stat-label">Yêu Thích</div>
+          <div class="stat-sublabel">
+            <button class="link-btn" (click)="goToFavorites()">Xem danh sách →</button>
+          </div>
+        </div>
+
+        <div class="stat-card stat-review">
+          <div class="stat-icon">🔄</div>
+          <div class="stat-value">{{ stats.totalNeedReview }}</div>
+          <div class="stat-label">Cần Ôn Tập</div>
+          <div class="stat-sublabel">
+            <button class="link-btn" (click)="goToReview()">Ôn tập ngay →</button>
+          </div>
+        </div>
+
+        <div class="stat-card stat-total">
+          <div class="stat-icon">📚</div>
+          <div class="stat-value">{{ stats.totalWordsStudied }}</div>
+          <div class="stat-label">Tổng Đã Học</div>
+          <div class="stat-sublabel">
+            @if (accuracyRate > 0) {
+              Độ chính xác: {{ accuracyRate }}%
+            } @else {
+              Hãy làm bài tập để đo!
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="charts-section">
+        <!-- Topic Breakdown -->
+        <div class="chart-card">
+          <h3>📂 Phân Bổ Theo Chủ đề</h3>
+          @if (topicEntries.length > 0) {
+            <div class="topic-bars">
+              @for (entry of topicEntries; track entry.name; let i = $index) {
+                <div class="topic-row">
+                  <div class="topic-name">{{ entry.name }}</div>
+                  <div class="topic-bar-track">
+                    <div class="topic-bar-fill"
+                         [style.width.%]="entry.percentage"
+                         [style.background]="getTopicColor(i)">
+                    </div>
+                  </div>
+                  <div class="topic-count">{{ entry.count }}</div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="chart-empty">
+              <p>Chưa có dữ liệu. Hãy bắt đầu học từ vựng!</p>
+            </div>
+          }
+        </div>
+
+        <!-- Accuracy Ring -->
+        <div class="chart-card">
+          <h3>🎯 Độ Chính Xác</h3>
+          <div class="accuracy-ring-container">
+            <svg class="accuracy-ring" viewBox="0 0 120 120">
+              <circle class="ring-bg" cx="60" cy="60" r="50" />
+              <circle class="ring-fill" cx="60" cy="60" r="50"
+                      [style.stroke-dasharray]="(accuracyRate / 100) * 314 + ' 314'"
+                      [style.stroke]="accuracyRate >= 70 ? '#4ecca3' : accuracyRate >= 40 ? '#feca57' : '#f5576c'" />
+            </svg>
+            <div class="accuracy-text">
+              <span class="accuracy-value">{{ accuracyRate }}%</span>
+              <span class="accuracy-label">
+                @if (accuracyRate >= 80) { Xuất sắc }
+                @else if (accuracyRate >= 60) { Tốt }
+                @else if (accuracyRate >= 40) { Khá }
+                @else if (accuracyRate > 0) { Cần cải thiện }
+                @else { Chưa có }
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <h3>⚡ Hành Động Nhanh</h3>
+        <div class="actions-grid">
+          <button class="action-card" (click)="goToLearn()">
+            <span class="action-icon">📚</span>
+            <span class="action-title">Học Từ Mới</span>
+            <span class="action-desc">Tạo từ vựng mới với AI</span>
+          </button>
+          <button class="action-card" (click)="goToReview()">
+            <span class="action-icon">🧠</span>
+            <span class="action-title">Ôn Tập</span>
+            <span class="action-desc">Flashcard, trắc nghiệm</span>
+          </button>
+          <button class="action-card" (click)="goToFavorites()">
+            <span class="action-icon">❤️</span>
+            <span class="action-title">Yêu Thích</span>
+            <span class="action-desc">Xem từ đã lưu</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Recent Words -->
+      @if (!isLoadingWords && recentWords.length > 0) {
+        <div class="recent-section">
+          <h3>🕐 Từ Vựng Gần Đây</h3>
+          <div class="recent-list">
+            @for (word of recentWords; track word.id) {
+              <div class="recent-item">
+                <div class="recent-word-info">
+                  <span class="recent-word">{{ word.word }}</span>
+                  <span class="recent-meaning">{{ word.meaningVi }}</span>
+                </div>
+                <div class="recent-badges">
+                  @if (word.learned) { <span class="badge badge-learned">✅ Đã học</span> }
+                  @if (word.favorite) { <span class="badge badge-fav">❤️</span> }
+                  @if (word.needReview) { <span class="badge badge-review">🔄</span> }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

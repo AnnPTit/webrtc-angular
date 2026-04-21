@@ -1,0 +1,327 @@
+<div class="vocab-container">
+  <!-- ═══════ TOAST ═══════ -->
+  @if (toastMessage) {
+    <div class="toast" [class]="'toast-' + toastType" (click)="dismissToast()">
+      <span class="toast-icon">
+        @switch (toastType) {
+          @case ('success') { ✅ }
+          @case ('error') { ❌ }
+          @case ('info') { ℹ️ }
+        }
+      </span>
+      <span>{{ toastMessage }}</span>
+    </div>
+  }
+
+  <!-- ═══════ HEADER ═══════ -->
+  <header class="header">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" />
+        </svg>
+      </button>
+      <div class="header-title">
+        <h1>📚 Từ Vựng AI</h1>
+        <p>Học từ vựng thông minh với trí tuệ nhân tạo</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn-nav" (click)="goToHistory()" title="Lịch sử">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3A.75.75 0 0118 3v1.5h.75a3 3 0 013 3v11.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V7.5a3 3 0 013-3H6V3a.75.75 0 01.75-.75zm13.5 9a1.5 1.5 0 00-1.5-1.5H5.25a1.5 1.5 0 00-1.5 1.5v7.5a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5v-7.5z" clip-rule="evenodd" />
+        </svg>
+        <span>Lịch sử</span>
+      </button>
+      <button class="btn-nav" (click)="goToStats()" title="Thống kê">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.036-.84-1.875-1.875-1.875h-.75zM9.75 8.625c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 01-1.875-1.875V8.625zM3 13.125c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 013 19.875v-6.75z" />
+        </svg>
+        <span>Thống kê</span>
+      </button>
+      <button class="btn-nav" (click)="goToFavorites()" title="Yêu thích">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
+        </svg>
+        <span>Yêu thích</span>
+      </button>
+      <button class="btn-nav accent" (click)="goToReview()" title="Ôn tập">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path fill-rule="evenodd" d="M4.755 10.059a7.5 7.5 0 0112.548-3.364l1.903 1.903h-3.183a.75.75 0 100 1.5h4.992a.75.75 0 00.75-.75V4.356a.75.75 0 00-1.5 0v3.18l-1.9-1.9A9 9 0 003.306 9.67a.75.75 0 101.45.388zm15.408 3.882a.75.75 0 10-1.45-.388 7.5 7.5 0 01-12.547 3.364l-1.902-1.903h3.183a.75.75 0 000-1.5H2.455a.75.75 0 00-.75.75v4.992a.75.75 0 001.5 0v-3.18l1.9 1.9a9 9 0 0015.059-4.035z" clip-rule="evenodd" />
+        </svg>
+        <span>Ôn tập</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══════ MINI STATS ═══════ -->
+  @if (!isLoadingStats && stats) {
+    <div class="mini-stats">
+      <div class="mini-stat">
+        <span class="mini-stat-value">{{ stats.totalWordsLearned }}</span>
+        <span class="mini-stat-label">Đã học</span>
+      </div>
+      <div class="mini-stat">
+        <span class="mini-stat-value">{{ stats.totalFavorites }}</span>
+        <span class="mini-stat-label">Yêu thích</span>
+      </div>
+      <div class="mini-stat">
+        <span class="mini-stat-value">{{ stats.totalNeedReview }}</span>
+        <span class="mini-stat-label">Cần ôn</span>
+      </div>
+      <div class="mini-stat">
+        <span class="mini-stat-value">{{ stats.totalWordsStudied }}</span>
+        <span class="mini-stat-label">Tổng cộng</span>
+      </div>
+    </div>
+  }
+
+  <!-- ═══════ FILTERS ═══════ -->
+  <section class="filters-section">
+    <div class="filters-card">
+      <h2 class="filters-title">🎯 Tạo Từ Vựng Mới</h2>
+      <div class="filters-grid">
+        <!-- Topic -->
+        <div class="filter-group">
+          <label for="topic-select">Chủ đề</label>
+          @if (isLoadingTopics) {
+            <div class="skeleton skeleton-select"></div>
+          } @else {
+            <select id="topic-select" [(ngModel)]="selectedTopic">
+              @for (topic of topics; track topic) {
+                <option [value]="topic">{{ topic }}</option>
+              }
+            </select>
+          }
+        </div>
+
+        <!-- Level -->
+        <div class="filter-group">
+          <label for="level-select">Trình độ</label>
+          <select id="level-select" [(ngModel)]="selectedLevel">
+            @for (level of levels; track level.value) {
+              <option [value]="level.value">{{ level.label }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Quantity -->
+        <div class="filter-group">
+          <label for="quantity-select">Số lượng</label>
+          <select id="quantity-select" [(ngModel)]="selectedQuantity">
+            @for (qty of quantities; track qty) {
+              <option [ngValue]="qty">{{ qty }} từ</option>
+            }
+          </select>
+        </div>
+
+        <!-- Generate Button -->
+        <div class="filter-group filter-action">
+          <button class="btn-generate" (click)="generateWords()" [disabled]="isLoading || isLoadingTopics">
+            @if (isLoading) {
+              <span class="spinner"></span>
+              <span>Đang tạo...</span>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path fill-rule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813A3.75 3.75 0 007.466 7.89l.813-2.846A.75.75 0 019 4.5zM18 1.5a.75.75 0 01.728.568l.258 1.036c.236.94.97 1.674 1.91 1.91l1.036.258a.75.75 0 010 1.456l-1.036.258c-.94.236-1.674.97-1.91 1.91l-.258 1.036a.75.75 0 01-1.456 0l-.258-1.036a2.625 2.625 0 00-1.91-1.91l-1.036-.258a.75.75 0 010-1.456l1.036-.258a2.625 2.625 0 001.91-1.91l.258-1.036A.75.75 0 0118 1.5z" clip-rule="evenodd" />
+              </svg>
+              <span>Tạo Từ Vựng</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ LOADING SKELETON ═══════ -->
+  @if (isLoading) {
+    <section class="words-section">
+      <div class="words-grid">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="word-card skeleton-card">
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text short"></div>
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton-actions">
+              <div class="skeleton skeleton-btn"></div>
+              <div class="skeleton skeleton-btn"></div>
+              <div class="skeleton skeleton-btn"></div>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ═══════ ERROR STATE ═══════ -->
+  @if (errorMessage && !isLoading) {
+    <section class="error-section">
+      <div class="error-card">
+        <span class="error-icon">⚠️</span>
+        <p>{{ errorMessage }}</p>
+        <button class="btn-retry" (click)="generateWords()">Thử lại</button>
+      </div>
+    </section>
+  }
+
+  <!-- ═══════ EMPTY STATE ═══════ -->
+  @if (!isLoading && !errorMessage && words.length === 0) {
+    <section class="empty-section">
+      <div class="empty-card">
+        <div class="empty-icon">🧠</div>
+        <h3>Sẵn sàng học từ vựng?</h3>
+        <p>Chọn chủ đề, trình độ và nhấn <strong>"Tạo Từ Vựng"</strong> để bắt đầu!</p>
+      </div>
+    </section>
+  }
+
+  <!-- ═══════ VOCABULARY CARDS ═══════ -->
+  @if (!isLoading && words.length > 0) {
+    <section class="words-section">
+      <!-- View Mode Toggle -->
+      <div class="words-header">
+        <h2>📖 Danh sách từ vựng ({{ words.length }} từ)</h2>
+        <div class="view-toggle">
+          <button [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Lưới">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4.25 2A2.25 2.25 0 002 4.25v2.5A2.25 2.25 0 004.25 9h2.5A2.25 2.25 0 009 6.75v-2.5A2.25 2.25 0 006.75 2h-2.5zm0 9A2.25 2.25 0 002 13.25v2.5A2.25 2.25 0 004.25 18h2.5A2.25 2.25 0 009 15.75v-2.5A2.25 2.25 0 006.75 11h-2.5zm9-9A2.25 2.25 0 0011 4.25v2.5A2.25 2.25 0 0013.25 9h2.5A2.25 2.25 0 0018 6.75v-2.5A2.25 2.25 0 0015.75 2h-2.5zm0 9A2.25 2.25 0 0011 13.25v2.5A2.25 2.25 0 0013.25 18h2.5A2.25 2.25 0 0018 15.75v-2.5A2.25 2.25 0 0015.75 11h-2.5z" clip-rule="evenodd" />
+            </svg>
+          </button>
+          <button [class.active]="viewMode === 'single'" (click)="viewMode = 'single'" title="Từng thẻ">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M1 2.75A.75.75 0 011.75 2h16.5a.75.75 0 010 1.5H1.75A.75.75 0 011 2.75zm0 5A.75.75 0 011.75 7h16.5a.75.75 0 010 1.5H1.75A.75.75 0 011 7.75zM1.75 12a.75.75 0 000 1.5h16.5a.75.75 0 000-1.5H1.75zM1 17.75a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H1.75a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Grid View -->
+      @if (viewMode === 'grid') {
+        <div class="words-grid">
+          @for (word of words; track word.id; let i = $index) {
+            <div class="word-card" [class.learned]="word.learned" [class.flipped]="isFlipped(word.id)">
+              <!-- Front -->
+              <div class="card-front" (click)="toggleFlip(word.id)">
+                <div class="card-top">
+                  <div class="word-main">
+                    <h3 class="word-text">{{ word.word }}</h3>
+                    <button class="btn-speak" (click)="playPronunciation(word); $event.stopPropagation()" title="Phát âm">
+                      🔊
+                    </button>
+                  </div>
+                  <div class="word-meta">
+                    <span class="ipa">{{ word.ipa }}</span>
+                    <span class="type-badge" [class]="getWordTypeBadgeClass(word.wordType)">{{ word.wordType }}</span>
+                  </div>
+                </div>
+
+                <div class="card-meanings">
+                  <p class="meaning-en">📖 {{ word.meaningEn }}</p>
+                  <p class="meaning-vi">🇻🇳 {{ word.meaningVi }}</p>
+                </div>
+
+                <div class="card-hint">
+                  <span>Nhấn để xem ví dụ →</span>
+                </div>
+              </div>
+
+              <!-- Back -->
+              <div class="card-back" (click)="toggleFlip(word.id)">
+                <div class="example-section">
+                  <h4>💬 Ví dụ</h4>
+                  <p class="example-en">{{ word.exampleSentence }}</p>
+                  <p class="example-vi">→ {{ word.exampleVi }}</p>
+                </div>
+
+                <div class="card-hint">
+                  <span>← Nhấn để quay lại</span>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="card-actions" (click)="$event.stopPropagation()">
+                <button class="action-btn" [class.active]="word.learned" (click)="toggleLearned(word)" [title]="word.learned ? 'Bỏ đánh dấu' : 'Đánh dấu đã học'">
+                  <span>{{ word.learned ? '✅' : '☐' }}</span>
+                  <span class="action-label">{{ word.learned ? 'Đã học' : 'Học xong' }}</span>
+                </button>
+                <button class="action-btn" [class.active]="word.favorite" (click)="toggleFavorite(word)" [title]="word.favorite ? 'Bỏ yêu thích' : 'Thêm yêu thích'">
+                  <span>{{ word.favorite ? '❤️' : '🤍' }}</span>
+                  <span class="action-label">Yêu thích</span>
+                </button>
+                <button class="action-btn" [class.active]="word.needReview" (click)="markForReview(word)" [title]="word.needReview ? 'Bỏ ôn tập' : 'Ôn tập sau'">
+                  <span>{{ word.needReview ? '🔄' : '📝' }}</span>
+                  <span class="action-label">Ôn tập</span>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Single Card View -->
+      @if (viewMode === 'single' && currentWord) {
+        <div class="single-card-view">
+          <!-- Progress -->
+          <div class="card-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="((currentCardIndex + 1) / words.length) * 100"></div>
+            </div>
+            <span class="progress-text">{{ currentCardIndex + 1 }} / {{ words.length }}</span>
+          </div>
+
+          <!-- Card -->
+          <div class="single-word-card" [class.flipped]="isFlipped(currentWord.id)" (click)="toggleFlip(currentWord.id)">
+            <div class="card-front">
+              <div class="single-word-main">
+                <h2>{{ currentWord.word }}</h2>
+                <button class="btn-speak-large" (click)="playPronunciation(currentWord); $event.stopPropagation()">🔊</button>
+              </div>
+              <p class="single-ipa">{{ currentWord.ipa }}</p>
+              <span class="type-badge large" [class]="getWordTypeBadgeClass(currentWord.wordType)">{{ currentWord.wordType }}</span>
+              <div class="single-meanings">
+                <p class="meaning-en">📖 {{ currentWord.meaningEn }}</p>
+                <p class="meaning-vi">🇻🇳 {{ currentWord.meaningVi }}</p>
+              </div>
+              <div class="card-hint">Nhấn để xem ví dụ →</div>
+            </div>
+            <div class="card-back">
+              <h3>💬 Câu ví dụ</h3>
+              <p class="single-example-en">{{ currentWord.exampleSentence }}</p>
+              <p class="single-example-vi">→ {{ currentWord.exampleVi }}</p>
+              <div class="card-hint">← Nhấn để quay lại</div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="single-actions">
+            <button class="action-btn large" [class.active]="currentWord.learned" (click)="toggleLearned(currentWord)">
+              {{ currentWord.learned ? '✅' : '☐' }} {{ currentWord.learned ? 'Đã học' : 'Học xong' }}
+            </button>
+            <button class="action-btn large" [class.active]="currentWord.favorite" (click)="toggleFavorite(currentWord)">
+              {{ currentWord.favorite ? '❤️' : '🤍' }} Yêu thích
+            </button>
+            <button class="action-btn large" [class.active]="currentWord.needReview" (click)="markForReview(currentWord)">
+              {{ currentWord.needReview ? '🔄' : '📝' }} Ôn tập
+            </button>
+          </div>
+
+          <!-- Navigation -->
+          <div class="card-nav">
+            <button class="btn-card-nav" (click)="prevCard()" [disabled]="currentCardIndex === 0">
+              ← Trước
+            </button>
+            <div class="card-dots">
+              @for (word of words; track word.id; let i = $index) {
+                <button class="dot" [class.active]="i === currentCardIndex" [class.learned]="word.learned" (click)="goToCard(i)"></button>
+              }
+            </div>
+            <button class="btn-card-nav" (click)="nextCard()" [disabled]="currentCardIndex === words.length - 1">
+              Tiếp →
+            </button>
+          </div>
+        </div>
+      }
+    </section>
+  }
+</div>
