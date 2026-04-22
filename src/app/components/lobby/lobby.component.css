@@ -1,16 +1,20 @@
+/* ═══════════════════════════════════════════
+   LOBBY — Modern Dark (Video Call)
+   ═══════════════════════════════════════════ */
+
 .lobby-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #1a1a2e;
-  color: #fff;
+  background: #181C2E;
+  color: #E8ECF4;
   overflow: hidden;
 }
 
 .lobby-header {
   padding: 1rem;
-  background: #16213e;
-  border-bottom: 1px solid #0f3460;
+  background: #1E2340;
+  border-bottom: 1px solid #2A3050;
   text-align: center;
   flex-shrink: 0;
 }
@@ -18,6 +22,7 @@
 .lobby-header h1 {
   margin: 0;
   font-size: 1.25rem;
+  font-weight: 700;
 }
 
 .lobby-content {
@@ -42,7 +47,7 @@
 
 .video-preview-container {
   position: relative;
-  background: #0f3460;
+  background: #0E1120;
   border-radius: 12px;
   overflow: hidden;
   width: 100%;
@@ -50,6 +55,7 @@
   padding-bottom: 40%;
   margin-bottom: 1rem;
   flex-shrink: 0;
+  border: 1px solid #2A3050;
 }
 
 video {
@@ -74,7 +80,7 @@ video.video-disabled {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #888;
+  color: #5B6578;
 }
 
 .video-off-overlay {
@@ -91,11 +97,12 @@ video.video-disabled {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  background: #16213e;
+  background: #1E2340;
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: 10px;
   flex-shrink: 0;
   overflow: auto;
+  border: 1px solid #2A3050;
 }
 
 .control-group {
@@ -107,27 +114,28 @@ video.video-disabled {
 .control-group label {
   font-weight: 500;
   font-size: 0.8rem;
-  color: #aaa;
+  color: #8B95A8;
 }
 
 select {
   padding: 0.5rem;
-  background: #0f3460;
-  border: 1px solid #0f3460;
-  border-radius: 6px;
-  color: #fff;
+  background: #0E1120;
+  border: 1px solid #2A3050;
+  border-radius: 8px;
+  color: #E8ECF4;
   font-size: 0.9rem;
   cursor: pointer;
   transition: border-color 0.2s;
 }
 
 select:hover:not(:disabled) {
-  border-color: #4ecca3;
+  border-color: #3B82F6;
 }
 
 select:focus {
   outline: none;
-  border-color: #4ecca3;
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 select:disabled {
@@ -137,25 +145,26 @@ select:disabled {
 
 input[type="text"] {
   padding: 0.5rem;
-  background: #0f3460;
-  border: 1px solid #0f3460;
-  border-radius: 6px;
-  color: #fff;
+  background: #0E1120;
+  border: 1px solid #2A3050;
+  border-radius: 8px;
+  color: #E8ECF4;
   font-size: 0.9rem;
   transition: border-color 0.2s;
 }
 
 input[type="text"]:hover {
-  border-color: #4ecca3;
+  border-color: #3B82F6;
 }
 
 input[type="text"]:focus {
   outline: none;
-  border-color: #4ecca3;
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 input[type="text"]::placeholder {
-  color: #888;
+  color: #5B6578;
 }
 
 .toggle-controls {
@@ -171,11 +180,13 @@ input[type="text"]::placeholder {
 .error-message {
   margin-top: 0.75rem;
   padding: 0.75rem;
-  background: #e94560;
-  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
   text-align: center;
   font-size: 0.875rem;
   flex-shrink: 0;
+  color: #FCA5A5;
 }
 
 .lobby-footer {
@@ -183,26 +194,26 @@ input[type="text"]::placeholder {
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 1.5rem;
-  background: #16213e;
-  border-top: 1px solid #0f3460;
+  background: #1E2340;
+  border-top: 1px solid #2A3050;
   flex-shrink: 0;
 }
 
 .btn {
   padding: 0.625rem 1.5rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  background: #0f3460;
-  color: #fff;
+  background: #2A3050;
+  color: #E8ECF4;
 }
 
 .btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(78, 204, 163, 0.3);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
 }
 
 .btn:disabled {
@@ -212,25 +223,25 @@ input[type="text"]::placeholder {
 }
 
 .btn-active {
-  background: #4ecca3;
-  color: #1a1a2e;
+  background: #3B82F6;
+  color: #fff;
 }
 
 .btn-primary {
-  background: #4ecca3;
-  color: #1a1a2e;
+  background: #3B82F6;
+  color: #fff;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #45b393;
+  background: #2563EB;
 }
 
 .btn-secondary {
-  background: #0f3460;
+  background: #2A3050;
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #1a4d7a;
+  background: #353D5C;
 }
 
 .visually-hidden {

@@ -1,10 +1,13 @@
-/* Reuse home component styles for lecturer dashboard */
+/* ═══════════════════════════════════════════
+   LECTURER DASHBOARD — White Theme
+   ═══════════════════════════════════════════ */
+
 .dashboard-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  color: #fff;
+  background: var(--bg-page);
+  color: var(--text-primary);
 }
 
 /* Header */
@@ -12,13 +15,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
-  background: rgba(22, 33, 62, 0.8);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(78, 204, 163, 0.1);
+  padding: 0.875rem 2rem;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 100;
+  box-shadow: var(--shadow-xs);
 }
 
 .header-left {
@@ -30,18 +33,16 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-size: 1.5rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #4ecca3 0%, #45b7d1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--brand);
+  text-decoration: none;
 }
 
 .logo-icon {
   width: 32px;
   height: 32px;
-  color: #4ecca3;
+  color: var(--brand);
 }
 
 .header-right {
@@ -57,40 +58,42 @@
 }
 
 .user-avatar {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4ecca3 0%, #45b7d1 100%);
+  background: var(--brand-gradient);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 1.1rem;
-  color: #1a1a2e;
+  font-size: 1rem;
+  color: #fff;
 }
 
 .user-name {
-  color: #a0a0a0;
-  font-size: 0.95rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .btn-logout {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 8px;
+  background: var(--danger-light);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-md);
   padding: 0.5rem 1rem;
-  color: #f87171;
+  color: var(--danger);
   font-size: 0.85rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .btn-logout:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.5);
+  background: #FEE2E2;
+  border-color: var(--danger);
 }
 
 .btn-logout svg {
@@ -113,14 +116,15 @@
 }
 
 .welcome-section h1 {
-  font-size: 2rem;
+  font-size: 1.875rem;
   margin: 0 0 0.5rem 0;
-  color: #fff;
+  color: var(--text-primary);
+  font-weight: 700;
 }
 
 .welcome-section p {
-  color: #a0a0a0;
-  font-size: 1.1rem;
+  color: var(--text-secondary);
+  font-size: 1rem;
   margin: 0;
 }
 
@@ -128,30 +132,31 @@
 .stats-section {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 3rem;
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
 }
 
 .stat-card {
-  background: rgba(22, 33, 62, 0.6);
-  border-radius: 16px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-xl);
   padding: 1.5rem;
   display: flex;
   align-items: center;
   gap: 1rem;
-  border: 1px solid rgba(78, 204, 163, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid var(--border);
+  transition: all 0.25s var(--ease);
+  box-shadow: var(--shadow-card);
 }
 
 .stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-card-hover);
 }
 
 .stat-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -169,48 +174,64 @@
 
 .stat-value {
   font-size: 1.75rem;
-  font-weight: 700;
-  color: #fff;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
 }
 
 .stat-label {
-  font-size: 0.875rem;
-  color: #a0a0a0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-top: 0.15rem;
 }
 
 /* Menu Section */
 .menu-section h2 {
-  font-size: 1.25rem;
-  margin: 0 0 1.5rem 0;
-  color: #a0a0a0;
+  font-size: 0.8rem;
+  margin: 0 0 1.25rem 0;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .menu-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .menu-card {
-  --accent-color: #4ecca3;
-  background: rgba(22, 33, 62, 0.6);
-  border-radius: 16px;
+  --accent-color: var(--brand);
+  background: var(--bg-primary);
+  border-radius: var(--radius-xl);
   padding: 1.5rem;
   display: flex;
   align-items: center;
   gap: 1rem;
-  border: 1px solid rgba(78, 204, 163, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: all 0.3s var(--ease);
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
 }
 
 .menu-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--border-hover);
 }
 
 .menu-card.disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
+}
+
+.menu-card.disabled:hover {
+  transform: none;
+  box-shadow: var(--shadow-card);
 }
 
 .menu-icon {
@@ -228,23 +249,29 @@
 
 .menu-content h3 {
   margin: 0;
-  font-size: 1.1rem;
-  color: #fff;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 .menu-content p {
   margin: 0.25rem 0 0 0;
-  font-size: 0.9rem;
-  color: #a0a0a0;
+  font-size: 0.825rem;
+  color: var(--text-secondary);
 }
 
 .menu-arrow {
   margin-left: auto;
-  color: #a0a0a0;
+  color: var(--text-muted);
 }
 
 .coming-soon {
-  font-size: 0.75rem;
-  color: #feca57;
+  background: var(--warning-light);
+  color: var(--warning-text);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.7rem;
+  font-weight: 600;
   margin-left: auto;
+  border: 1px solid var(--warning-border);
 }

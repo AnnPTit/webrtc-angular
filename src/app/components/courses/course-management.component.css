@@ -1,10 +1,14 @@
+/* ═══════════════════════════════════════════
+   COURSE MANAGEMENT — White Theme
+   ═══════════════════════════════════════════ */
+
 /* Dashboard Container */
 .dashboard-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #fff;
+  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  color: var(--text-primary);
 }
 
 /* Header */
@@ -14,14 +18,14 @@
   align-items: center;
   margin-bottom: 30px;
   padding-bottom: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border);
 }
 
 .dashboard-title {
   margin: 0;
   font-size: 2rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 /* Search Bar */
@@ -33,23 +37,22 @@
   width: 100%;
   max-width: 400px;
   padding: 12px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
   font-size: 1rem;
-  background-color: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .search-input::placeholder {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
 }
 
 .search-input:focus {
   outline: none;
-  border-color: #4ecca3;
-  box-shadow: 0 0 0 2px rgba(78, 204, 163, 0.25);
-  background-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
 }
 
 /* Dashboard Content */
@@ -72,25 +75,25 @@
 
 /* Course Card */
 .course-card {
-  background: rgba(15, 52, 96, 0.6);
-  border: 1px solid rgba(78, 204, 163, 0.3);
-  border-radius: 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   padding: 16px;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-xs);
 }
 
 .course-card:hover {
   transform: translateX(4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  border-color: rgba(78, 204, 163, 0.6);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--brand);
 }
 
 .course-card.selected {
-  border-color: #4ecca3;
-  box-shadow: 0 0 0 2px rgba(78, 204, 163, 0.3), 0 4px 12px rgba(78, 204, 163, 0.2);
-  background: rgba(15, 52, 96, 0.8);
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15), 0 4px 12px rgba(59, 130, 246, 0.08);
+  background: var(--brand-light);
 }
 
 .card-header {
@@ -101,7 +104,7 @@
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .card-body {
@@ -110,7 +113,7 @@
 
 .card-description {
   margin: 0;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
   line-height: 1.4;
   font-size: 0.9rem;
 }
@@ -122,26 +125,28 @@
 
 /* Buttons */
 .btn-primary {
-  background-color: #4ecca3;
-  color: #1a1a2e;
+  background-color: var(--brand);
+  color: var(--text-inverse);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   padding: 10px 16px;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
 }
 
-.btn-primary:hover {
-  background-color: #35a366;
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--brand-hover);
+  transform: translateY(-1px);
 }
 
 .btn-back {
   background-color: transparent;
-  color: #4ecca3;
-  border: 1px solid #4ecca3;
-  border-radius: 6px;
+  color: var(--brand);
+  border: 1px solid var(--brand);
+  border-radius: var(--radius-md);
   padding: 10px 16px;
   font-size: 0.9rem;
   font-weight: 600;
@@ -150,15 +155,14 @@
 }
 
 .btn-back:hover {
-  background-color: #4ecca3;
-  color: #1a1a2e;
+  background-color: var(--brand-light);
 }
 
 .btn-secondary {
-  background-color: rgba(78, 204, 163, 0.3);
-  color: #4ecca3;
-  border: 1px solid #4ecca3;
-  border-radius: 6px;
+  background-color: var(--bg-secondary);
+  color: var(--brand);
+  border: 1px solid var(--brand);
+  border-radius: var(--radius-md);
   padding: 8px 14px;
   font-size: 0.85rem;
   cursor: pointer;
@@ -166,15 +170,14 @@
 }
 
 .btn-secondary:hover {
-  background-color: rgba(78, 204, 163, 0.5);
-  color: #fff;
+  background-color: var(--brand-light);
 }
 
 .btn-danger {
-  background-color: rgba(220, 53, 69, 0.3);
-  color: #ff6b6b;
-  border: 1px solid #ff6b6b;
-  border-radius: 6px;
+  background-color: var(--danger-light);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-md);
   padding: 8px 14px;
   font-size: 0.85rem;
   cursor: pointer;
@@ -182,15 +185,14 @@
 }
 
 .btn-danger:hover {
-  background-color: rgba(220, 53, 69, 0.6);
-  color: #fff;
+  background-color: #FEE2E2;
 }
 
 .btn-outline {
   background-color: transparent;
-  color: #4ecca3;
-  border: 1px solid #4ecca3;
-  border-radius: 6px;
+  color: var(--brand);
+  border: 1px solid var(--brand);
+  border-radius: var(--radius-md);
   padding: 6px 12px;
   font-size: 0.8rem;
   cursor: pointer;
@@ -198,15 +200,14 @@
 }
 
 .btn-outline:hover {
-  background-color: #4ecca3;
-  color: #1a1a2e;
+  background-color: var(--brand-light);
 }
 
 .btn-danger-outline {
   background-color: transparent;
-  color: #ff6b6b;
-  border: 1px solid #ff6b6b;
-  border-radius: 6px;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-md);
   padding: 6px 12px;
   font-size: 0.8rem;
   cursor: pointer;
@@ -214,8 +215,7 @@
 }
 
 .btn-danger-outline:hover {
-  background-color: #ff6b6b;
-  color: #1a1a2e;
+  background-color: var(--danger-light);
 }
 
 /* Course Form Overlay */
@@ -225,7 +225,8 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -233,19 +234,20 @@
 }
 
 .course-form-card {
-  background: rgba(15, 52, 96, 0.9);
-  border: 1px solid rgba(78, 204, 163, 0.3);
-  border-radius: 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
   padding: 30px;
   max-width: 500px;
   width: 90%;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-xl);
 }
 
 .course-form-card h3 {
   margin-top: 0;
   margin-bottom: 20px;
-  color: #fff;
+  color: var(--text-primary);
+  font-weight: 700;
 }
 
 .form {
@@ -261,33 +263,33 @@
   display: block;
   margin-bottom: 8px;
   font-weight: 600;
-  color: #fff;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
 }
 
 .form-input,
 .form-textarea {
   width: 100%;
   padding: 12px;
-  border: 1px solid rgba(78, 204, 163, 0.3);
-  border-radius: 6px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
   font-size: 1rem;
-  background-color: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   transition: border-color 0.3s ease;
   box-sizing: border-box;
 }
 
 .form-input::placeholder,
 .form-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
 }
 
 .form-input:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: #4ecca3;
-  box-shadow: 0 0 0 2px rgba(78, 204, 163, 0.25);
-  background-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
 }
 
 .form-textarea {
@@ -308,17 +310,18 @@
 }
 
 .detail-card {
-  background: rgba(15, 52, 96, 0.6);
-  border: 1px solid rgba(78, 204, 163, 0.3);
-  border-radius: 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-card);
 }
 
 .detail-card h3 {
   margin-top: 0;
   margin-bottom: 20px;
-  color: #fff;
+  color: var(--text-primary);
+  font-weight: 700;
 }
 
 .lesson-list {
@@ -332,8 +335,8 @@
   justify-content: space-between;
   align-items: flex-start;
   padding: 12px 0;
-  border-bottom: 1px solid rgba(78, 204, 163, 0.1);
-  color: rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
   gap: 12px;
   flex-wrap: wrap;
   width: 100%;
@@ -351,13 +354,13 @@
 .lesson-title {
   margin: 0 0 4px 0;
   font-weight: 600;
-  color: #fff;
+  color: var(--text-primary);
   font-size: 0.95rem;
 }
 
 .lesson-description {
   margin: 0;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   font-size: 0.85rem;
   line-height: 1.3;
 }
@@ -372,9 +375,9 @@
 
 .btn-outline-lg {
   background-color: transparent;
-  color: #4ecca3;
-  border: 1px solid #4ecca3;
-  border-radius: 6px;
+  color: var(--brand);
+  border: 1px solid var(--brand);
+  border-radius: var(--radius-md);
   padding: 10px 16px;
   font-size: 0.9rem;
   font-weight: 600;
@@ -384,8 +387,7 @@
 }
 
 .btn-outline-lg:hover {
-  background-color: #4ecca3;
-  color: #1a1a2e;
+  background-color: var(--brand-light);
 }
 
 /* Disabled State for Buttons */
@@ -402,23 +404,23 @@ button:disabled:hover {
 
 /* Error Message */
 .error-message {
-  background-color: rgba(220, 53, 69, 0.2);
-  border: 1px solid #ff6b6b;
-  border-radius: 8px;
+  background-color: var(--danger-light);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-lg);
   padding: 12px 16px;
   margin-bottom: 20px;
-  color: #ff6b6b;
+  color: var(--danger);
   font-weight: 500;
 }
 
 /* Loading Indicator */
 .loading-indicator {
-  background-color: rgba(78, 204, 163, 0.2);
-  border: 1px solid #4ecca3;
-  border-radius: 8px;
+  background-color: var(--brand-light);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: var(--radius-lg);
   padding: 12px 16px;
   margin-bottom: 20px;
-  color: #4ecca3;
+  color: var(--brand);
   font-weight: 500;
   text-align: center;
 }
@@ -427,14 +429,14 @@ button:disabled:hover {
 .no-courses {
   grid-column: 1 / -1;
   text-align: center;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   padding: 40px 20px;
   font-size: 1.1rem;
 }
 
 /* Loading Text */
 .loading-text {
-  color: #4ecca3;
+  color: var(--brand);
   font-size: 0.9rem;
   margin: 8px 0;
   font-weight: 500;
@@ -449,18 +451,18 @@ button:disabled:hover {
   display: block;
   width: 100%;
   padding: 12px;
-  border: 2px dashed rgba(78, 204, 163, 0.3);
-  border-radius: 6px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
   font-size: 1rem;
-  background-color: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
   cursor: pointer;
   transition: border-color 0.3s ease;
   box-sizing: border-box;
 }
 
 .form-file-input:hover:not(:disabled) {
-  border-color: rgba(78, 204, 163, 0.6);
+  border-color: var(--brand);
 }
 
 .form-file-input:disabled {
@@ -470,7 +472,7 @@ button:disabled:hover {
 
 .file-info {
   margin: 8px 0 0 0;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
   font-size: 0.9rem;
 }
 
@@ -481,7 +483,7 @@ button:disabled:hover {
 
 .progress-label {
   margin: 0 0 8px 0;
-  color: #4ecca3;
+  color: var(--brand);
   font-size: 0.9rem;
   font-weight: 500;
 }
@@ -489,34 +491,30 @@ button:disabled:hover {
 .progress-bar {
   width: 100%;
   height: 24px;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-md);
   overflow: hidden;
-  border: 1px solid rgba(78, 204, 163, 0.3);
+  border: 1px solid var(--border);
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    #4ecca3,
-    #35a366
-  );
+  background: var(--brand-gradient);
   transition: width 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.8rem;
-  color: #1a1a2e;
+  color: var(--text-inverse);
   font-weight: 600;
 }
 
 /* Button Styles */
 .btn-video-toggle {
-  background-color: rgba(78, 204, 163, 0.2);
-  color: #4ecca3;
-  border: 1px solid #4ecca3;
-  border-radius: 6px;
+  background-color: var(--brand-light);
+  color: var(--brand);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: var(--radius-md);
   padding: 6px 12px;
   font-size: 0.8rem;
   cursor: pointer;
@@ -524,13 +522,12 @@ button:disabled:hover {
 }
 
 .btn-video-toggle:hover:not(:disabled) {
-  background-color: #4ecca3;
-  color: #1a1a2e;
+  background-color: rgba(59, 130, 246, 0.15);
 }
 
 .btn-video-toggle.active {
-  background-color: #4ecca3;
-  color: #1a1a2e;
+  background-color: var(--brand);
+  color: var(--text-inverse);
   font-weight: 600;
 }
 
@@ -545,11 +542,11 @@ button:disabled:hover {
   width: 100%;
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid rgba(78, 204, 163, 0.2);
+  border-top: 1px solid var(--border);
 }
 
 .no-videos {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
   text-align: center;
   padding: 20px;
   font-size: 0.9rem;
@@ -563,16 +560,16 @@ button:disabled:hover {
 }
 
 .video-item {
-  background-color: rgba(15, 52, 96, 0.6);
-  border: 1px solid rgba(78, 204, 163, 0.2);
-  border-radius: 8px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   transition: all 0.3s ease;
 }
 
 .video-item:hover {
-  border-color: rgba(78, 204, 163, 0.4);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-sm);
 }
 
 .video-player {
@@ -599,7 +596,7 @@ button:disabled:hover {
 
 .video-name {
   margin: 0;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text-primary);
   font-size: 0.95rem;
   font-weight: 500;
   flex: 1;
@@ -609,7 +606,7 @@ button:disabled:hover {
 
 .video-meta {
   margin: 0;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   font-size: 0.8rem;
   white-space: nowrap;
 }
@@ -630,17 +627,15 @@ button:disabled:hover {
   }
 }
 
-/* ─── Assignment Styles ────────────────────────────────────────── */
+/* ─── Assignment Styles ─── */
 
-/* View Assignments button (different accent) */
 .btn-view-assignments {
-  color: #64b5f6 !important;
-  border-color: #64b5f6 !important;
+  color: var(--brand) !important;
+  border-color: var(--brand) !important;
 }
 
 .btn-view-assignments:hover:not(:disabled) {
-  background-color: #64b5f6 !important;
-  color: #1a1a2e !important;
+  background-color: var(--brand-light) !important;
 }
 
 /* Assignment form card */
@@ -648,17 +643,17 @@ button:disabled:hover {
   max-width: 550px;
 }
 
-/* Assignment Panel (large overlay card) */
+/* Assignment Panel */
 .assignment-panel {
-  background: rgba(15, 52, 96, 0.95);
-  border: 1px solid rgba(78, 204, 163, 0.3);
-  border-radius: 16px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
   padding: 30px;
   width: 90%;
   max-width: 800px;
   max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--shadow-xl);
   animation: panelSlideIn 0.3s ease;
 }
 
@@ -673,19 +668,20 @@ button:disabled:hover {
   align-items: center;
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(78, 204, 163, 0.2);
+  border-bottom: 1px solid var(--border);
 }
 
 .assignment-panel-header h3 {
   margin: 0;
   font-size: 1.4rem;
-  color: #fff;
+  color: var(--text-primary);
+  font-weight: 700;
 }
 
 .btn-close {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
   font-size: 1.2rem;
   width: 36px;
   height: 36px;
@@ -698,9 +694,9 @@ button:disabled:hover {
 }
 
 .btn-close:hover {
-  background: rgba(255, 100, 100, 0.3);
-  border-color: #ff6b6b;
-  color: #ff6b6b;
+  background: var(--danger-light);
+  border-color: var(--danger-border);
+  color: var(--danger);
 }
 
 /* Assignment list */
@@ -715,16 +711,16 @@ button:disabled:hover {
   justify-content: space-between;
   align-items: center;
   padding: 14px 18px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(78, 204, 163, 0.15);
-  border-radius: 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .assignment-list-item:hover {
-  background: rgba(78, 204, 163, 0.1);
-  border-color: rgba(78, 204, 163, 0.4);
+  background: var(--brand-light);
+  border-color: var(--brand);
   transform: translateX(4px);
 }
 
@@ -735,19 +731,19 @@ button:disabled:hover {
 .assignment-list-title {
   margin: 0 0 4px 0;
   font-weight: 600;
-  color: #fff;
+  color: var(--text-primary);
   font-size: 1rem;
 }
 
 .assignment-list-desc {
   margin: 0;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   font-size: 0.85rem;
 }
 
 .no-assignments {
   text-align: center;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--text-muted);
   padding: 40px 20px;
   font-size: 1rem;
 }
@@ -755,7 +751,7 @@ button:disabled:hover {
 /* Status badges */
 .status-badge {
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-full);
   font-size: 0.78rem;
   font-weight: 600;
   white-space: nowrap;
@@ -763,15 +759,15 @@ button:disabled:hover {
 }
 
 .status-pending {
-  background: rgba(255, 193, 7, 0.2);
-  color: #ffc107;
-  border: 1px solid rgba(255, 193, 7, 0.4);
+  background: var(--warning-light);
+  color: var(--warning-text);
+  border: 1px solid var(--warning-border);
 }
 
 .status-processing {
-  background: rgba(100, 181, 246, 0.2);
-  color: #64b5f6;
-  border: 1px solid rgba(100, 181, 246, 0.4);
+  background: var(--brand-light);
+  color: var(--brand);
+  border: 1px solid rgba(59, 130, 246, 0.25);
   animation: statusPulse 1.5s ease-in-out infinite;
 }
 
@@ -781,15 +777,15 @@ button:disabled:hover {
 }
 
 .status-completed {
-  background: rgba(78, 204, 163, 0.2);
-  color: #4ecca3;
-  border: 1px solid rgba(78, 204, 163, 0.4);
+  background: var(--success-light);
+  color: var(--success);
+  border: 1px solid var(--success-border);
 }
 
 .status-failed {
-  background: rgba(255, 107, 107, 0.2);
-  color: #ff6b6b;
-  border: 1px solid rgba(255, 107, 107, 0.4);
+  background: var(--danger-light);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
 }
 
 /* Assignment detail */
@@ -805,16 +801,17 @@ button:disabled:hover {
 .btn-back-small {
   background: transparent;
   border: none;
-  color: #64b5f6;
+  color: var(--brand);
   font-size: 0.9rem;
   cursor: pointer;
   padding: 6px 0;
   margin-bottom: 12px;
   transition: color 0.2s ease;
+  font-weight: 500;
 }
 
 .btn-back-small:hover {
-  color: #90caf9;
+  color: var(--brand-hover);
 }
 
 .assignment-detail-header {
@@ -829,11 +826,12 @@ button:disabled:hover {
 .assignment-detail-header h4 {
   margin: 0;
   font-size: 1.2rem;
-  color: #fff;
+  color: var(--text-primary);
+  font-weight: 700;
 }
 
 .assignment-description {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
   font-size: 0.9rem;
   margin: 0 0 20px 0;
   line-height: 1.5;
@@ -846,7 +844,7 @@ button:disabled:hover {
   align-items: center;
   padding: 40px 20px;
   gap: 12px;
-  color: #64b5f6;
+  color: var(--brand);
 }
 
 .processing-indicator p {
@@ -856,7 +854,7 @@ button:disabled:hover {
 }
 
 .processing-hint {
-  color: rgba(255, 255, 255, 0.4) !important;
+  color: var(--text-muted) !important;
   font-weight: 400 !important;
   font-size: 0.85rem !important;
 }
@@ -864,8 +862,8 @@ button:disabled:hover {
 .spinner {
   width: 44px;
   height: 44px;
-  border: 4px solid rgba(100, 181, 246, 0.2);
-  border-top-color: #64b5f6;
+  border: 4px solid rgba(59, 130, 246, 0.15);
+  border-top-color: var(--brand);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -882,35 +880,35 @@ button:disabled:hover {
 .questions-heading {
   margin: 0 0 16px 0;
   font-size: 1.1rem;
-  color: #4ecca3;
+  color: var(--brand);
   font-weight: 700;
 }
 
 .question-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(78, 204, 163, 0.15);
-  border-radius: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   padding: 20px;
   margin-bottom: 16px;
   transition: border-color 0.2s ease;
 }
 
 .question-card:hover {
-  border-color: rgba(78, 204, 163, 0.3);
+  border-color: var(--border-hover);
 }
 
 .question-number {
   margin: 0 0 6px 0;
   font-size: 0.8rem;
   font-weight: 700;
-  color: #4ecca3;
+  color: var(--brand);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .question-text {
   margin: 0 0 14px 0;
-  color: #fff;
+  color: var(--text-primary);
   font-size: 1rem;
   line-height: 1.5;
   font-weight: 500;
@@ -928,42 +926,42 @@ button:disabled:hover {
   align-items: flex-start;
   gap: 10px;
   padding: 10px 14px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
   transition: all 0.2s ease;
 }
 
 .option-item.correct {
-  background: rgba(78, 204, 163, 0.12);
-  border-color: rgba(78, 204, 163, 0.35);
+  background: var(--success-light);
+  border-color: var(--success-border);
 }
 
 .option-key {
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
   min-width: 22px;
   font-size: 0.9rem;
 }
 
 .option-item.correct .option-key {
-  color: #4ecca3;
+  color: var(--success);
 }
 
 .option-value {
   flex: 1;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--text-secondary);
   font-size: 0.9rem;
   line-height: 1.4;
 }
 
 .option-item.correct .option-value {
-  color: #fff;
+  color: var(--text-primary);
   font-weight: 500;
 }
 
 .correct-badge {
-  color: #4ecca3;
+  color: var(--success);
   font-weight: 700;
   font-size: 1rem;
   margin-left: auto;
@@ -979,10 +977,10 @@ button:disabled:hover {
 }
 
 .assignment-panel::-webkit-scrollbar-thumb {
-  background: rgba(78, 204, 163, 0.3);
+  background: var(--border);
   border-radius: 3px;
 }
 
 .assignment-panel::-webkit-scrollbar-thumb:hover {
-  background: rgba(78, 204, 163, 0.5);
+  background: var(--border-hover);
 }
