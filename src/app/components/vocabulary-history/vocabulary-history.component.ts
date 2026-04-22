@@ -86,7 +86,8 @@ export class VocabularyHistoryComponent implements OnInit {
     }
 
     this.isLoading = true;
-    this.vocabService.getUserProgress(userId).subscribe({
+    // Load ALL vocabulary (including unlearned) instead of only user progress
+    this.vocabService.getAllVocabulary(userId).subscribe({
       next: words => {
         this.allWords = words;
         this.buildDailySessions();
@@ -373,6 +374,8 @@ export class VocabularyHistoryComponent implements OnInit {
   flashcardKnew(): void {
     this.reviewAnswered++;
     this.reviewScore++;
+    // If word is unlearned, mark as learned
+    this.markLearnedIfCorrect(this.currentReviewWord);
     this.nextReviewCard();
   }
 
@@ -415,6 +418,8 @@ export class VocabularyHistoryComponent implements OnInit {
     if (option.correct) {
       this.reviewScore++;
       this.showToast('Chính xác! 🎉', 'success');
+      // If word is unlearned, mark as learned
+      this.markLearnedIfCorrect(this.currentReviewWord);
     } else {
       this.showToast('Sai rồi! 😔', 'error');
     }
@@ -433,6 +438,8 @@ export class VocabularyHistoryComponent implements OnInit {
     if (this.practiceCorrect) {
       this.reviewScore++;
       this.showToast('Chính xác! 🎉', 'success');
+      // If word is unlearned, mark as learned
+      this.markLearnedIfCorrect(this.currentReviewWord);
     } else {
       this.showToast(`Đáp án: ${this.currentReviewWord?.word}`, 'error');
     }
@@ -468,6 +475,59 @@ export class VocabularyHistoryComponent implements OnInit {
   get reviewScorePercent(): number {
     if (this.reviewAnswered === 0) return 0;
     return Math.round((this.reviewScore / this.reviewAnswered) * 100);
+  }
+
+  // ═══════════════════════════════════════════
+  //  MARK LEARNED ON CORRECT ANSWER
+  // ═══════════════════════════════════════════
+
+  /**
+   * If the word is currently unlearned, call the API to mark it as learned.
+   * If already learned, do nothing (keep existing status).
+   */
+  private markLearnedIfCorrect(word: VocabularyWord | null): void {
+    if (!word || word.learned) return; // Already learned → keep as is
+
+    const userId = this.currentUserId;
+    if (!userId) return;
+
+    this.vocabService.updateProgress({
+      userId,
+      vocabularyId: word.id,
+      learnedFlag: true,
+    }).subscribe({
+      next: (updated) => {
+        // Update in allWords
+        const idx = this.allWords.findIndex(w => w.id === updated.id);
+        if (idx !== -1) this.allWords[idx] = updated;
+
+        // Update in reviewWords
+        const ridx = this.reviewWords.findIndex(w => w.id === updated.id);
+        if (ridx !== -1) this.reviewWords[ridx] = updated;
+
+        // Update in dailySessions
+        for (const session of this.dailySessions) {
+          const sidx = session.words.findIndex(w => w.id === updated.id);
+          if (sidx !== -1) {
+            session.words[sidx] = updated;
+            // Recalculate session stats
+            session.learnedWords = session.words.filter(w => w.learned).length;
+            session.completionPercent = session.totalWords > 0
+              ? Math.round((session.learnedWords / session.totalWords) * 100)
+              : 0;
+            session.goalMet = session.learnedWords >= this.dailyGoal.wordsPerDay;
+            break;
+          }
+        }
+
+        this.showToast(`"${updated.word}" đã được đánh dấu là đã học! ✅`, 'info');
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        // Silent fail — don't disrupt the review flow
+        console.error('Failed to mark word as learned:', word.word);
+      },
+    });
   }
 
   restartReview(): void {

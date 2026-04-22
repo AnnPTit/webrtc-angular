@@ -145,6 +145,40 @@ export class VocabularyService {
   }
 
   // ═══════════════════════════════════════════
+  //  Get All Vocabulary (GET)
+  // ═══════════════════════════════════════════
+
+  getAllVocabulary(userId?: number): Observable<VocabularyWord[]> {
+    let params = new HttpParams();
+    if (userId) {
+      params = params.set('userId', userId.toString());
+    }
+    return this.http
+      .get<ApiResponse<VocabularyWord[]>>(`${this.baseUrl}/all`, { params })
+      .pipe(
+        map(res => res.data),
+        catchError(this.handleError),
+      );
+  }
+
+  // ═══════════════════════════════════════════
+  //  Get Vocabulary by Date (GET)
+  // ═══════════════════════════════════════════
+
+  getByDate(date: string, userId?: number): Observable<VocabularyWord[]> {
+    let params = new HttpParams().set('date', date);
+    if (userId) {
+      params = params.set('userId', userId.toString());
+    }
+    return this.http
+      .get<ApiResponse<VocabularyWord[]>>(`${this.baseUrl}/by-date`, { params })
+      .pipe(
+        map(res => res.data),
+        catchError(this.handleError),
+      );
+  }
+
+  // ═══════════════════════════════════════════
   //  Pronunciation (Browser TTS)
   // ═══════════════════════════════════════════
 
