@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://web-rtc-backend-2073.onrender.com',
+  apiBaseUrl: 'https://webrtcbackend-cexlj3i6.b4a.run',
   apiEndpoints: {
     auth: '/api/auth',
     courses: '/api/courses',
