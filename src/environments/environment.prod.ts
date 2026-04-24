@@ -12,7 +12,7 @@ export const environment = {
     vocabulary: '/api/vocabulary',
   },
   socket: {
-    url: 'https://webrtc-signaling-production-534f.up.railway.app',
+    url: 'https://webrtc-signaling-annptit1644-g9un62tx.leapcell.dev',
   },
   r2PublicUrl: 'https://pub-5d0364766d28413d822cfa2cb638d396.r2.dev',
 };
