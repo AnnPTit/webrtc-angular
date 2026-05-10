@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://webrtcbackend-cexlj3i6.b4a.run',
+  apiBaseUrl: '__API_BASE_URL__',
   apiEndpoints: {
     auth: '/api/auth',
     courses: '/api/courses',
@@ -12,7 +12,8 @@ export const environment = {
     vocabulary: '/api/vocabulary',
   },
   socket: {
-    url: 'https://webrtc-signaling-annptit1644-g9un62tx.leapcell.dev',
+    url: '__SOCKET_URL__',
   },
-  r2PublicUrl: 'https://pub-5d0364766d28413d822cfa2cb638d396.r2.dev',
+  r2PublicUrl: '__R2_PUBLIC_URL__',
 };
+

@@ -35,7 +35,13 @@ app.listen(PORT, () => {
 });
 EOF
 
+# Copy entrypoint script và cấp quyền thực thi
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 ENV PORT=8080
 EXPOSE 8080
 
+# Dùng entrypoint để inject env vars trước khi start server
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["node", "server.js"]
