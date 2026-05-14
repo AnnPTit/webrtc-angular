@@ -1,0 +1,181 @@
+<div class="welcome-container" [class.animating]="animating()">
+  <!-- Progress Bar -->
+  <div class="progress-bar-wrapper">
+    <div class="progress-bar">
+      <div class="progress-fill" [style.width.%]="progressPercent"></div>
+    </div>
+    <button class="skip-btn" (click)="skip()" *ngIf="currentStep() < 5">
+      Bỏ qua
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+        <path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Step 0: Welcome Screen -->
+  <div class="step step-welcome" *ngIf="currentStep() === 0">
+    <div class="welcome-hero">
+      <div class="welcome-illustration">
+        <div class="welcome-emoji-ring">
+          <span class="orbit-emoji orbit-1">📚</span>
+          <span class="orbit-emoji orbit-2">🎯</span>
+          <span class="orbit-emoji orbit-3">💡</span>
+          <span class="orbit-emoji orbit-4">🌟</span>
+          <span class="orbit-emoji orbit-5">🎓</span>
+          <span class="orbit-emoji orbit-6">✨</span>
+        </div>
+        <div class="welcome-avatar-large">
+          {{ (currentUser?.fullName || currentUser?.username || 'S').charAt(0).toUpperCase() }}
+        </div>
+      </div>
+
+      <h1 class="welcome-title">
+        Chào mừng bạn, <span class="highlight">{{ currentUser?.fullName || currentUser?.username || 'bạn' }}</span>! 🎉
+      </h1>
+      <p class="welcome-subtitle">
+        Bạn đã sẵn sàng bắt đầu hành trình học tiếng Anh cùng <strong>E-Learning</strong>?
+        <br>Hãy trả lời vài câu hỏi ngắn để chúng tôi tìm khóa học phù hợp nhất cho bạn.
+      </p>
+
+      <div class="welcome-features">
+        <div class="feature-item">
+          <div class="feature-icon">🎯</div>
+          <div class="feature-text">
+            <strong>Cá nhân hóa</strong>
+            <span>Lộ trình riêng cho bạn</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🤖</div>
+          <div class="feature-text">
+            <strong>AI hỗ trợ</strong>
+            <span>Học từ vựng thông minh</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">📹</div>
+          <div class="feature-text">
+            <strong>Video trực tuyến</strong>
+            <span>Học với giảng viên thực</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-start" (click)="nextStep()">
+        <span>Bắt đầu khảo sát</span>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd" />
+        </svg>
+      </button>
+      <p class="welcome-note">⏱️ Chỉ mất khoảng 1 phút</p>
+    </div>
+  </div>
+
+  <!-- Steps 1-4: Questions -->
+  <div class="step step-question" *ngIf="currentStep() >= 1 && currentStep() <= 4">
+    <div class="question-container" *ngIf="currentQuestion">
+      <div class="question-header">
+        <span class="question-number">Câu {{ currentStep() }}/4</span>
+        <span class="question-icon">{{ currentQuestion.icon }}</span>
+      </div>
+      <h2 class="question-title">{{ currentQuestion.title }}</h2>
+      <p class="question-subtitle">{{ currentQuestion.subtitle }}</p>
+
+      <div class="options-grid">
+        <button
+          class="option-card"
+          *ngFor="let option of currentQuestion.options"
+          [class.selected]="isSelected(currentQuestion.id, option.value)"
+          (click)="selectAnswer(currentQuestion.id, option.value)"
+        >
+          <span class="option-icon">{{ option.icon }}</span>
+          <div class="option-content">
+            <span class="option-label">{{ option.label }}</span>
+            <span class="option-description">{{ option.description }}</span>
+          </div>
+          <div class="option-check">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
+            </svg>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 5: Results & Recommendations -->
+  <div class="step step-result" *ngIf="currentStep() === 5">
+    <div class="result-container">
+      <!-- Confetti decoration -->
+      <div class="confetti-wrapper">
+        <span class="confetti c1">🎉</span>
+        <span class="confetti c2">✨</span>
+        <span class="confetti c3">🌟</span>
+        <span class="confetti c4">🎊</span>
+        <span class="confetti c5">💫</span>
+      </div>
+
+      <div class="result-header">
+        <div class="result-badge" [style.background]="getLevelBg(recommendedLevel())" [style.color]="getLevelColor(recommendedLevel())">
+          <span class="result-badge-icon">🎯</span>
+          <span>{{ getLevelLabel(recommendedLevel()) }}</span>
+        </div>
+        <h2 class="result-title">Tuyệt vời! Chúng tôi đã tìm ra lộ trình cho bạn</h2>
+        <p class="result-subtitle">
+          Dựa trên câu trả lời, trình độ phù hợp của bạn là
+          <strong [style.color]="getLevelColor(recommendedLevel())">{{ getLevelLabel(recommendedLevel()) }}</strong>.
+          Dưới đây là các khóa học gợi ý:
+        </p>
+      </div>
+
+      <!-- Loading State -->
+      <div class="courses-loading" *ngIf="loadingCourses()">
+        <div class="loading-spinner"></div>
+        <p>Đang tìm khóa học phù hợp...</p>
+      </div>
+
+      <!-- Course Recommendations -->
+      <div class="courses-grid" *ngIf="!loadingCourses() && recommendedCourses().length > 0">
+        <div
+          class="course-card"
+          *ngFor="let course of recommendedCourses(); let i = index"
+        >
+          <div class="course-card-header">
+            <span class="course-icon">{{ getCourseIcon(i) }}</span>
+            <span
+              class="course-level-badge"
+              [style.background]="getLevelBg(course.level)"
+              [style.color]="getLevelColor(course.level)"
+            >
+              {{ getLevelLabel(course.level || 'BEGINNER') }}
+            </span>
+          </div>
+          <h3 class="course-title">{{ course.title }}</h3>
+          <p class="course-description">{{ course.description }}</p>
+          <button class="btn-enroll" (click)="startCourse(course.id)">
+            Bắt đầu học
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- No courses -->
+      <div class="no-courses" *ngIf="!loadingCourses() && recommendedCourses().length === 0">
+        <span class="no-courses-icon">📭</span>
+        <p>Chưa có khóa học phù hợp. Hãy khám phá tất cả khóa học!</p>
+      </div>
+
+      <!-- Actions -->
+      <div class="result-actions">
+        <button class="btn-home" (click)="goHome()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd" />
+          </svg>
+          Về trang chủ
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

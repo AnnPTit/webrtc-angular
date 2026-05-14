@@ -122,6 +122,13 @@ export const routes: Routes = [
     data: { roles: ['STUDENT'] }
   },
   {
+    path: 'welcome',
+    loadComponent: () =>
+      import('./components/welcome/welcome.component').then(m => m.WelcomeComponent),
+    canActivate: [authGuard],
+    data: { roles: ['STUDENT'] }
+  },
+  {
     path: '**',
     redirectTo: 'login',
   },

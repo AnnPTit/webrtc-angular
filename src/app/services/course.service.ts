@@ -3,15 +3,21 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+export type CourseLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+
 export interface Course {
   id: number;
   title: string;
   description: string;
+  level?: CourseLevel;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CreateCourseRequest {
   title: string;
   description: string;
+  level?: CourseLevel;
 }
 
 export interface Lesson {

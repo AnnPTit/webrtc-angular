@@ -35,6 +35,7 @@ export interface AuthResponse {
   fullName: string;
   email: string;
   role: string;
+  newUser: boolean;
 }
 
 export interface User {
@@ -115,8 +116,27 @@ export class AuthService {
         role: response.role,
       };
       localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+      // Store newUser flag separately so login component can check it
+      localStorage.setItem('is_new_user', JSON.stringify(response.newUser ?? false));
       this.currentUserSubject.next(user);
       this.isAuthenticatedSignal.set(true);
+    }
+  }
+
+  /** Check if the current session user was flagged as newUser by the backend */
+  isNewUser(): boolean {
+    if (!this.isBrowser) return false;
+    try {
+      return JSON.parse(localStorage.getItem('is_new_user') || 'false');
+    } catch {
+      return false;
+    }
+  }
+
+  /** Clear the newUser flag (called after onboarding completes) */
+  clearNewUserFlag(): void {
+    if (this.isBrowser) {
+      localStorage.removeItem('is_new_user');
     }
   }
 
