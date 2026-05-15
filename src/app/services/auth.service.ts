@@ -17,7 +17,7 @@ export interface RegisterRequest {
   email: string;
   password: string;
   confirmPassword: string;
-  role: 'STUDENT' | 'LECTURER';
+  role: 'STUDENT' | 'LECTURER' | 'ADMIN';
 }
 
 /** Wrapper response từ POST /api/auth/register */
@@ -138,6 +138,22 @@ export class AuthService {
     if (this.isBrowser) {
       localStorage.removeItem('is_new_user');
     }
+  }
+
+  /** Check if the current user is an ADMIN */
+  isAdmin(): boolean {
+    return this.getCurrentUser()?.role === 'ADMIN';
+  }
+
+  /** Check if the current user is a LECTURER */
+  isLecturer(): boolean {
+    return this.getCurrentUser()?.role === 'LECTURER';
+  }
+
+  /** Check if the current user is a LECTURER or ADMIN */
+  isLecturerOrAdmin(): boolean {
+    const role = this.getCurrentUser()?.role;
+    return role === 'LECTURER' || role === 'ADMIN';
   }
 
   private hasToken(): boolean {

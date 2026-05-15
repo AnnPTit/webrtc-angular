@@ -20,6 +20,8 @@ export const authGuard: CanActivateFn = (route, state) => {
       // redirect to appropriate default page based on role
       if (user.role === 'LECTURER') {
         router.navigate(['/dashboard']);
+      } else if (user.role === 'ADMIN') {
+        router.navigate(['/dashboard']);
       } else {
         router.navigate(['/home']);
       }
@@ -36,7 +38,8 @@ export const loginGuard: CanActivateFn = (route, state) => {
 
   if (authService.getToken()) {
     const user = authService.getCurrentUser();
-    const target = user?.role === 'LECTURER' ? '/dashboard' : '/home';
+    // ADMIN and LECTURER go to dashboard, STUDENT goes to home
+    const target = (user?.role === 'LECTURER' || user?.role === 'ADMIN') ? '/dashboard' : '/home';
     router.navigate([target]);
     return false;
   }

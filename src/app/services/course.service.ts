@@ -10,6 +10,7 @@ export interface Course {
   title: string;
   description: string;
   level?: CourseLevel;
+  lecturerId?: number;
   createdAt?: string;
   updatedAt?: string;
 }

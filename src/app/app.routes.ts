@@ -24,28 +24,28 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./components/home/home.component').then(m => m.HomeComponent),
     canActivate: [authGuard],
-    data: { roles: ['STUDENT'] }
+    data: { roles: ['STUDENT', 'ADMIN'] }
   },
   {
     path: 'dashboard',
     loadComponent: () =>
       import('./components/lecturer-dashboard/lecturer-dashboard.component').then(m => m.LecturerDashboardComponent),
     canActivate: [authGuard],
-    data: { roles: ['LECTURER'] }
+    data: { roles: ['LECTURER', 'ADMIN'] }
   },
   {
     path: 'dashboard/courses',
     loadComponent: () =>
       import('./components/courses/course-management.component').then(m => m.CourseManagementComponent),
     canActivate: [authGuard],
-    data: { roles: ['LECTURER'] }
+    data: { roles: ['LECTURER', 'ADMIN'] }
   },
   {
     path: 'dashboard/videos/upload',
     loadComponent: () =>
       import('./components/videos/video-upload.component').then(m => m.VideoUploadComponent),
     canActivate: [authGuard],
-    data: { roles: ['LECTURER'] }
+    data: { roles: ['LECTURER', 'ADMIN'] }
   },
   {
     path: 'meeting',
@@ -70,63 +70,63 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./components/course-list/course-list.component').then(m => m.CourseListComponent),
     canActivate: [authGuard],
-    data: { roles: ['STUDENT'] }
+    data: { roles: ['STUDENT', 'ADMIN'] }
   },
   {
     path: 'quiz-stats',
     loadComponent: () =>
       import('./components/quiz-stats/quiz-stats.component').then(m => m.QuizStatsComponent),
     canActivate: [authGuard],
-    data: { roles: ['STUDENT'] }
+    data: { roles: ['STUDENT', 'ADMIN'] }
   },
   {
     path: 'learn/:courseId',
     loadComponent: () =>
       import('./components/course-learning/course-learning.component').then(m => m.CourseLearningComponent),
     canActivate: [authGuard],
-    data: { roles: ['STUDENT'] }
+    data: { roles: ['STUDENT', 'ADMIN'] }
   },
   {
     path: 'vocabulary',
     loadComponent: () =>
       import('./components/vocabulary-learning/vocabulary-learning.component').then(m => m.VocabularyLearningComponent),
     canActivate: [authGuard],
-    data: { roles: ['STUDENT'] }
+    data: { roles: ['STUDENT', 'ADMIN'] }
   },
   {
     path: 'vocabulary/stats',
     loadComponent: () =>
       import('./components/vocabulary-stats/vocabulary-stats.component').then(m => m.VocabularyStatsComponent),
     canActivate: [authGuard],
-    data: { roles: ['STUDENT'] }
+    data: { roles: ['STUDENT', 'ADMIN'] }
   },
   {
     path: 'vocabulary/review',
     loadComponent: () =>
       import('./components/vocabulary-review/vocabulary-review.component').then(m => m.VocabularyReviewComponent),
     canActivate: [authGuard],
-    data: { roles: ['STUDENT'] }
+    data: { roles: ['STUDENT', 'ADMIN'] }
   },
   {
     path: 'vocabulary/favorites',
     loadComponent: () =>
       import('./components/vocabulary-favorites/vocabulary-favorites.component').then(m => m.VocabularyFavoritesComponent),
     canActivate: [authGuard],
-    data: { roles: ['STUDENT'] }
+    data: { roles: ['STUDENT', 'ADMIN'] }
   },
   {
     path: 'vocabulary/history',
     loadComponent: () =>
       import('./components/vocabulary-history/vocabulary-history.component').then(m => m.VocabularyHistoryComponent),
     canActivate: [authGuard],
-    data: { roles: ['STUDENT'] }
+    data: { roles: ['STUDENT', 'ADMIN'] }
   },
   {
     path: 'welcome',
     loadComponent: () =>
       import('./components/welcome/welcome.component').then(m => m.WelcomeComponent),
     canActivate: [authGuard],
-    data: { roles: ['STUDENT'] }
+    data: { roles: ['STUDENT', 'ADMIN'] }
   },
   {
     path: '**',
