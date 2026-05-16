@@ -235,10 +235,19 @@
               (input)="assignmentFormDescription.set($any($event.target).value)" class="form-textarea"
               placeholder="Nhập mô tả bài tập" [disabled]="assignmentLoading()"></textarea>
           </div>
+
+          @if (assignmentLoading()) {
+          <div class="processing-indicator">
+            <div class="spinner"></div>
+            <p>Đang xử lý video và tạo câu hỏi...</p>
+            <p class="processing-hint">Quá trình này có thể mất vài phút, vui lòng không tắt trang.</p>
+          </div>
+          }
+
           <div class="form-actions">
             <button class="btn-primary" (click)="submitCreateAssignment()" type="button"
               [disabled]="assignmentLoading()">
-              {{ assignmentLoading() ? 'Đang tạo...' : 'Tạo bài tập' }}
+              {{ assignmentLoading() ? 'Đang xử lý...' : 'Tạo bài tập' }}
             </button>
             <button class="btn-secondary" (click)="closeAssignmentForm()" type="button"
               [disabled]="assignmentLoading()">Hủy</button>
@@ -302,15 +311,6 @@
             <p class="assignment-description">{{ assignment.description }}</p>
           }
 
-          <!-- Processing status -->
-          @if (assignment.statusProgress !== 'DONE' && assignment.statusProgress !== 'FAILED') {
-          <div class="processing-indicator">
-            <div class="spinner"></div>
-            <p>{{ getStatusLabel(assignment.statusProgress) }}</p>
-            <p class="processing-hint">Hệ thống đang xử lý tự động, vui lòng chờ...</p>
-          </div>
-          }
-
           <!-- Error -->
           @if (assignment.statusProgress === 'FAILED') {
           <div class="error-message">
@@ -324,19 +324,78 @@
             <h5 class="questions-heading">Câu hỏi ({{ assignment.questions.length }})</h5>
             @for (q of assignment.questions; track $index) {
             <div class="question-card">
-              <p class="question-number">Câu {{ $index + 1 }}</p>
-              <p class="question-text">{{ q.question }}</p>
-              <div class="options-list">
-                @for (key of getOptionKeys(q.options); track key) {
-                <div class="option-item" [class.correct]="key === q.answer">
-                  <span class="option-key">{{ key }}.</span>
-                  <span class="option-value">{{ q.options[key] }}</span>
-                  @if (key === q.answer) {
-                    <span class="correct-badge">✓</span>
+
+              <!-- VIEW MODE -->
+              @if (editingQuestionId !== q.questionId) {
+              <div class="question-view">
+                <div class="question-header-row">
+                  <p class="question-number">Câu {{ $index + 1 }}</p>
+                  <div class="question-actions-row">
+                    <button class="btn-edit-question" (click)="startEditQuestion(q)" title="Sửa câu hỏi">✏️</button>
+                    <button class="btn-delete-question" (click)="deleteQuestion(q)" title="Xóa câu hỏi">🗑️</button>
+                  </div>
+                </div>
+                <p class="question-text">{{ q.question }}</p>
+                <div class="options-list">
+                  @for (key of getOptionKeys(q.options); track key) {
+                  <div class="option-item" [class.correct]="key === q.answer">
+                    <span class="option-key">{{ key }}.</span>
+                    <span class="option-value">{{ q.options[key] }}</span>
+                    @if (key === q.answer) {
+                      <span class="correct-badge">✓</span>
+                    }
+                  </div>
                   }
                 </div>
-                }
               </div>
+              }
+
+              <!-- EDIT MODE -->
+              @if (editingQuestionId === q.questionId) {
+              <div class="question-edit-form">
+                <p class="question-number">Câu {{ $index + 1 }} — Chỉnh sửa</p>
+
+                <div class="edit-form-group">
+                  <label>Nội dung câu hỏi</label>
+                  <textarea class="form-textarea" [value]="editQuestionText()"
+                    (input)="editQuestionText.set($any($event.target).value)"
+                    [disabled]="questionSaving()"></textarea>
+                </div>
+
+                <div class="edit-options-group">
+                  <label>Đáp án</label>
+                  @for (key of getOptionKeys(editOptions()); track key) {
+                  <div class="edit-option-row">
+                    <span class="edit-option-key">{{ key }}.</span>
+                    <input type="text" class="form-input edit-option-input" [value]="editOptions()[key]"
+                      (input)="updateEditOption(key, $any($event.target).value)"
+                      [disabled]="questionSaving()" />
+                  </div>
+                  }
+                </div>
+
+                <div class="edit-form-group">
+                  <label>Đáp án đúng</label>
+                  <select class="form-input edit-answer-select" [value]="editCorrectAnswer()"
+                    (change)="editCorrectAnswer.set($any($event.target).value)"
+                    [disabled]="questionSaving()">
+                    @for (key of getOptionKeys(editOptions()); track key) {
+                    <option [value]="key">{{ key }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="edit-form-actions">
+                  <button class="btn-primary btn-sm" (click)="saveEditQuestion()" [disabled]="questionSaving()">
+                    {{ questionSaving() ? 'Đang lưu...' : 'Lưu' }}
+                  </button>
+                  <button class="btn-secondary btn-sm" (click)="cancelEditQuestion()" [disabled]="questionSaving()">
+                    Hủy
+                  </button>
+                </div>
+              </div>
+              }
+
             </div>
             }
           </div>

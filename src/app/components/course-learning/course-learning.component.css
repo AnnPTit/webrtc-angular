@@ -236,6 +236,34 @@
   border-color: var(--green-border);
 }
 
+/* Locked state */
+.cl-sidebar-lesson.locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.cl-sidebar-lesson.locked:hover {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.cl-sidebar-lesson.locked .cl-lesson-number {
+  background: var(--bg-input);
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+.cl-lock-icon {
+  font-size: 11px;
+}
+
+.cl-locked-hint {
+  font-size: 12px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
 .cl-lesson-number {
   display: flex;
   align-items: center;

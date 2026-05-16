@@ -984,3 +984,107 @@ button:disabled:hover {
 .assignment-panel::-webkit-scrollbar-thumb:hover {
   background: var(--border-hover);
 }
+
+/* ─── Question Edit / Delete ─── */
+
+.question-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.question-actions-row {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-edit-question,
+.btn-delete-question {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  width: 32px;
+  height: 32px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-edit-question:hover {
+  background: var(--brand-light);
+  border-color: var(--brand);
+}
+
+.btn-delete-question:hover {
+  background: var(--danger-light);
+  border-color: var(--danger);
+}
+
+/* Question Edit Form */
+.question-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.edit-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.edit-form-group label,
+.edit-options-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.edit-options-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.edit-option-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.edit-option-key {
+  font-weight: 700;
+  color: var(--brand);
+  min-width: 22px;
+  font-size: 0.9rem;
+}
+
+.edit-option-input {
+  flex: 1;
+}
+
+.edit-answer-select {
+  max-width: 120px;
+  padding: 8px 12px;
+  font-weight: 600;
+}
+
+.edit-form-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.btn-sm {
+  padding: 6px 16px !important;
+  font-size: 0.85rem !important;
+  min-width: auto !important;
+}

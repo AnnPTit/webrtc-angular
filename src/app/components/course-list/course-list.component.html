@@ -61,21 +61,122 @@
     @if (!loading && !error && courses.length > 0) {
       <div class="cl-course-grid">
         @for (course of courses; track course.id; let i = $index) {
-          <a [routerLink]="['/learn', course.id]" class="cl-course-card" [id]="'course-card-' + course.id">
+          <div class="cl-course-card" [id]="'course-card-' + course.id" (click)="openCourseDetail(course)">
             <div class="cl-card-accent" [style.background]="getCourseGradient(i)">
               <span class="cl-card-icon">{{ getCourseIcon(i) }}</span>
+              <span class="cl-card-level-badge" [class]="getLevelClass(course.level)">
+                {{ getLevelLabel(course.level) }}
+              </span>
             </div>
             <div class="cl-card-body">
               <h3 class="cl-card-title">{{ course.title }}</h3>
               <p class="cl-card-description">{{ course.description || 'Chưa có mô tả' }}</p>
+
+              <!-- Meta Info -->
+              <div class="cl-card-meta">
+                <div class="cl-meta-item">
+                  <span class="cl-meta-icon">📖</span>
+                  <span>{{ course.lessonCount || 0 }} bài học</span>
+                </div>
+                <div class="cl-meta-item">
+                  <span class="cl-meta-icon">👨‍🏫</span>
+                  <span>{{ course.lecturerName || 'Chưa xác định' }}</span>
+                </div>
+              </div>
+
               <div class="cl-card-footer">
-                <span class="cl-card-badge">Khóa học #{{ course.id }}</span>
+                <span class="cl-card-badge" [class]="getLevelClass(course.level)">
+                  {{ getLevelLabel(course.level) }}
+                </span>
                 <span class="cl-card-arrow">→</span>
               </div>
             </div>
-          </a>
+          </div>
         }
       </div>
     }
   </main>
+
+  <!-- ═══════════════════════════════════════════
+       COURSE DETAIL MODAL
+       ═══════════════════════════════════════════ -->
+  @if (showModal && selectedCourse) {
+    <div class="cl-modal-overlay" (click)="onOverlayClick($event)" id="course-detail-modal">
+      <div class="cl-modal-card">
+        <!-- Modal Header -->
+        <div class="cl-modal-header" [style.background]="getCourseGradient(courses.indexOf(selectedCourse))">
+          <button class="cl-modal-close" (click)="closeModal()" title="Đóng">✕</button>
+          <span class="cl-modal-icon">{{ getCourseIcon(courses.indexOf(selectedCourse)) }}</span>
+          <h2 class="cl-modal-title">{{ selectedCourse.title }}</h2>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="cl-modal-body">
+          <!-- Course Info -->
+          <div class="cl-modal-info-grid">
+            <div class="cl-modal-info-item">
+              <span class="cl-info-label">Giảng viên</span>
+              <span class="cl-info-value">👨‍🏫 {{ selectedCourse.lecturerName || 'Chưa xác định' }}</span>
+            </div>
+            <div class="cl-modal-info-item">
+              <span class="cl-info-label">Độ khó</span>
+              <span class="cl-info-value cl-info-level" [class]="getLevelClass(selectedCourse.level)">
+                {{ getLevelLabel(selectedCourse.level) }}
+              </span>
+            </div>
+            <div class="cl-modal-info-item">
+              <span class="cl-info-label">Số bài học</span>
+              <span class="cl-info-value">📖 {{ selectedCourse.lessonCount || 0 }} bài</span>
+            </div>
+          </div>
+
+          <!-- Description -->
+          @if (selectedCourse.description) {
+            <div class="cl-modal-section">
+              <h3 class="cl-modal-section-title">📝 Mô tả khóa học</h3>
+              <p class="cl-modal-description">{{ selectedCourse.description }}</p>
+            </div>
+          }
+
+          <!-- Lesson List -->
+          <div class="cl-modal-section">
+            <h3 class="cl-modal-section-title">📋 Danh sách bài học</h3>
+
+            @if (loadingLessons) {
+              <div class="cl-modal-loading">
+                <div class="cl-spinner cl-spinner-sm"></div>
+                <span>Đang tải danh sách bài học...</span>
+              </div>
+            }
+
+            @if (!loadingLessons && selectedCourseLessons.length === 0) {
+              <div class="cl-modal-empty-lessons">
+                <span>📭</span>
+                <p>Khóa học này chưa có bài học nào.</p>
+              </div>
+            }
+
+            @if (!loadingLessons && selectedCourseLessons.length > 0) {
+              <div class="cl-modal-lesson-list">
+                @for (lesson of selectedCourseLessons; track lesson.id; let i = $index) {
+                  <div class="cl-modal-lesson-item" [id]="'modal-lesson-' + lesson.id">
+                    <span class="cl-lesson-num">{{ i + 1 }}</span>
+                    <span class="cl-lesson-title">{{ lesson.title }}</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="cl-modal-footer">
+          <button class="cl-modal-cancel-btn" (click)="closeModal()">Đóng</button>
+          <button class="cl-modal-enroll-btn" (click)="enrollCourse()" id="enroll-course-btn">
+            🚀 Đăng ký học
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </div>

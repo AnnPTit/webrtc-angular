@@ -11,6 +11,12 @@ export interface CreateAssignmentRequest {
   description?: string;
 }
 
+export interface UpdateQuestionRequest {
+  question: string;
+  correctAnswer: string;
+  options: { [key: string]: string };
+}
+
 export interface QuestionDTO {
   questionId?: number;
   question: string;
@@ -44,7 +50,8 @@ export class AssignmentService {
 
   /**
    * POST /api/assignments
-   * Create a new assignment and queue it for async processing.
+   * Create a new assignment — synchronously processes video transcription + AI.
+   * This call may take 1-5 minutes.
    */
   createAssignment(request: CreateAssignmentRequest): Observable<ApiResponse<AssignmentResponse>> {
     return this.http.post<ApiResponse<AssignmentResponse>>(this.API_URL, request);
@@ -64,5 +71,30 @@ export class AssignmentService {
    */
   getAssignmentsByLessonId(lessonId: number): Observable<ApiResponse<AssignmentResponse[]>> {
     return this.http.get<ApiResponse<AssignmentResponse[]>>(`${this.API_URL}/by-lesson/${lessonId}`);
+  }
+
+  /**
+   * PUT /api/assignments/{assignmentId}/questions/{questionId}
+   * Update a question's text, correct answer, and options.
+   */
+  updateQuestion(
+    assignmentId: number,
+    questionId: number,
+    data: UpdateQuestionRequest,
+  ): Observable<ApiResponse<QuestionDTO>> {
+    return this.http.put<ApiResponse<QuestionDTO>>(
+      `${this.API_URL}/${assignmentId}/questions/${questionId}`,
+      data,
+    );
+  }
+
+  /**
+   * DELETE /api/assignments/{assignmentId}/questions/{questionId}
+   * Delete a question and its options.
+   */
+  deleteQuestion(assignmentId: number, questionId: number): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(
+      `${this.API_URL}/${assignmentId}/questions/${questionId}`,
+    );
   }
 }

@@ -1,10 +1,10 @@
-import { Component, signal, ChangeDetectionStrategy, effect, inject, OnDestroy } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy, effect, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CourseService, type Course, type Lesson, type CreateLessonRequest, type Video } from '../../services/course.service';
 import { VideoService, type PresignRequest, type VideoMetadataDto } from '../../services/video.service';
-import { AssignmentService, type AssignmentResponse, type CreateAssignmentRequest } from '../../services/assignment.service';
+import { AssignmentService, type AssignmentResponse, type CreateAssignmentRequest, type QuestionDTO, type UpdateQuestionRequest } from '../../services/assignment.service';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -15,7 +15,7 @@ import { environment } from '../../../environments/environment';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
 })
-export class CourseManagementComponent implements OnDestroy {
+export class CourseManagementComponent {
   private courseService = inject(CourseService);
   private videoService = inject(VideoService);
   private assignmentService = inject(AssignmentService);
@@ -68,7 +68,13 @@ export class CourseManagementComponent implements OnDestroy {
   assignments = signal<AssignmentResponse[]>([]);
   assignmentsLoading = signal(false);
   selectedAssignment = signal<AssignmentResponse | null>(null);
-  assignmentPollingId: ReturnType<typeof setInterval> | null = null;
+
+  // question editing state
+  editingQuestionId: number | null = null;
+  editQuestionText = signal('');
+  editCorrectAnswer = signal('');
+  editOptions = signal<{ [key: string]: string }>({});
+  questionSaving = signal(false);
 
   constructor() {
     // Load courses on init
@@ -585,7 +591,7 @@ export class CourseManagementComponent implements OnDestroy {
     this.assignmentFormDescription.set('');
   }
 
-  // ── Assignment: create (calls backend) ───────────────────────
+  // ── Assignment: create (synchronous — blocks until done) ────
 
   submitCreateAssignment() {
     const title = this.assignmentFormTitle().trim();
@@ -611,47 +617,16 @@ export class CourseManagementComponent implements OnDestroy {
         this.assignmentLoading.set(false);
         this.closeAssignmentForm();
 
-        // Start polling for status updates
+        // Show result immediately (no polling needed)
         this.selectedAssignment.set(res.data);
         this.showAssignmentPanel.set(true);
-        this.startPollingAssignment(res.data.id);
       },
       error: (err) => {
         console.error('Error creating assignment:', err);
-        this.errorMessage.set(err.error?.message || 'Lỗi tạo bài tập');
+        this.errorMessage.set(err.error?.message || 'Lỗi tạo bài tập. Quá trình có thể mất vài phút, vui lòng thử lại.');
         this.assignmentLoading.set(false);
       },
     });
-  }
-
-  // ── Assignment: poll for async processing ────────────────────
-
-  private startPollingAssignment(assignmentId: number) {
-    this.stopPollingAssignment();
-
-    this.assignmentPollingId = setInterval(() => {
-      this.assignmentService.getAssignmentById(assignmentId).subscribe({
-        next: (res) => {
-          this.selectedAssignment.set(res.data);
-
-          const status = res.data.statusProgress;
-          if (status === 'DONE' || status === 'FAILED') {
-            this.stopPollingAssignment();
-          }
-        },
-        error: (err) => {
-          console.error('Polling error:', err);
-          this.stopPollingAssignment();
-        },
-      });
-    }, 3000); // poll every 3 seconds
-  }
-
-  private stopPollingAssignment() {
-    if (this.assignmentPollingId) {
-      clearInterval(this.assignmentPollingId);
-      this.assignmentPollingId = null;
-    }
   }
 
   // ── Assignment: view all assignments for a lesson ────────────
@@ -676,28 +651,99 @@ export class CourseManagementComponent implements OnDestroy {
 
   selectAssignment(assignment: AssignmentResponse) {
     this.selectedAssignment.set(assignment);
-
-    // If still processing, resume polling
-    const status = assignment.statusProgress;
-    if (status && status !== 'DONE' && status !== 'FAILED') {
-      this.startPollingAssignment(assignment.id);
-    }
+    this.cancelEditQuestion();
   }
 
   closeAssignmentPanel() {
     this.showAssignmentPanel.set(false);
     this.selectedAssignment.set(null);
     this.assignments.set([]);
-    this.stopPollingAssignment();
+    this.cancelEditQuestion();
+  }
+
+  // ── Question: edit ───────────────────────────────────────────
+
+  startEditQuestion(q: QuestionDTO) {
+    this.editingQuestionId = q.questionId ?? null;
+    this.editQuestionText.set(q.question);
+    this.editCorrectAnswer.set(q.answer);
+    this.editOptions.set({ ...q.options });
+  }
+
+  cancelEditQuestion() {
+    this.editingQuestionId = null;
+    this.editQuestionText.set('');
+    this.editCorrectAnswer.set('');
+    this.editOptions.set({});
+  }
+
+  updateEditOption(key: string, value: string) {
+    const current = this.editOptions();
+    this.editOptions.set({ ...current, [key]: value });
+  }
+
+  saveEditQuestion() {
+    const assignment = this.selectedAssignment();
+    if (!assignment || !this.editingQuestionId) return;
+
+    this.questionSaving.set(true);
+
+    const data: UpdateQuestionRequest = {
+      question: this.editQuestionText(),
+      correctAnswer: this.editCorrectAnswer(),
+      options: this.editOptions(),
+    };
+
+    this.assignmentService
+      .updateQuestion(assignment.id, this.editingQuestionId, data)
+      .subscribe({
+        next: (res) => {
+          // Update the question in the local state
+          const updated = res.data;
+          const questions = [...(assignment.questions || [])];
+          const idx = questions.findIndex((q) => q.questionId === updated.questionId);
+          if (idx !== -1) {
+            questions[idx] = updated;
+          }
+          this.selectedAssignment.set({ ...assignment, questions });
+          this.cancelEditQuestion();
+          this.questionSaving.set(false);
+        },
+        error: (err) => {
+          console.error('Error updating question:', err);
+          this.errorMessage.set('Lỗi cập nhật câu hỏi');
+          this.questionSaving.set(false);
+        },
+      });
+  }
+
+  // ── Question: delete ─────────────────────────────────────────
+
+  deleteQuestion(q: QuestionDTO) {
+    const assignment = this.selectedAssignment();
+    if (!assignment || !q.questionId) return;
+
+    if (!confirm(`Bạn có chắc chắn muốn xóa câu hỏi này không?`)) return;
+
+    this.assignmentService.deleteQuestion(assignment.id, q.questionId).subscribe({
+      next: () => {
+        const questions = (assignment.questions || []).filter(
+          (qItem) => qItem.questionId !== q.questionId,
+        );
+        this.selectedAssignment.set({ ...assignment, questions });
+      },
+      error: (err) => {
+        console.error('Error deleting question:', err);
+        this.errorMessage.set('Lỗi xóa câu hỏi');
+      },
+    });
   }
 
   // ── Assignment helpers ───────────────────────────────────────
 
   getStatusLabel(status: string): string {
     const map: Record<string, string> = {
-      PENDING: 'Đang chờ',
-      TRANSCRIBING: 'Đang tách text...',
-      GENERATING: 'Đang tạo câu hỏi...',
+      PROCESSING: 'Đang xử lý...',
       DONE: 'Hoàn thành',
       FAILED: 'Lỗi',
     };
@@ -706,9 +752,7 @@ export class CourseManagementComponent implements OnDestroy {
 
   getStatusClass(status: string): string {
     const map: Record<string, string> = {
-      PENDING: 'status-pending',
-      TRANSCRIBING: 'status-processing',
-      GENERATING: 'status-processing',
+      PROCESSING: 'status-processing',
       DONE: 'status-completed',
       FAILED: 'status-failed',
     };
@@ -717,11 +761,5 @@ export class CourseManagementComponent implements OnDestroy {
 
   getOptionKeys(options: { [key: string]: string }): string[] {
     return Object.keys(options).sort();
-  }
-
-  // ── Lifecycle ────────────────────────────────────────────────
-
-  ngOnDestroy() {
-    this.stopPollingAssignment();
   }
 }

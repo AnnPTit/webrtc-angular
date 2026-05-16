@@ -40,4 +40,5 @@ export interface SidebarLesson {
   title: string;
   status: LessonStatus;
   duration: string;
+  locked: boolean;
 }

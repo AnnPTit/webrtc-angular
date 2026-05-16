@@ -1,8 +1,8 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { CourseService, Course } from '../../services/course.service';
+import { CourseService, Course, Lesson } from '../../services/course.service';
 
 @Component({
   selector: 'app-course-list',
@@ -16,10 +16,17 @@ export class CourseListComponent implements OnInit {
   loading = true;
   error: string | null = null;
 
+  // Modal state
+  showModal = false;
+  selectedCourse: Course | null = null;
+  selectedCourseLessons: Lesson[] = [];
+  loadingLessons = false;
+
   constructor(
     private courseService: CourseService,
     protected authService: AuthService,
     private cdr: ChangeDetectorRef,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -46,6 +53,49 @@ export class CourseListComponent implements OnInit {
     });
   }
 
+  // ── Modal ──
+
+  openCourseDetail(course: Course): void {
+    this.selectedCourse = course;
+    this.showModal = true;
+    this.selectedCourseLessons = [];
+    this.loadingLessons = true;
+    this.cdr.markForCheck();
+
+    this.courseService.getLessonsByCourseId(course.id).subscribe({
+      next: (lessons) => {
+        this.selectedCourseLessons = lessons;
+        this.loadingLessons = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loadingLessons = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  closeModal(): void {
+    this.showModal = false;
+    this.selectedCourse = null;
+    this.selectedCourseLessons = [];
+    this.cdr.markForCheck();
+  }
+
+  onOverlayClick(event: MouseEvent): void {
+    if ((event.target as HTMLElement).classList.contains('cl-modal-overlay')) {
+      this.closeModal();
+    }
+  }
+
+  enrollCourse(): void {
+    if (this.selectedCourse) {
+      this.router.navigate(['/learn', this.selectedCourse.id]);
+    }
+  }
+
+  // ── Helpers ──
+
   get currentUser() {
     return this.authService.getCurrentUser();
   }
@@ -65,6 +115,24 @@ export class CourseListComponent implements OnInit {
 
   logout(): void {
     this.authService.logout();
+  }
+
+  getLevelLabel(level?: string): string {
+    switch (level) {
+      case 'BEGINNER': return 'Cơ bản';
+      case 'INTERMEDIATE': return 'Trung bình';
+      case 'ADVANCED': return 'Nâng cao';
+      default: return 'Cơ bản';
+    }
+  }
+
+  getLevelClass(level?: string): string {
+    switch (level) {
+      case 'BEGINNER': return 'level-beginner';
+      case 'INTERMEDIATE': return 'level-intermediate';
+      case 'ADVANCED': return 'level-advanced';
+      default: return 'level-beginner';
+    }
   }
 
   getCourseIcon(index: number): string {

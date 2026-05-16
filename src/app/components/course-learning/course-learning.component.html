@@ -33,10 +33,15 @@
           class="cl-sidebar-lesson"
           [class.active]="currentLesson?.id === lesson.id"
           [class.completed]="lesson.status === 'completed'"
+          [class.locked]="lesson.locked"
+          [disabled]="lesson.locked"
           (click)="selectLesson(lesson.id)"
+          [title]="lesson.locked ? 'Hoàn thành bài trước để mở khóa' : lesson.title"
           [id]="'sidebar-lesson-' + lesson.id">
           <span class="cl-lesson-number">
-            @if (lesson.status === 'completed') {
+            @if (lesson.locked) {
+              <span class="cl-lock-icon">🔒</span>
+            } @else if (lesson.status === 'completed') {
               <span class="cl-check-icon">✓</span>
             } @else {
               {{ i + 1 }}
@@ -45,6 +50,9 @@
           <span class="cl-lesson-name">{{ lesson.title }}</span>
           @if (lesson.duration) {
             <span class="cl-lesson-dur">{{ lesson.duration }}</span>
+          }
+          @if (lesson.locked) {
+            <span class="cl-locked-hint">🔒</span>
           }
         </button>
       }

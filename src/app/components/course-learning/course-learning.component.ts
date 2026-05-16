@@ -52,6 +52,7 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
   mobileSidebarOpen = false;
 
   private courseId = 0;
+  private readonly PROGRESS_KEY_PREFIX = 'course_progress_';
 
   constructor(
     private authService: AuthService,
@@ -110,16 +111,26 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
     // Load lesson list
     this.courseService.getLessonsByCourseId(this.courseId).subscribe({
       next: (apiLessons) => {
-        this.sidebarLessons = apiLessons.map((l) => ({
+        const completedIds = this.loadProgress();
+        this.sidebarLessons = apiLessons.map((l, index) => ({
           id: l.id,
           title: l.title,
-          status: 'not-started' as const,
+          status: completedIds.includes(l.id) ? 'completed' as const : 'not-started' as const,
           duration: '',
+          locked: false,
         }));
+
+        // Apply sequential locking
+        this.applyLessonLocking();
         this.loadingCourse = false;
 
-        // Auto-select first lesson
-        if (this.sidebarLessons.length > 0) {
+        // Auto-select the first non-completed, unlocked lesson (or first lesson)
+        const firstUnlocked = this.sidebarLessons.find(
+          (l) => l.status !== 'completed' && !l.locked
+        );
+        if (firstUnlocked) {
+          this.selectLesson(firstUnlocked.id);
+        } else if (this.sidebarLessons.length > 0) {
           this.selectLesson(this.sidebarLessons[0].id);
         }
         this.cdr.markForCheck();
@@ -135,6 +146,10 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
 
   selectLesson(lessonId: number): void {
     if (this.currentLesson?.id === lessonId) return;
+
+    // Block selecting locked lessons
+    const target = this.sidebarLessons.find((l) => l.id === lessonId);
+    if (target?.locked) return;
 
     this.loadingLesson = true;
     this.loadingQuiz = false;
@@ -408,13 +423,8 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
         // Update answer correctness from server
         this.applyServerResults(result);
 
-        // Mark lesson as completed in sidebar
-        const sidebarItem = this.sidebarLessons.find(
-          (l) => l.id === this.currentLesson?.id,
-        );
-        if (sidebarItem) {
-          sidebarItem.status = 'completed';
-        }
+        // Mark lesson as completed in sidebar and unlock next
+        this.markCurrentLessonCompleted();
 
         this.cdr.markForCheck();
       },
@@ -436,13 +446,8 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
     this.quizSubmitted = true;
     this.submittingQuiz = false;
 
-    // Mark lesson as completed in sidebar
-    const sidebarItem = this.sidebarLessons.find(
-      (l) => l.id === this.currentLesson?.id,
-    );
-    if (sidebarItem) {
-      sidebarItem.status = 'completed';
-    }
+    // Mark lesson as completed in sidebar and unlock next
+    this.markCurrentLessonCompleted();
   }
 
   /**
@@ -563,7 +568,9 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
   }
 
   get canGoNext(): boolean {
-    return this.currentLessonIndex < this.sidebarLessons.length - 1;
+    const nextIndex = this.currentLessonIndex + 1;
+    if (nextIndex >= this.sidebarLessons.length) return false;
+    return !this.sidebarLessons[nextIndex].locked;
   }
 
   get canGoPrev(): boolean {
@@ -619,6 +626,66 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
     return Math.round(
       (this.completedLessonsCount / this.sidebarLessons.length) * 100,
     );
+  }
+
+  // ═══════════════════════════════════════════
+  //  PROGRESS PERSISTENCE (localStorage)
+  // ═══════════════════════════════════════════
+
+  /**
+   * Save completed lesson IDs to localStorage.
+   */
+  private saveProgress(): void {
+    const completedIds = this.sidebarLessons
+      .filter((l) => l.status === 'completed')
+      .map((l) => l.id);
+    try {
+      localStorage.setItem(
+        this.PROGRESS_KEY_PREFIX + this.courseId,
+        JSON.stringify(completedIds),
+      );
+    } catch { /* ignore quota errors */ }
+  }
+
+  /**
+   * Load completed lesson IDs from localStorage.
+   */
+  private loadProgress(): number[] {
+    try {
+      const raw = localStorage.getItem(this.PROGRESS_KEY_PREFIX + this.courseId);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Apply sequential locking: lesson N+1 is locked unless lesson N is completed.
+   * First lesson is always unlocked.
+   */
+  private applyLessonLocking(): void {
+    for (let i = 0; i < this.sidebarLessons.length; i++) {
+      if (i === 0) {
+        this.sidebarLessons[i].locked = false;
+      } else {
+        const prevLesson = this.sidebarLessons[i - 1];
+        this.sidebarLessons[i].locked = prevLesson.status !== 'completed';
+      }
+    }
+  }
+
+  /**
+   * Mark current lesson as completed, save progress, unlock next.
+   */
+  private markCurrentLessonCompleted(): void {
+    const sidebarItem = this.sidebarLessons.find(
+      (l) => l.id === this.currentLesson?.id,
+    );
+    if (sidebarItem) {
+      sidebarItem.status = 'completed';
+    }
+    this.applyLessonLocking();
+    this.saveProgress();
   }
 
   // ═══════════════════════════════════════════
