@@ -36,12 +36,12 @@ export class LoginComponent {
     const password = this.password();
 
     if (!username.trim()) {
-      this.errorMessage.set('Please enter your username');
+      this.errorMessage.set('Vui lòng nhập tên đăng nhập');
       return;
     }
 
     if (!password.trim()) {
-      this.errorMessage.set('Please enter your password');
+      this.errorMessage.set('Vui lòng nhập mật khẩu');
       return;
     }
 
@@ -74,7 +74,7 @@ export class LoginComponent {
       },
       error: (error) => {
         this.isLoading.set(false);
-        this.errorMessage.set(error.message || 'Login failed');
+        this.errorMessage.set(error.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
       },
     });
   }
