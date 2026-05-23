@@ -1,20 +1,41 @@
-<div class="meeting-container">
-  <div class="top-bar">
-    <a routerLink="/home" class="back-link">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" />
-      </svg>
-      Quay lại Trang chủ
-    </a>
-    <div class="user-info">
-      @if (currentUser) {
-        <span class="user-name">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="user-icon">
-            <path d="M10 8a3 3 0 100-6 3 3 0 000 6zM3.465 14.493a1.23 1.23 0 00.41 1.412A9.957 9.957 0 0010 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 00-13.074.003z" />
+<div class="meet-page">
+
+  <!-- ══════════ BACKGROUND ══════════ -->
+  <div class="meet-bg" aria-hidden="true">
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <!-- ══════════ TOP NAV ══════════ -->
+  <header class="meet-nav">
+    <div class="nav-left">
+      <a routerLink="/home" class="nav-back" id="btn-nav-back">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" />
+        </svg>
+        Quay lại
+      </a>
+      <div class="nav-divider"></div>
+      <div class="nav-brand">
+        <div class="nav-logo">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M4.5 4.5a3 3 0 00-3 3v9a3 3 0 003 3h8.25a3 3 0 003-3v-9a3 3 0 00-3-3H4.5zM19.94 18.75l-2.69-2.69V7.94l2.69-2.69c.944-.945 2.56-.276 2.56 1.06v11.38c0 1.336-1.616 2.005-2.56 1.06z" />
           </svg>
-          {{ currentUser.fullName || currentUser.username }}
-        </span>
-        <button class="btn-logout" (click)="logout()">
+        </div>
+        <span class="nav-title">E-Learning</span>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      @if (currentUser) {
+        <div class="nav-user">
+          <div class="user-avatar">
+            {{ (currentUser.fullName || currentUser.username).charAt(0).toUpperCase() }}
+          </div>
+          <span class="user-display-name">{{ currentUser.fullName || currentUser.username }}</span>
+        </div>
+        <button class="btn-nav-logout" (click)="logout()" id="btn-logout" title="Đăng xuất">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M3 4.25A2.25 2.25 0 015.25 2h5.5A2.25 2.25 0 0113 4.25v2a.75.75 0 01-1.5 0v-2a.75.75 0 00-.75-.75h-5.5a.75.75 0 00-.75.75v11.5c0 .414.336.75.75.75h5.5a.75.75 0 00.75-.75v-2a.75.75 0 011.5 0v2A2.25 2.25 0 0110.75 18h-5.5A2.25 2.25 0 013 15.75V4.25z" clip-rule="evenodd" />
             <path fill-rule="evenodd" d="M19 10a.75.75 0 00-.75-.75H8.704l1.048-.943a.75.75 0 10-1.004-1.114l-2.5 2.25a.75.75 0 000 1.114l2.5 2.25a.75.75 0 101.004-1.114l-1.048-.943h9.546A.75.75 0 0019 10z" clip-rule="evenodd" />
@@ -23,150 +44,286 @@
         </button>
       }
     </div>
-  </div>
+  </header>
 
-  <div class="hero">
-    <h1>Họp Trực Tuyến</h1>
-    <p>Tham gia hoặc tạo phòng họp video trực tuyến</p>
-  </div>
+  <!-- ══════════ MAIN CONTENT ══════════ -->
+  <main class="meet-main">
 
-  <div class="join-card">
-    <div class="connection-status">
-      <span
-        class="status-indicator"
-        [class.connected]="socket.isConnected()"
-        [attr.aria-label]="socket.isConnected() ? 'Đã kết nối server' : 'Đang kết nối server'"
-      ></span>
-      <span>{{ socket.isConnected() ? 'Đã kết nối' : 'Đang kết nối...' }}</span>
-    </div>
+    <!-- Left: Hero -->
+    <section class="meet-hero">
+      <div class="hero-badge">
+        <span class="badge-dot" [class.online]="socket.isConnected()"></span>
+        <span>{{ socket.isConnected() ? 'Máy chủ đang hoạt động' : 'Đang kết nối...' }}</span>
+      </div>
 
-    <!-- Tabs -->
-    <div class="tabs" role="tablist">
-      <button
-        type="button"
-        role="tab"
-        class="tab"
-        [class.active]="activeTab() === 'join'"
-        [attr.aria-selected]="activeTab() === 'join'"
-        (click)="activeTab.set('join')"
-      >
-        Tham gia phòng
-      </button>
-      <button
-        type="button"
-        role="tab"
-        class="tab"
-        [class.active]="activeTab() === 'create'"
-        [attr.aria-selected]="activeTab() === 'create'"
-        (click)="activeTab.set('create')"
-      >
-        Tạo phòng mới
-      </button>
-    </div>
+      <h1 class="hero-title">
+        Họp trực tuyến<br/>
+        <span class="hero-title-accent">mọi lúc, mọi nơi</span>
+      </h1>
 
-    @if (activeTab() === 'join') {
-      <form (ngSubmit)="joinRoom()" class="join-form">
-        <div class="form-group">
-          <label for="roomId">Room ID</label>
-          <input
-            id="roomId"
-            type="text"
-            [(ngModel)]="roomId"
-            name="roomId"
-            placeholder="Nhập Room ID"
-            required
-            autocomplete="off"
-          />
+      <p class="hero-desc">
+        Tạo hoặc tham gia phòng họp video chất lượng cao, kết nối với giảng viên và sinh viên theo thời gian thực.
+      </p>
+
+      <!-- Feature pills -->
+      <div class="hero-pills">
+        <div class="pill">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
+            <path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+          </svg>
+          Video HD
         </div>
+        <div class="pill">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
+          </svg>
+          Bảo mật
+        </div>
+        <div class="pill">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M3.505 2.365A41.369 41.369 0 019 2c1.863 0 3.697.124 5.495.365 1.247.167 2.18 1.108 2.435 2.268a4.45 4.45 0 00-.577-.069 43.141 43.141 0 00-4.706 0C9.229 4.696 7.5 6.727 7.5 8.998v2.24c0 1.413.67 2.735 1.76 3.562l-2.98 2.98A.75.75 0 015 17.25v-3.443c-.501-.048-1-.106-1.495-.172C2.033 13.438 1 12.162 1 10.72V5.28c0-1.441 1.033-2.717 2.505-2.914z" />
+            <path d="M14 6c-.762 0-1.52.02-2.271.062C10.157 6.148 9 7.472 9 8.998v2.24c0 1.519 1.147 2.839 2.71 2.935.214.013.428.024.642.034.2.009.385.09.518.224l2.35 2.35a.75.75 0 001.28-.531v-2.07c1.453-.195 2.5-1.463 2.5-2.915V8.998c0-1.526-1.157-2.85-2.729-2.936A41.645 41.645 0 0014 6z" />
+          </svg>
+          Trò chuyện
+        </div>
+        <div class="pill">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M2 4.25A2.25 2.25 0 014.25 2h11.5A2.25 2.25 0 0118 4.25v8.5A2.25 2.25 0 0115.75 15h-3.105a3.501 3.501 0 001.1 1.677A.75.75 0 0113.26 18H6.74a.75.75 0 01-.484-1.323A3.501 3.501 0 007.355 15H4.25A2.25 2.25 0 012 12.75v-8.5zm1.5 0a.75.75 0 01.75-.75h11.5a.75.75 0 01.75.75v7.5a.75.75 0 01-.75.75H4.25a.75.75 0 01-.75-.75v-7.5z" clip-rule="evenodd" />
+          </svg>
+          Chia sẻ màn hình
+        </div>
+      </div>
+    </section>
 
-        @if (showPasswordInput()) {
-          <div class="form-group">
-            <label for="joinPassword">Mật khẩu</label>
-            <input
-              id="joinPassword"
-              type="password"
-              [(ngModel)]="joinPassword"
-              name="joinPassword"
-              placeholder="Nhập mật khẩu phòng"
-              autocomplete="off"
-            />
-          </div>
-        }
+    <!-- Right: Card -->
+    <section class="meet-card">
 
-        @if (errorMessage()) {
-          <div class="error-message" role="alert">
-            {{ errorMessage() }}
-          </div>
-        }
+      <!-- Connection status bar -->
+      <div class="card-status-bar" [class.connected]="socket.isConnected()">
+        <div class="status-dot" [class.connected]="socket.isConnected()"></div>
+        <span>{{ socket.isConnected() ? 'Đã kết nối máy chủ' : 'Đang thiết lập kết nối...' }}</span>
+      </div>
 
+      <!-- Tabs -->
+      <div class="card-tabs" role="tablist">
         <button
-          type="submit"
-          class="btn btn-primary"
-          [disabled]="!socket.isConnected() || !roomId().trim() || isLoading()"
+          type="button"
+          role="tab"
+          class="card-tab"
+          id="tab-join"
+          [class.active]="activeTab() === 'join'"
+          [attr.aria-selected]="activeTab() === 'join'"
+          (click)="activeTab.set('join')"
         >
-          {{ isLoading() ? 'Đang tham gia...' : 'Tham gia phòng' }}
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M3 4.25A2.25 2.25 0 015.25 2h5.5A2.25 2.25 0 0113 4.25v2a.75.75 0 01-1.5 0v-2a.75.75 0 00-.75-.75h-5.5a.75.75 0 00-.75.75v11.5c0 .414.336.75.75.75h5.5a.75.75 0 00.75-.75v-2a.75.75 0 011.5 0v2A2.25 2.25 0 0110.75 18h-5.5A2.25 2.25 0 013 15.75V4.25z" clip-rule="evenodd" />
+            <path fill-rule="evenodd" d="M19 10a.75.75 0 00-.75-.75H8.704l1.048-.943a.75.75 0 10-1.004-1.114l-2.5 2.25a.75.75 0 000 1.114l2.5 2.25a.75.75 0 101.004-1.114l-1.048-.943h9.546A.75.75 0 0019 10z" clip-rule="evenodd" />
+          </svg>
+          Tham gia phòng
         </button>
-      </form>
-    }
-
-    @if (activeTab() === 'create') {
-      <form (ngSubmit)="createRoom()" class="join-form">
-        <div class="form-group">
-          <label for="newRoomId">Room ID</label>
-          <input
-            id="newRoomId"
-            type="text"
-            [(ngModel)]="newRoomId"
-            name="newRoomId"
-            placeholder="Nhập Room ID mới"
-            required
-            autocomplete="off"
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="createPassword">Mật khẩu (tùy chọn)</label>
-          <input
-            id="createPassword"
-            type="password"
-            [(ngModel)]="createPassword"
-            name="createPassword"
-            placeholder="Đặt mật khẩu cho phòng"
-            autocomplete="new-password"
-          />
-          <small class="hint">Để trống nếu muốn phòng công khai</small>
-        </div>
-
-        @if (successMessage()) {
-          <div class="success-message" role="status">
-            {{ successMessage() }}
-          </div>
-        }
-
-        @if (createErrorMessage()) {
-          <div class="error-message" role="alert">
-            {{ createErrorMessage() }}
-          </div>
-        }
-
         <button
-          type="submit"
-          class="btn btn-primary"
-          [disabled]="!socket.isConnected() || !newRoomId().trim() || isLoading()"
+          type="button"
+          role="tab"
+          class="card-tab"
+          id="tab-create"
+          [class.active]="activeTab() === 'create'"
+          [attr.aria-selected]="activeTab() === 'create'"
+          (click)="activeTab.set('create')"
         >
-          {{ isLoading() ? 'Đang tạo...' : 'Tạo & Tham gia phòng' }}
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-11.25a.75.75 0 00-1.5 0v2.5h-2.5a.75.75 0 000 1.5h2.5v2.5a.75.75 0 001.5 0v-2.5h2.5a.75.75 0 000-1.5h-2.5v-2.5z" clip-rule="evenodd" />
+          </svg>
+          Tạo phòng mới
         </button>
-      </form>
-    }
+      </div>
 
-    <div class="info">
-      <h2>Hướng dẫn sử dụng</h2>
-      <ol>
-        <li>Tạo phòng mới hoặc tham gia phòng có sẵn</li>
-        <li>Đặt mật khẩu để phòng riêng tư (tùy chọn)</li>
-        <li>Cấu hình camera và microphone</li>
-        <li>Chia sẻ Room ID và mật khẩu cho người khác</li>
-      </ol>
-    </div>
-  </div>
+      <!-- ── JOIN FORM ── -->
+      @if (activeTab() === 'join') {
+        <form (ngSubmit)="joinRoom()" class="meet-form" novalidate>
+          <div class="field">
+            <label for="roomId" class="field-label">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                <path fill-rule="evenodd" d="M4 1.75A2.25 2.25 0 001.75 4v1.401c0 .454.214.882.581 1.155l4.25 3.12a2.25 2.25 0 002.838 0l4.25-3.12A1.45 1.45 0 0014.25 5.4V4A2.25 2.25 0 0012 1.75H4zM1.75 8.131v3.869A2.25 2.25 0 004 14.25h8A2.25 2.25 0 0014.25 12v-3.869l-3.44 2.523a3.75 3.75 0 01-4.62 0L1.75 8.13z" clip-rule="evenodd" />
+              </svg>
+              Room ID
+            </label>
+            <div class="field-input-wrap">
+              <input
+                id="roomId"
+                type="text"
+                [(ngModel)]="roomId"
+                name="roomId"
+                placeholder="Nhập mã phòng (vd: abc-1234-xyz)"
+                required
+                autocomplete="off"
+                class="field-input"
+              />
+            </div>
+          </div>
+
+          @if (showPasswordInput()) {
+            <div class="field">
+              <label for="joinPassword" class="field-label">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                  <path fill-rule="evenodd" d="M8 1a3.5 3.5 0 00-3.5 3.5V7A1.5 1.5 0 003 8.5v5A1.5 1.5 0 004.5 15h7a1.5 1.5 0 001.5-1.5v-5A1.5 1.5 0 0011.5 7V4.5A3.5 3.5 0 008 1zm2 6V4.5a2 2 0 10-4 0V7h4z" clip-rule="evenodd" />
+                </svg>
+                Mật khẩu phòng
+              </label>
+              <div class="field-input-wrap">
+                <input
+                  id="joinPassword"
+                  type="password"
+                  [(ngModel)]="joinPassword"
+                  name="joinPassword"
+                  placeholder="Nhập mật khẩu phòng"
+                  autocomplete="off"
+                  class="field-input"
+                />
+              </div>
+            </div>
+          }
+
+          @if (errorMessage()) {
+            <div class="alert alert-error" role="alert">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+              </svg>
+              {{ errorMessage() }}
+            </div>
+          }
+
+          <button
+            id="btn-join-room"
+            type="submit"
+            class="btn-meet btn-join"
+            [disabled]="!socket.isConnected() || !roomId().trim() || isLoading()"
+          >
+            @if (isLoading()) {
+              <span class="btn-spinner"></span>
+              Đang tham gia...
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M4.5 4.5a3 3 0 00-3 3v9a3 3 0 003 3h8.25a3 3 0 003-3v-9a3 3 0 00-3-3H4.5zM19.94 18.75l-2.69-2.69V7.94l2.69-2.69c.944-.945 2.56-.276 2.56 1.06v11.38c0 1.336-1.616 2.005-2.56 1.06z" />
+              </svg>
+              Tham gia ngay
+            }
+          </button>
+        </form>
+      }
+
+      <!-- ── CREATE FORM ── -->
+      @if (activeTab() === 'create') {
+        <form (ngSubmit)="createRoom()" class="meet-form" novalidate>
+          <div class="field">
+            <label for="newRoomId" class="field-label">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                <path fill-rule="evenodd" d="M4 1.75A2.25 2.25 0 001.75 4v1.401c0 .454.214.882.581 1.155l4.25 3.12a2.25 2.25 0 002.838 0l4.25-3.12A1.45 1.45 0 0014.25 5.4V4A2.25 2.25 0 0012 1.75H4zM1.75 8.131v3.869A2.25 2.25 0 004 14.25h8A2.25 2.25 0 0014.25 12v-3.869l-3.44 2.523a3.75 3.75 0 01-4.62 0L1.75 8.13z" clip-rule="evenodd" />
+              </svg>
+              Đặt tên phòng
+            </label>
+            <div class="field-input-wrap">
+              <input
+                id="newRoomId"
+                type="text"
+                [(ngModel)]="newRoomId"
+                name="newRoomId"
+                placeholder="Nhập tên / mã phòng mới"
+                required
+                autocomplete="off"
+                class="field-input"
+              />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="createPassword" class="field-label">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                <path fill-rule="evenodd" d="M8 1a3.5 3.5 0 00-3.5 3.5V7A1.5 1.5 0 003 8.5v5A1.5 1.5 0 004.5 15h7a1.5 1.5 0 001.5-1.5v-5A1.5 1.5 0 0011.5 7V4.5A3.5 3.5 0 008 1zm2 6V4.5a2 2 0 10-4 0V7h4z" clip-rule="evenodd" />
+              </svg>
+              Mật khẩu phòng
+              <span class="label-optional">tùy chọn</span>
+            </label>
+            <div class="field-input-wrap">
+              <input
+                id="createPassword"
+                type="password"
+                [(ngModel)]="createPassword"
+                name="createPassword"
+                placeholder="Để trống nếu muốn phòng công khai"
+                autocomplete="new-password"
+                class="field-input"
+              />
+            </div>
+            <p class="field-hint">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                <path fill-rule="evenodd" d="M15 8A7 7 0 111 8a7 7 0 0114 0zm-9 .571V8a1 1 0 012 0v.571a1 1 0 01-.293.707l-.707.707a1 1 0 11-1.414-1.414l.414-.414zM8 5a.75.75 0 100-1.5A.75.75 0 008 5z" clip-rule="evenodd" />
+              </svg>
+              Chỉ người có mật khẩu mới có thể tham gia phòng riêng tư
+            </p>
+          </div>
+
+          @if (successMessage()) {
+            <div class="alert alert-success" role="status">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+              </svg>
+              {{ successMessage() }}
+            </div>
+          }
+
+          @if (createErrorMessage()) {
+            <div class="alert alert-error" role="alert">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+              </svg>
+              {{ createErrorMessage() }}
+            </div>
+          }
+
+          <button
+            id="btn-create-room"
+            type="submit"
+            class="btn-meet btn-create"
+            [disabled]="!socket.isConnected() || !newRoomId().trim() || isLoading()"
+          >
+            @if (isLoading()) {
+              <span class="btn-spinner"></span>
+              Đang tạo phòng...
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-11.25a.75.75 0 00-1.5 0v2.5h-2.5a.75.75 0 000 1.5h2.5v2.5a.75.75 0 001.5 0v-2.5h2.5a.75.75 0 000-1.5h-2.5v-2.5z" clip-rule="evenodd" />
+              </svg>
+              Tạo &amp; Vào phòng
+            }
+          </button>
+        </form>
+      }
+
+      <!-- ── Guide ── -->
+      <div class="card-guide">
+        <p class="guide-title">Hướng dẫn nhanh</p>
+        <ol class="guide-list">
+          <li>
+            <span class="guide-num">1</span>
+            Tạo phòng mới hoặc nhập mã phòng để tham gia
+          </li>
+          <li>
+            <span class="guide-num">2</span>
+            Đặt mật khẩu nếu muốn phòng riêng tư
+          </li>
+          <li>
+            <span class="guide-num">3</span>
+            Cho phép truy cập camera và microphone
+          </li>
+          <li>
+            <span class="guide-num">4</span>
+            Chia sẻ Room ID với người tham gia
+          </li>
+        </ol>
+      </div>
+
+    </section>
+  </main>
+
 </div>

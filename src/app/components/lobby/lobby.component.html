@@ -1,41 +1,195 @@
-<div class="lobby-container">
-  <header class="lobby-header">
-    <h1>Join Room: {{ roomId() }}</h1>
+<div class="lobby-page">
+
+  <!-- ══ Background ══ -->
+  <div class="lobby-bg" aria-hidden="true">
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <!-- ══ Top Nav ══ -->
+  <header class="lobby-nav">
+    <div class="nav-brand">
+      <div class="brand-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M4.5 4.5a3 3 0 00-3 3v9a3 3 0 003 3h8.25a3 3 0 003-3v-9a3 3 0 00-3-3H4.5zM19.94 18.75l-2.69-2.69V7.94l2.69-2.69c.944-.945 2.56-.276 2.56 1.06v11.38c0 1.336-1.616 2.005-2.56 1.06z" />
+        </svg>
+      </div>
+      <span class="brand-name">E-Learning</span>
+    </div>
+
+    <div class="nav-room-info">
+      <div class="room-badge">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+          <path fill-rule="evenodd" d="M4 1.75A2.25 2.25 0 001.75 4v1.401c0 .454.214.882.581 1.155l4.25 3.12a2.25 2.25 0 002.838 0l4.25-3.12A1.45 1.45 0 0014.25 5.4V4A2.25 2.25 0 0012 1.75H4zM1.75 8.131v3.869A2.25 2.25 0 004 14.25h8A2.25 2.25 0 0014.25 12v-3.869l-3.44 2.523a3.75 3.75 0 01-4.62 0L1.75 8.13z" clip-rule="evenodd" />
+        </svg>
+        <span>{{ roomId() }}</span>
+      </div>
+    </div>
+
+    <button type="button" class="nav-back-btn" (click)="goBack()" id="btn-lobby-back">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" />
+      </svg>
+      Quay lại
+    </button>
   </header>
 
-  <main class="lobby-content">
-    <section class="preview-section" aria-label="Device setup">
-      <div class="video-preview-container">
+  <!-- ══ Main ══ -->
+  <main class="lobby-main" aria-label="Thiết lập thiết bị">
+
+    <!-- LEFT: Camera Preview -->
+    <section class="preview-panel">
+      <div class="preview-title">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M3.25 4A2.25 2.25 0 001 6.25v7.5A2.25 2.25 0 003.25 16h7.5A2.25 2.25 0 0013 13.75v-7.5A2.25 2.25 0 0010.75 4h-7.5zM19 4.75a.75.75 0 00-1.28-.53l-3 3a.75.75 0 00-.22.53v4.5c0 .199.079.39.22.53l3 3a.75.75 0 001.28-.53V4.75z" />
+        </svg>
+        Xem trước camera
+      </div>
+
+      <div class="camera-frame" [class.cam-off]="!isVideoEnabled()">
         @if (previewStream()) {
           <video
-            #videoPreview
             autoplay
             muted
             playsinline
-            aria-label="Camera preview"
+            aria-label="Xem trước camera"
             [srcObject]="previewStream()"
             [class.video-disabled]="!isVideoEnabled()"
           ></video>
         } @else {
-          <div class="video-placeholder">
-            <p>Camera preview will appear here</p>
+          <div class="camera-placeholder">
+            <div class="placeholder-avatar">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path fill-rule="evenodd" d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <p>Đang chờ quyền truy cập camera...</p>
           </div>
         }
+
         @if (!isVideoEnabled()) {
-          <div class="video-off-overlay">
-            <span>Camera Off</span>
+          <div class="cam-off-overlay">
+            <div class="cam-off-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3.53 2.47a.75.75 0 00-1.06 1.06l18 18a.75.75 0 101.06-1.06l-18-18zM22.676 12.553a11.249 11.249 0 01-2.631 4.31l-3.099-3.099a5.25 5.25 0 00-6.71-6.71L7.759 4.577a11.217 11.217 0 014.242-.827c4.970 0 9.154 3.173 10.675 7.634a1.016 1.016 0 010 .692z" />
+                <path d="M15.75 12c0 .18-.013.357-.037.53l-4.244-4.243A3.75 3.75 0 0115.75 12zM21.25 18.75l-2.063-2.063A11.188 11.188 0 0112 19.5c-4.97 0-9.154-3.173-10.675-7.633a1.015 1.015 0 010-.692 11.19 11.19 0 012.167-3.846L1.75 6l1.06-1.06L21.25 18.75z" />
+              </svg>
+            </div>
+            <span>Camera đã tắt</span>
           </div>
         }
+
+        <!-- Quick media toggles overlay -->
+        <div class="camera-quick-controls">
+          <button
+            type="button"
+            class="quick-ctrl"
+            [class.ctrl-off]="!isVideoEnabled()"
+            (click)="toggleVideo()"
+            [attr.aria-pressed]="isVideoEnabled()"
+            aria-label="Bật/tắt camera"
+            id="btn-lobby-toggle-video"
+          >
+            @if (isVideoEnabled()) {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M3.25 4A2.25 2.25 0 001 6.25v7.5A2.25 2.25 0 003.25 16h7.5A2.25 2.25 0 0013 13.75v-7.5A2.25 2.25 0 0010.75 4h-7.5zM19 4.75a.75.75 0 00-1.28-.53l-3 3a.75.75 0 00-.22.53v4.5c0 .199.079.39.22.53l3 3a.75.75 0 001.28-.53V4.75z" />
+              </svg>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M2.28 3.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.318-1.319a3.009 3.009 0 001.526-2.637V6.25a.75.75 0 00-1.28-.53l-3 3a.75.75 0 00-.22.53v2.024l-6.12-6.12A2.25 2.25 0 0010.75 4h-7.5a2.25 2.25 0 00-.97.22V4l-1.78-.78h.78zM13 8.44V6.25a.75.75 0 00-.22-.53l-3-3a.75.75 0 00-1.06 0l-.698.697 1.5 1.5A.75.75 0 0110 6h.25a.75.75 0 010 1.5H10a.75.75 0 01-.53-.22L8 5.81V13.31l-2.25-2.25V6.25A2.25 2.25 0 013.5 4H3v.44L2.28 3.72A2.25 2.25 0 001 6.25v7.5A2.25 2.25 0 003.25 16h5.129L13 11.379V8.44z" />
+              </svg>
+            }
+          </button>
+
+          <button
+            type="button"
+            class="quick-ctrl"
+            [class.ctrl-off]="!isAudioEnabled()"
+            (click)="toggleAudio()"
+            [attr.aria-pressed]="isAudioEnabled()"
+            aria-label="Bật/tắt microphone"
+            id="btn-lobby-toggle-audio"
+          >
+            @if (isAudioEnabled()) {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M7 4a3 3 0 016 0v6a3 3 0 11-6 0V4z" />
+                <path d="M5.5 9.643a.75.75 0 00-1.5 0V10c0 3.06 2.29 5.585 5.25 5.954V17.5h-1.5a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5h-1.5v-1.546A6.001 6.001 0 0016 10v-.357a.75.75 0 00-1.5 0V10a4.5 4.5 0 01-9 0v-.357z" />
+              </svg>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M3.28 2.22a.75.75 0 00-1.06 1.06l3.217 3.217A6 6 0 004 10v.357a.75.75 0 001.5 0V10c0-.93.216-1.809.6-2.592L7.28 8.59A4.5 4.5 0 007 10a4.5 4.5 0 004.95 4.487l1.52 1.52A6 6 0 014 10v-.357a.75.75 0 00-1.5 0V10a7.5 7.5 0 007.25 7.468V19h-2.25a.75.75 0 000 1.5h6a.75.75 0 000-1.5h-2.25v-1.532a7.454 7.454 0 002.944-1.026l-1.065-1.066A5.997 5.997 0 0110 16a5.97 5.97 0 01-3.72-1.295l-1.12-1.119a4.474 4.474 0 01-.91-2.586V10c0-.484.077-.95.218-1.388L3.28 7.218V4a3 3 0 013.997-2.83l-1.06-1.06A4.5 4.5 0 006 4v6a4.5 4.5 0 00.648 2.355L8.11 13.82A3 3 0 017 10V4a3 3 0 013-3c.698 0 1.34.238 1.848.634L13.22 2.27A4.5 4.5 0 0010 1.5a4.5 4.5 0 00-4.5 4.5v3.72l-2.22-2.22V4z" />
+              </svg>
+            }
+          </button>
+        </div>
       </div>
 
-      <div class="device-controls">
-        <div class="control-group">
-          <label for="cameraSelect">Camera</label>
+      <!-- Status labels -->
+      <div class="device-status-row">
+        <div class="device-status-pill" [class.active]="isVideoEnabled()">
+          <span class="pill-dot"></span>
+          <span>{{ isVideoEnabled() ? 'Camera bật' : 'Camera tắt' }}</span>
+        </div>
+        <div class="device-status-pill" [class.active]="isAudioEnabled()">
+          <span class="pill-dot"></span>
+          <span>{{ isAudioEnabled() ? 'Mic bật' : 'Mic tắt' }}</span>
+        </div>
+      </div>
+
+      @if (error()) {
+        <div class="lobby-error" role="alert">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+          </svg>
+          {{ error() }}
+        </div>
+      }
+    </section>
+
+    <!-- RIGHT: Settings Panel -->
+    <section class="settings-panel" aria-label="Cài đặt thiết bị">
+
+      <div class="settings-header-block">
+        <h1 class="settings-title">Sẵn sàng tham gia?</h1>
+        <p class="settings-subtitle">Kiểm tra camera và microphone trước khi vào phòng</p>
+      </div>
+
+      <div class="settings-fields">
+
+        <!-- Display name -->
+        <div class="field-group">
+          <label for="displayName" class="field-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+              <path fill-rule="evenodd" d="M15 8A7 7 0 111 8a7 7 0 0114 0zm-5-2a2 2 0 11-4 0 2 2 0 014 0zM8 11a5 5 0 00-4.546 2.916A5.986 5.986 0 008 15a5.986 5.986 0 004.546-1.084A5 5 0 008 11z" clip-rule="evenodd" />
+            </svg>
+            Tên hiển thị
+          </label>
+          <input
+            id="displayName"
+            type="text"
+            [(ngModel)]="displayName"
+            placeholder="Nhập tên của bạn"
+            maxlength="30"
+            aria-label="Nhập tên hiển thị"
+            class="lobby-input"
+          />
+        </div>
+
+        <!-- Camera device -->
+        <div class="field-group">
+          <label for="cameraSelect" class="field-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M2.5 3.5A1.5 1.5 0 011 5v6.5A1.5 1.5 0 002.5 13h7A1.5 1.5 0 0011 11.5v-6A1.5 1.5 0 009.5 4h-7zM14 5.25a.75.75 0 00-1.28-.53l-2 2a.75.75 0 00-.22.53v1.5c0 .199.079.39.22.53l2 2a.75.75 0 001.28-.53V5.25z" />
+            </svg>
+            Camera
+          </label>
           <select
             id="cameraSelect"
             [(ngModel)]="selectedVideoDevice"
             (change)="onDeviceChange()"
             [disabled]="!isVideoEnabled()"
+            class="lobby-select"
           >
             @for (device of videoDevices(); track device.deviceId) {
               <option [value]="device.deviceId">{{ device.label }}</option>
@@ -43,13 +197,21 @@
           </select>
         </div>
 
-        <div class="control-group">
-          <label for="micSelect">Microphone</label>
+        <!-- Microphone device -->
+        <div class="field-group">
+          <label for="micSelect" class="field-label">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M6 2a2 2 0 104 0v5a2 2 0 11-4 0V2z" />
+              <path d="M3.5 7.5a.75.75 0 00-1.5 0v.5a6 6 0 005.25 5.954V15.5H5.75a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5H8.75v-1.546A6 6 0 0014 8v-.5a.75.75 0 00-1.5 0V8a4.5 4.5 0 01-9 0v-.5z" />
+            </svg>
+            Microphone
+          </label>
           <select
             id="micSelect"
             [(ngModel)]="selectedAudioDevice"
             (change)="onDeviceChange()"
             [disabled]="!isAudioEnabled()"
+            class="lobby-select"
           >
             @for (device of audioDevices(); track device.deviceId) {
               <option [value]="device.deviceId">{{ device.label }}</option>
@@ -57,67 +219,58 @@
           </select>
         </div>
 
-        <div class="control-group">
-          <label for="displayName">Display Name</label>
-          <input
-            id="displayName"
-            type="text"
-            [(ngModel)]="displayName"
-            placeholder="Enter your display name"
-            maxlength="30"
-            aria-label="Enter your display name"
-          />
-        </div>
-
-        <div class="toggle-controls">
+        <!-- Toggle row -->
+        <div class="toggle-row">
           <button
             type="button"
-            class="btn"
-            [class.btn-active]="isVideoEnabled()"
+            class="toggle-btn"
+            [class.toggle-on]="isVideoEnabled()"
+            [class.toggle-off]="!isVideoEnabled()"
             (click)="toggleVideo()"
             [attr.aria-pressed]="isVideoEnabled()"
-            aria-label="Toggle camera"
+            aria-label="Bật/tắt camera"
           >
-            {{ isVideoEnabled() ? '📹 Camera On' : '📹 Camera Off' }}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M3.25 4A2.25 2.25 0 001 6.25v7.5A2.25 2.25 0 003.25 16h7.5A2.25 2.25 0 0013 13.75v-7.5A2.25 2.25 0 0010.75 4h-7.5zM19 4.75a.75.75 0 00-1.28-.53l-3 3a.75.75 0 00-.22.53v4.5c0 .199.079.39.22.53l3 3a.75.75 0 001.28-.53V4.75z" />
+            </svg>
+            {{ isVideoEnabled() ? 'Camera bật' : 'Camera tắt' }}
           </button>
 
           <button
             type="button"
-            class="btn"
-            [class.btn-active]="isAudioEnabled()"
+            class="toggle-btn"
+            [class.toggle-on]="isAudioEnabled()"
+            [class.toggle-off]="!isAudioEnabled()"
             (click)="toggleAudio()"
             [attr.aria-pressed]="isAudioEnabled()"
-            aria-label="Toggle microphone"
+            aria-label="Bật/tắt microphone"
           >
-            {{ isAudioEnabled() ? '🎤 Mic On' : '🎤 Mic Off' }}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M7 4a3 3 0 016 0v6a3 3 0 11-6 0V4z" />
+              <path d="M5.5 9.643a.75.75 0 00-1.5 0V10c0 3.06 2.29 5.585 5.25 5.954V17.5h-1.5a.75.75 0 000 1.5h4.5a.75.75 0 000-1.5h-1.5v-1.546A6.001 6.001 0 0016 10v-.357a.75.75 0 00-1.5 0V10a4.5 4.5 0 01-9 0v-.357z" />
+            </svg>
+            {{ isAudioEnabled() ? 'Mic bật' : 'Mic tắt' }}
           </button>
         </div>
       </div>
 
-      @if (error()) {
-        <div class="error-message" role="alert">
-          {{ error() }}
-        </div>
-      }
-    </section>
-  </main>
+      <!-- Actions -->
+      <div class="lobby-actions">
+        <button
+          type="button"
+          id="btn-lobby-join"
+          class="btn-join-room"
+          (click)="joinRoom()"
+          aria-label="Tham gia phòng"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M4.5 4.5a3 3 0 00-3 3v9a3 3 0 003 3h8.25a3 3 0 003-3v-9a3 3 0 00-3-3H4.5zM19.94 18.75l-2.69-2.69V7.94l2.69-2.69c.944-.945 2.56-.276 2.56 1.06v11.38c0 1.336-1.616 2.005-2.56 1.06z" />
+          </svg>
+          Tham gia phòng
+        </button>
+      </div>
 
-  <footer class="lobby-footer">
-    <button
-      type="button"
-      class="btn btn-secondary"
-      (click)="goBack()"
-      aria-label="Go back to home"
-    >
-      Back
-    </button>
-    <button
-      type="button"
-      class="btn btn-primary"
-      (click)="joinRoom()"
-      aria-label="Join room"
-    >
-      Join Room
-    </button>
-  </footer>
+    </section>
+
+  </main>
 </div>
