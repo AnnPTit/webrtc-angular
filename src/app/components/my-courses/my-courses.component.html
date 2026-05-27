@@ -1,0 +1,253 @@
+<div class="mc-container">
+
+  <!-- ── HEADER ── -->
+  <header class="mc-header">
+    <div class="mc-header-left">
+      <a routerLink="/courses" class="mc-back-btn" title="Tất cả khóa học">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd"/></svg>
+      </a>
+      <div class="mc-logo">
+        <span class="mc-logo-icon">🎓</span>
+        <span class="mc-logo-text">Khóa học của tôi</span>
+      </div>
+    </div>
+
+    <nav class="mc-nav-tabs" role="tablist" aria-label="Course filter tabs">
+      <button
+        role="tab"
+        class="mc-nav-tab"
+        [class.active]="activeTab() === 'all'"
+        [attr.aria-selected]="activeTab() === 'all'"
+        (click)="setTab('all')"
+        id="tab-all"
+      >
+        Tất cả
+        <span class="mc-tab-count">{{ totalCount }}</span>
+      </button>
+      <button
+        role="tab"
+        class="mc-nav-tab"
+        [class.active]="activeTab() === 'inProgress'"
+        [attr.aria-selected]="activeTab() === 'inProgress'"
+        (click)="setTab('inProgress')"
+        id="tab-inprogress"
+      >
+        Đang học
+        <span class="mc-tab-count in-progress">{{ inProgressCount }}</span>
+      </button>
+      <button
+        role="tab"
+        class="mc-nav-tab"
+        [class.active]="activeTab() === 'completed'"
+        [attr.aria-selected]="activeTab() === 'completed'"
+        (click)="setTab('completed')"
+        id="tab-completed"
+      >
+        Hoàn thành
+        <span class="mc-tab-count completed">{{ completedCount }}</span>
+      </button>
+    </nav>
+
+    <div class="mc-header-right">
+      @if (currentUser) {
+        <div class="mc-user-info">
+          <div class="mc-user-avatar">{{ userInitials }}</div>
+          <span class="mc-user-name">{{ currentUser.fullName || currentUser.username }}</span>
+        </div>
+        <a routerLink="/courses" class="mc-browse-btn" id="browse-courses-btn">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"/></svg>
+          Khám phá thêm
+        </a>
+      }
+    </div>
+  </header>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="mc-main">
+
+    <!-- Loading -->
+    @if (loading) {
+      <div class="mc-loading">
+        <div class="mc-spinner"></div>
+        <p>Đang tải khóa học của bạn...</p>
+      </div>
+    }
+
+    <!-- Error -->
+    @if (error && !loading) {
+      <div class="mc-error-state">
+        <span>⚠️</span>
+        <p>{{ error }}</p>
+        <button class="mc-retry-btn" (click)="loadMyCourses()">🔄 Thử lại</button>
+      </div>
+    }
+
+    <!-- Empty — chưa đăng ký khóa nào -->
+    @if (!loading && !error && totalCount === 0) {
+      <div class="mc-empty-state">
+        <div class="mc-empty-illustration">
+          <span class="mc-empty-icon">📚</span>
+          <div class="mc-empty-orbit">
+            <span class="orbit-dot d1"></span>
+            <span class="orbit-dot d2"></span>
+            <span class="orbit-dot d3"></span>
+          </div>
+        </div>
+        <h2 class="mc-empty-title">Bạn chưa đăng ký khóa học nào</h2>
+        <p class="mc-empty-text">
+          Hãy khám phá kho khóa học của chúng tôi và bắt đầu hành trình học tập ngay hôm nay!
+        </p>
+        <a routerLink="/courses" class="mc-empty-cta" id="empty-explore-btn">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd"/></svg>
+          Khám phá khóa học
+        </a>
+      </div>
+    }
+
+    <!-- Empty — tab hiện tại không có kết quả -->
+    @if (!loading && !error && totalCount > 0 && filteredCourses.length === 0) {
+      <div class="mc-empty-tab">
+        <span class="mc-empty-tab-icon">
+          @if (activeTab() === 'inProgress') { 📖 }
+          @if (activeTab() === 'completed') { 🏆 }
+        </span>
+        <p>
+          @if (activeTab() === 'inProgress') { Bạn chưa bắt đầu học khóa nào. }
+          @if (activeTab() === 'completed') { Bạn chưa hoàn thành khóa học nào. }
+        </p>
+      </div>
+    }
+
+    <!-- Course Grid -->
+    @if (!loading && !error && filteredCourses.length > 0) {
+      <div class="mc-summary-bar">
+        <span class="mc-summary-text">
+          Hiển thị <strong>{{ filteredCourses.length }}</strong> khóa học
+        </span>
+      </div>
+
+      <div class="mc-course-grid">
+        @for (item of filteredCourses; track item.course.id; let i = $index) {
+          <article class="mc-course-card" [id]="'my-course-' + item.course.id">
+
+            <!-- Thumbnail Header -->
+            <div class="mc-card-thumbnail" [style.background]="getCourseGradient(i)">
+              <span class="mc-card-emoji">{{ getCourseEmoji(i) }}</span>
+              <span class="mc-card-level-badge" [class]="getLevelClass(item.course.level)">
+                {{ getLevelLabel(item.course.level) }}
+              </span>
+
+              <!-- Status chip -->
+              <span
+                class="mc-card-status-chip"
+                [class]="getProgressStatusClass(item.enrollment.progressPercent)"
+              >
+                @if (item.enrollment.progressPercent >= 100) { ✅ Hoàn thành }
+                @else if (item.enrollment.progressPercent > 0) { 📖 Đang học }
+                @else { 🆕 Mới đăng ký }
+              </span>
+            </div>
+
+            <!-- Card Body -->
+            <div class="mc-card-body">
+              <h3 class="mc-card-title">{{ item.course.title }}</h3>
+              <p class="mc-card-desc">{{ item.course.description || 'Chưa có mô tả' }}</p>
+
+              <!-- Meta info -->
+              <div class="mc-card-meta">
+                <div class="mc-meta-item">
+                  <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 100-6 3 3 0 000 6zM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 00-11.215 0c-.22.578.254 1.139.872 1.139h9.47z"/></svg>
+                  <span>{{ item.course.lecturerName || 'Chưa xác định' }}</span>
+                </div>
+                <div class="mc-meta-item">
+                  <svg viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 1.5A1.5 1.5 0 017 0h2a1.5 1.5 0 011.5 1.5h1A1.5 1.5 0 0113 3H3a1.5 1.5 0 011.5-1.5h1zM3 4.5h10v9A1.5 1.5 0 0111.5 15h-7A1.5 1.5 0 013 13.5v-9z"/></svg>
+                  <span>{{ item.course.lessonCount || 0 }} bài học</span>
+                </div>
+              </div>
+
+              <!-- Progress Bar -->
+              <div class="mc-progress-section">
+                <div class="mc-progress-header">
+                  <span class="mc-progress-label">Tiến độ</span>
+                  <span class="mc-progress-value">{{ item.enrollment.progressPercent }}%</span>
+                </div>
+                <div class="mc-progress-bar" role="progressbar"
+                  [attr.aria-valuenow]="item.enrollment.progressPercent"
+                  aria-valuemin="0" aria-valuemax="100">
+                  <div
+                    class="mc-progress-fill"
+                    [style.width.%]="item.enrollment.progressPercent"
+                    [class.completed]="item.enrollment.progressPercent >= 100"
+                  ></div>
+                </div>
+                <div class="mc-progress-sub">
+                  <span class="mc-enrolled-date">
+                    Đăng ký: {{ formatDate(item.enrollment.enrolledAt) }}
+                  </span>
+                  @if (item.enrollment.lastAccessedAt) {
+                    <span class="mc-last-access">
+                      Truy cập: {{ formatDate(item.enrollment.lastAccessedAt) }}
+                    </span>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Footer -->
+            <div class="mc-card-footer">
+              <button
+                class="mc-continue-btn"
+                [class.btn-start]="item.enrollment.progressPercent === 0"
+                [class.btn-review]="item.enrollment.progressPercent >= 100"
+                (click)="continueCourse(item.course.id)"
+                [id]="'continue-btn-' + item.course.id"
+              >
+                <svg viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd"/>
+                </svg>
+                {{ getContinueBtnLabel(item.enrollment.progressPercent) }}
+              </button>
+
+              <button
+                class="mc-unenroll-btn"
+                (click)="openUnenrollModal(item, $event)"
+                [id]="'unenroll-btn-' + item.course.id"
+                title="Hủy đăng ký"
+              >
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clip-rule="evenodd"/></svg>
+              </button>
+            </div>
+
+          </article>
+        }
+      </div>
+    }
+
+  </main>
+
+  <!-- ── UNENROLL CONFIRMATION MODAL ── -->
+  @if (showUnenrollModal && unenrollTarget) {
+    <div class="mc-modal-overlay" (click)="cancelUnenroll()" id="unenroll-modal">
+      <div class="mc-modal-card" (click)="$event.stopPropagation()">
+        <div class="mc-modal-icon-wrap">
+          <span class="mc-modal-icon">⚠️</span>
+        </div>
+        <h3 class="mc-modal-title">Hủy đăng ký khóa học?</h3>
+        <p class="mc-modal-body">
+          Bạn có chắc muốn hủy đăng ký
+          <strong>"{{ unenrollTarget.course.title }}"</strong>?
+          Tiến độ học tập của bạn sẽ bị xóa.
+        </p>
+        <div class="mc-modal-actions">
+          <button class="mc-modal-cancel" (click)="cancelUnenroll()" id="cancel-unenroll-btn">
+            Giữ lại
+          </button>
+          <button class="mc-modal-confirm" (click)="confirmUnenroll()" id="confirm-unenroll-btn">
+            Hủy đăng ký
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

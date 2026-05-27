@@ -831,3 +831,98 @@
     padding: 16px 20px;
   }
 }
+
+/* ================================================================
+   MY COURSES NAVIGATION ELEMENTS
+   ================================================================ */
+
+/* Nút "Khóa học của tôi" trong header */
+.cl-my-courses-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #3B82F6, #6366F1);
+  color: #fff;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.25);
+  white-space: nowrap;
+}
+
+.cl-my-courses-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+}
+
+/* Badge hiển thị số khóa đã đăng ký */
+.cl-enrolled-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* Link "X khóa học" trong subtitle */
+.cl-enrolled-link {
+  color: #3B82F6;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.cl-enrolled-link:hover {
+  color: #1D4ED8;
+  text-decoration: underline;
+}
+
+/* CTA button khi đã đăng ký hết tất cả */
+.cl-my-courses-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #3B82F6, #6366F1);
+  color: #fff;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+  margin-top: 8px;
+}
+
+.cl-my-courses-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.45);
+}
+
+/* Spinner trong nút enroll */
+.cl-enroll-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: cl-spin 0.7s linear infinite;
+  margin-right: 4px;
+}
+
+/* Disable state của enroll button */
+.cl-modal-enroll-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}

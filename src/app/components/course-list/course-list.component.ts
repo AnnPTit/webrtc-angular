@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CourseService, Course, Lesson } from '../../services/course.service';
+import { EnrollmentService } from '../../services/enrollment.service';
 
 @Component({
   selector: 'app-course-list',
@@ -12,24 +13,45 @@ import { CourseService, Course, Lesson } from '../../services/course.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CourseListComponent implements OnInit {
+  /** Tất cả khóa học từ API */
+  allCourses: Course[] = [];
+
+  /**
+   * Khóa học chưa đăng ký — computed từ allCourses trừ đi enrolledIds.
+   * Cập nhật lại khi user enroll khóa mới.
+   */
   courses: Course[] = [];
+
+  /** Set các courseId đã đăng ký của user hiện tại */
+  private enrolledIds: Set<number> = new Set();
+
   loading = true;
   error: string | null = null;
 
   // Modal state
   showModal = false;
   selectedCourse: Course | null = null;
-  selectedCourseLessons: Lesson[] = [];
+  selectedCourseLessons: Lesson[] = []
   loadingLessons = false;
+
+  /** Trạng thái đang enroll (để tránh double click) */
+  enrolling = false;
 
   constructor(
     private courseService: CourseService,
     protected authService: AuthService,
+    private enrollmentService: EnrollmentService,
     private cdr: ChangeDetectorRef,
     private router: Router,
   ) {}
 
   ngOnInit(): void {
+    const user = this.currentUser;
+    if (user) {
+      // Khởi tạo enrollment service và lấy danh sách đã đăng ký
+      this.enrollmentService.init(user.userId);
+      this.enrolledIds = this.enrollmentService.getEnrolledCourseIds(user.userId);
+    }
     this.loadCourses();
   }
 
@@ -40,7 +62,9 @@ export class CourseListComponent implements OnInit {
 
     this.courseService.getAllCourses().subscribe({
       next: (courses) => {
-        this.courses = courses;
+        this.allCourses = courses;
+        // Lọc bỏ các khóa học đã đăng ký
+        this.filterUnenrolledCourses();
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -51,6 +75,19 @@ export class CourseListComponent implements OnInit {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  /**
+   * Lọc danh sách hiển thị: chỉ hiển thị khóa học chưa đăng ký.
+   * Được gọi lại sau mỗi lần enroll.
+   */
+  private filterUnenrolledCourses(): void {
+    this.courses = this.allCourses.filter(c => !this.enrolledIds.has(c.id));
+  }
+
+  /** Số khóa học đã đăng ký */
+  get enrolledCount(): number {
+    return this.enrolledIds.size;
   }
 
   // ── Modal ──
@@ -79,6 +116,7 @@ export class CourseListComponent implements OnInit {
     this.showModal = false;
     this.selectedCourse = null;
     this.selectedCourseLessons = [];
+    this.enrolling = false;
     this.cdr.markForCheck();
   }
 
@@ -88,10 +126,36 @@ export class CourseListComponent implements OnInit {
     }
   }
 
+  /**
+   * Đăng ký khóa học và chuyển đến trang học.
+   * Thực hiện enroll qua EnrollmentService trước khi navigate.
+   */
   enrollCourse(): void {
-    if (this.selectedCourse) {
-      this.router.navigate(['/learn', this.selectedCourse.id]);
+    if (!this.selectedCourse || this.enrolling) return;
+
+    const user = this.currentUser;
+    if (!user) {
+      this.router.navigate(['/login']);
+      return;
     }
+
+    this.enrolling = true;
+    this.cdr.markForCheck();
+
+    // Thực hiện đăng ký
+    const isNewEnroll = this.enrollmentService.enroll(user.userId, this.selectedCourse.id);
+
+    if (isNewEnroll) {
+      // Cập nhật danh sách enrolled IDs và lọc lại
+      this.enrolledIds = this.enrollmentService.getEnrolledCourseIds(user.userId);
+      this.filterUnenrolledCourses();
+    }
+
+    const courseId = this.selectedCourse.id;
+    this.closeModal();
+
+    // Điều hướng sang trang học
+    this.router.navigate(['/learn', courseId]);
   }
 
   // ── Helpers ──

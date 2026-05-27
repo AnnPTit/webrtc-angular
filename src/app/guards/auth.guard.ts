@@ -46,3 +46,17 @@ export const loginGuard: CanActivateFn = (route, state) => {
 
   return true;
 };
+
+/**
+ * guestGuard — Guard cho route /meeting (họp trực tuyến)
+ *
+ * Cho phép TẤT CẢ người dùng truy cập, kể cả chưa đăng nhập (guest).
+ * Nếu đã đăng nhập: vẫn cho phép truy cập bình thường.
+ * Nếu chưa đăng nhập: vẫn cho phép với tư cách guest.
+ *
+ * Khác biệt với authGuard (chặn guest) và loginGuard (chặn user đã đăng nhập).
+ */
+export const guestGuard: CanActivateFn = (_route, _state) => {
+  // Always allow access — route này công khai cho cả guest và user đã đăng nhập
+  return true;
+};

@@ -235,6 +235,39 @@
   border-color: rgba(240, 74, 94, 0.4);
 }
 
+/* ── Guest navigation buttons (hiển thị khi chưa đăng nhập) ── */
+.btn-nav-guest-login {
+  color: rgba(240, 250, 255, 0.75);
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.45rem 0.875rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btn-nav-guest-login:hover {
+  color: var(--text-100);
+  background: var(--dark-500);
+}
+
+.btn-nav-guest-register {
+  background: linear-gradient(135deg, #3d7eff, #7c3aed);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.45rem 1.1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.25s;
+  box-shadow: 0 0 15px rgba(61, 126, 255, 0.3);
+}
+
+.btn-nav-guest-register:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(61, 126, 255, 0.5);
+}
+
 /* ════════════════════════════════════════════════
    MAIN CONTENT
 ════════════════════════════════════════════════ */

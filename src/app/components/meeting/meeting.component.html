@@ -10,7 +10,8 @@
   <!-- ══════════ TOP NAV ══════════ -->
   <header class="meet-nav">
     <div class="nav-left">
-      <a routerLink="/home" class="nav-back" id="btn-nav-back">
+      <!-- Nút quay lại: user đã đăng nhập → /home, guest → / (landing) -->
+      <a [routerLink]="currentUser ? '/home' : '/'" class="nav-back" id="btn-nav-back">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" />
         </svg>
@@ -29,6 +30,7 @@
 
     <div class="nav-right">
       @if (currentUser) {
+        <!-- User đã đăng nhập: hiển thị avatar và nút đăng xuất -->
         <div class="nav-user">
           <div class="user-avatar">
             {{ (currentUser.fullName || currentUser.username).charAt(0).toUpperCase() }}
@@ -42,6 +44,10 @@
           </svg>
           Đăng xuất
         </button>
+      } @else {
+        <!-- Guest: hiển thị nút đăng nhập và đăng ký -->
+        <a routerLink="/login" class="btn-nav-guest-login" id="btn-guest-login">Đăng nhập</a>
+        <a routerLink="/register" class="btn-nav-guest-register" id="btn-guest-register">Đăng ký miễn phí</a>
       }
     </div>
   </header>

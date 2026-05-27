@@ -1,11 +1,13 @@
 import { Routes } from '@angular/router';
-import { authGuard, loginGuard } from './guards/auth.guard';
+import { authGuard, loginGuard, guestGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   {
+    // Route mặc định: Hiển thị Landing Page thay vì redirect thẳng đến login
     path: '',
-    redirectTo: 'login',
-    pathMatch: 'full',
+    loadComponent: () =>
+      import('./components/landing/landing.component').then(m => m.LandingComponent),
+    // Không cần guard — trang công khai cho tất cả người dùng
   },
   {
     path: 'login',
@@ -48,10 +50,12 @@ export const routes: Routes = [
     data: { roles: ['LECTURER', 'ADMIN'] }
   },
   {
+    // Route /meeting: Cho phép guest access — không cần authentication
+    // guestGuard: nếu đã đăng nhập → giữ nguyên, nếu chưa → vẫn cho phép truy cập
     path: 'meeting',
     loadComponent: () =>
       import('./components/meeting/meeting.component').then(m => m.MeetingComponent),
-    canActivate: [authGuard],
+    canActivate: [guestGuard],
   },
   {
     path: 'lobby/:roomId',
@@ -69,6 +73,14 @@ export const routes: Routes = [
     path: 'courses',
     loadComponent: () =>
       import('./components/course-list/course-list.component').then(m => m.CourseListComponent),
+    canActivate: [authGuard],
+    data: { roles: ['STUDENT', 'ADMIN'] }
+  },
+  {
+    // Route /my-courses: Danh sách khóa học đã đăng ký của học viên
+    path: 'my-courses',
+    loadComponent: () =>
+      import('./components/my-courses/my-courses.component').then(m => m.MyCoursesComponent),
     canActivate: [authGuard],
     data: { roles: ['STUDENT', 'ADMIN'] }
   },
@@ -122,6 +134,8 @@ export const routes: Routes = [
     data: { roles: ['STUDENT', 'ADMIN'] }
   },
   {
+    // Route /welcome: Màn hình onboarding quiz dành cho sinh viên mới đăng ký
+    // Yêu cầu authentication và chỉ dành cho STUDENT/ADMIN
     path: 'welcome',
     loadComponent: () =>
       import('./components/welcome/welcome.component').then(m => m.WelcomeComponent),

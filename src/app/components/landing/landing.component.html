@@ -1,0 +1,414 @@
+<!-- ═══════════════════════════════════════════
+     LANDING PAGE — Trang chào mừng công khai
+     Route: /
+     ═══════════════════════════════════════════ -->
+
+<!-- ── NAVBAR ── -->
+<header class="navbar" [class.scrolled]="isScrolled()">
+  <div class="navbar-container">
+    <!-- Logo -->
+    <a class="navbar-brand" (click)="scrollTo('hero')" role="button">
+      <div class="brand-icon">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="10" fill="url(#brandGrad)"/>
+          <path d="M8 20L16 10L24 20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="16" cy="22" r="2" fill="white"/>
+          <defs>
+            <linearGradient id="brandGrad" x1="0" y1="0" x2="32" y2="32">
+              <stop stop-color="#3B82F6"/>
+              <stop offset="1" stop-color="#6366F1"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <span class="brand-name">E-Learning</span>
+    </a>
+
+    <!-- Desktop Nav Links -->
+    <nav class="navbar-links" aria-label="Main navigation">
+      <button class="nav-link" (click)="scrollTo('features')" id="nav-features">Tính năng</button>
+      <button class="nav-link" (click)="scrollTo('testimonials')" id="nav-testimonials">Đánh giá</button>
+      <button class="nav-link" (click)="scrollTo('cta')" id="nav-cta">Bắt đầu</button>
+    </nav>
+
+    <!-- Desktop CTA Buttons -->
+    <div class="navbar-actions">
+      <a routerLink="/login" class="btn-nav-login" id="navbar-login">Đăng nhập</a>
+      <a routerLink="/register" class="btn-nav-register" id="navbar-register">Đăng ký miễn phí</a>
+    </div>
+
+    <!-- Mobile Hamburger -->
+    <button
+      class="mobile-menu-btn"
+      (click)="toggleMobileMenu()"
+      [class.open]="mobileMenuOpen()"
+      id="mobile-menu-toggle"
+      aria-label="Toggle menu"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" [class.open]="mobileMenuOpen()">
+    <button class="mobile-nav-link" (click)="scrollTo('features')">🚀 Tính năng</button>
+    <button class="mobile-nav-link" (click)="scrollTo('testimonials')">⭐ Đánh giá</button>
+    <button class="mobile-nav-link" (click)="scrollTo('cta')">🎯 Bắt đầu</button>
+    <div class="mobile-menu-divider"></div>
+    <a routerLink="/login" class="mobile-nav-link" id="mobile-login">🔐 Đăng nhập</a>
+    <a routerLink="/register" class="mobile-nav-link btn-mobile-register" id="mobile-register">✨ Đăng ký miễn phí</a>
+  </div>
+</header>
+
+<!-- ── HERO SECTION ── -->
+<section class="hero" id="hero">
+  <!-- Background decorations -->
+  <div class="hero-bg">
+    <div class="hero-blob blob-1"></div>
+    <div class="hero-blob blob-2"></div>
+    <div class="hero-blob blob-3"></div>
+    <div class="hero-grid"></div>
+  </div>
+
+  <div class="hero-container">
+    <div class="hero-content">
+      <!-- Badge -->
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        <span>Nền tảng học tiếng Anh #1 Việt Nam</span>
+      </div>
+
+      <!-- Headline -->
+      <h1 class="hero-title">
+        Học tiếng Anh
+        <span class="hero-title-gradient">thông minh hơn</span>
+        với công nghệ AI
+      </h1>
+
+      <!-- Subtitle -->
+      <p class="hero-subtitle">
+        Kết nối cùng giảng viên qua họp trực tuyến, học từ vựng với AI,
+        theo dõi tiến độ và đạt mục tiêu tiếng Anh nhanh hơn bao giờ hết.
+      </p>
+
+      <!-- CTA Buttons -->
+      <div class="hero-actions">
+        <!-- Nút chính: Họp trực tuyến ngay (guest access) -->
+        <button
+          class="btn-hero-primary"
+          (click)="goToMeeting()"
+          id="hero-meeting-btn"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 10l4.553-2.069A1 1 0 0121 8.845v6.31a1 1 0 01-1.447.894L15 14"/>
+            <rect x="3" y="6" width="12" height="12" rx="2"/>
+          </svg>
+          Tham gia họp ngay
+          <span class="btn-badge">Miễn phí</span>
+        </button>
+
+        <!-- Nút phụ: Đăng ký -->
+        <a routerLink="/register" class="btn-hero-secondary" id="hero-register-btn">
+          Tạo tài khoản miễn phí
+          <svg viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Login nudge -->
+      <p class="hero-login-hint">
+        Đã có tài khoản?
+        <a routerLink="/login" class="hero-login-link" id="hero-login-link">Đăng nhập ngay →</a>
+      </p>
+    </div>
+
+    <!-- Hero Visual -->
+    <div class="hero-visual">
+      <div class="hero-card hero-card-main">
+        <div class="hcard-header">
+          <div class="hcard-avatar">A</div>
+          <div class="hcard-info">
+            <span class="hcard-name">Anna Johnson</span>
+            <span class="hcard-role">Giảng viên</span>
+          </div>
+          <div class="hcard-status live">🔴 LIVE</div>
+        </div>
+        <div class="hcard-video-placeholder">
+          <div class="video-grid">
+            <div class="video-thumb v1">
+              <span>👨‍💻</span>
+              <div class="vthumb-bar"></div>
+            </div>
+            <div class="video-thumb v2">
+              <span>👩‍🎓</span>
+              <div class="vthumb-bar"></div>
+            </div>
+            <div class="video-thumb v3">
+              <span>👨‍🏫</span>
+              <div class="vthumb-bar"></div>
+            </div>
+            <div class="video-thumb v4">
+              <span>👩‍💼</span>
+              <div class="vthumb-bar"></div>
+            </div>
+          </div>
+        </div>
+        <div class="hcard-footer">
+          <div class="hcard-controls">
+            <button class="ctrl-btn ctrl-mic">🎙️</button>
+            <button class="ctrl-btn ctrl-cam">📹</button>
+            <button class="ctrl-btn ctrl-chat">💬</button>
+          </div>
+          <span class="hcard-participants">👥 24 người tham gia</span>
+        </div>
+      </div>
+
+      <!-- Floating cards -->
+      <div class="float-card float-card-1">
+        <span class="float-icon">📈</span>
+        <div class="float-content">
+          <strong>Tiến độ hôm nay</strong>
+          <span>+15 từ mới</span>
+        </div>
+      </div>
+
+      <div class="float-card float-card-2">
+        <span class="float-icon">🏆</span>
+        <div class="float-content">
+          <strong>Streak 30 ngày</strong>
+          <span>Tiếp tục học!</span>
+        </div>
+      </div>
+
+      <div class="float-card float-card-3">
+        <span class="float-icon">⚡</span>
+        <div class="float-content">
+          <strong>AI gợi ý</strong>
+          <span>3 từ cần ôn</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Bar -->
+  <div class="stats-bar">
+    @for (stat of stats; track stat.label) {
+      <div class="stat-item">
+        <span class="stat-value">{{ stat.value }}</span>
+        <span class="stat-label">{{ stat.label }}</span>
+      </div>
+    }
+  </div>
+</section>
+
+<!-- ── FEATURES SECTION ── -->
+<section class="features" id="features">
+  <div class="section-container">
+    <div class="section-header">
+      <span class="section-chip">✨ Tính năng</span>
+      <h2 class="section-title">Mọi thứ bạn cần để học tiếng Anh</h2>
+      <p class="section-subtitle">
+        Từ họp trực tuyến đến AI từ vựng, chúng tôi cung cấp bộ công cụ toàn diện
+        giúp việc học trở nên hiệu quả và thú vị hơn.
+      </p>
+    </div>
+
+    <div class="features-grid">
+      @for (feature of features; track feature.title; let i = $index) {
+        <div class="feature-card" [attr.data-color]="feature.color" [style.animation-delay]="(i * 0.1) + 's'">
+          <div class="feature-icon-wrap">
+            <span class="feature-icon">{{ feature.icon }}</span>
+          </div>
+          <h3 class="feature-title">{{ feature.title }}</h3>
+          <p class="feature-desc">{{ feature.description }}</p>
+          <div class="feature-arrow">→</div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ── MEETING HIGHLIGHT SECTION ── -->
+<section class="meeting-highlight">
+  <div class="section-container">
+    <div class="meeting-content">
+      <div class="meeting-text">
+        <span class="section-chip chip-light">🎥 Họp trực tuyến</span>
+        <h2 class="meeting-title">Kết nối ngay — Không cần tài khoản</h2>
+        <p class="meeting-desc">
+          Tham gia phòng học trực tuyến ngay lập tức mà không cần đăng nhập.
+          Công nghệ WebRTC đảm bảo kết nối ổn định, bảo mật và chất lượng HD.
+        </p>
+        <ul class="meeting-features-list">
+          <li>✅ Kết nối tức thì, không cần cài đặt</li>
+          <li>✅ Hỗ trợ chia sẻ màn hình</li>
+          <li>✅ Chat text và emoji trong phòng</li>
+          <li>✅ Phòng họp có thể đặt mật khẩu</li>
+        </ul>
+        <button
+          class="btn-meeting-cta"
+          (click)="goToMeeting()"
+          id="meeting-section-btn"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 10l4.553-2.069A1 1 0 0121 8.845v6.31a1 1 0 01-1.447.894L15 14"/>
+            <rect x="3" y="6" width="12" height="12" rx="2"/>
+          </svg>
+          Tham gia họp ngay
+        </button>
+      </div>
+
+      <div class="meeting-visual">
+        <div class="meeting-demo-card">
+          <div class="mdc-top">
+            <div class="mdc-icon">📡</div>
+            <div class="mdc-info">
+              <span class="mdc-title">E-Learning Meeting</span>
+              <span class="mdc-status">🟢 Online · 156 phòng đang hoạt động</span>
+            </div>
+          </div>
+          <div class="mdc-rooms">
+            <div class="mdc-room">
+              <span class="room-icon">🏫</span>
+              <div class="room-info">
+                <span class="room-name">Lớp Tiếng Anh Cơ Bản</span>
+                <span class="room-count">12 / 30</span>
+              </div>
+              <span class="room-join">Vào →</span>
+            </div>
+            <div class="mdc-room">
+              <span class="room-icon">🎓</span>
+              <div class="room-info">
+                <span class="room-name">IELTS Speaking Practice</span>
+                <span class="room-count">8 / 20</span>
+              </div>
+              <span class="room-join">Vào →</span>
+            </div>
+            <div class="mdc-room">
+              <span class="room-icon">💼</span>
+              <div class="room-info">
+                <span class="room-name">Business English</span>
+                <span class="room-count">5 / 15</span>
+              </div>
+              <span class="room-join">Vào →</span>
+            </div>
+          </div>
+          <div class="mdc-footer">
+            <input class="mdc-input" type="text" placeholder="Nhập Room ID..." readonly />
+            <button class="mdc-btn">Tham gia</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TESTIMONIALS SECTION ── -->
+<section class="testimonials" id="testimonials">
+  <div class="section-container">
+    <div class="section-header">
+      <span class="section-chip">⭐ Đánh giá</span>
+      <h2 class="section-title">Học viên nói gì về chúng tôi</h2>
+      <p class="section-subtitle">
+        Hàng nghìn học viên đã cải thiện tiếng Anh và đạt được mục tiêu nhờ E-Learning.
+      </p>
+    </div>
+
+    <div class="testimonials-grid">
+      @for (review of testimonials; track review.name; let i = $index) {
+        <div class="testimonial-card" [style.animation-delay]="(i * 0.15) + 's'">
+          <div class="tcard-stars">
+            @for (star of [1,2,3,4,5]; track star) {
+              <span class="star">⭐</span>
+            }
+          </div>
+          <p class="tcard-content">"{{ review.content }}"</p>
+          <div class="tcard-author">
+            <div class="tcard-avatar">{{ review.avatar }}</div>
+            <div class="tcard-info">
+              <strong class="tcard-name">{{ review.name }}</strong>
+              <span class="tcard-role">{{ review.role }}</span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA SECTION ── -->
+<section class="cta-section" id="cta">
+  <div class="cta-bg">
+    <div class="cta-blob cta-blob-1"></div>
+    <div class="cta-blob cta-blob-2"></div>
+  </div>
+  <div class="section-container cta-container">
+    <div class="cta-badge">🚀 Bắt đầu ngay hôm nay</div>
+    <h2 class="cta-title">Sẵn sàng bứt phá tiếng Anh?</h2>
+    <p class="cta-subtitle">
+      Tham gia cùng hơn 10,000 học viên đang học tiếng Anh hiệu quả mỗi ngày.
+      Đăng ký miễn phí và bắt đầu hành trình của bạn ngay hôm nay!
+    </p>
+    <div class="cta-actions">
+      <a routerLink="/register" class="btn-cta-primary" id="cta-register-btn">
+        Đăng ký miễn phí
+        <svg viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clip-rule="evenodd"/>
+        </svg>
+      </a>
+      <button class="btn-cta-secondary" (click)="goToMeeting()" id="cta-meeting-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 10l4.553-2.069A1 1 0 0121 8.845v6.31a1 1 0 01-1.447.894L15 14"/>
+          <rect x="3" y="6" width="12" height="12" rx="2"/>
+        </svg>
+        Thử họp ngay (không cần tài khoản)
+      </button>
+    </div>
+    <p class="cta-note">Miễn phí · Không cần thẻ tín dụng · Hủy bất cứ lúc nào</p>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-brand">
+      <div class="footer-logo">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="10" fill="url(#footerGrad)"/>
+          <path d="M8 20L16 10L24 20" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="16" cy="22" r="2" fill="white"/>
+          <defs>
+            <linearGradient id="footerGrad" x1="0" y1="0" x2="32" y2="32">
+              <stop stop-color="#3B82F6"/>
+              <stop offset="1" stop-color="#6366F1"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span>E-Learning</span>
+      </div>
+      <p class="footer-tagline">Nền tảng học tiếng Anh thông minh với AI và WebRTC</p>
+    </div>
+
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>Điều hướng</h4>
+        <a routerLink="/login">Đăng nhập</a>
+        <a routerLink="/register">Đăng ký</a>
+        <button (click)="goToMeeting()">Họp trực tuyến</button>
+      </div>
+      <div class="footer-col">
+        <h4>Tính năng</h4>
+        <span>Học từ vựng AI</span>
+        <span>Video bài học</span>
+        <span>Quiz tương tác</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2026 E-Learning · Đồ án tốt nghiệp · UTC</p>
+  </div>
+</footer>

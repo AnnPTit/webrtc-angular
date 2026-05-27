@@ -11,6 +11,13 @@
       </div>
     </div>
     <div class="cl-header-right">
+      <!-- Nút chuyển sang trang Khóa học của tôi -->
+      <a routerLink="/my-courses" class="cl-my-courses-btn" id="btn-my-courses">
+        🎓 Khóa học của tôi
+        @if (enrolledCount > 0) {
+          <span class="cl-enrolled-badge">{{ enrolledCount }}</span>
+        }
+      </a>
       @if (currentUser) {
         <div class="cl-user-info">
           <div class="cl-user-avatar">{{ userInitials }}</div>
@@ -24,7 +31,13 @@
   <main class="cl-main">
     <div class="cl-page-header">
       <h1 class="cl-page-title">Danh sách khóa học</h1>
-      <p class="cl-page-subtitle">Chọn một khóa học để bắt đầu hành trình học tập của bạn</p>
+      <p class="cl-page-subtitle">
+        Khám phá các khóa học chưa đăng ký và bắt đầu hành trình học tập của bạn
+        @if (enrolledCount > 0) {
+          &nbsp;&mdash;&nbsp;Bạn đã đăng ký
+          <a routerLink="/my-courses" class="cl-enrolled-link">{{ enrolledCount }} khóa học</a>
+        }
+      </p>
     </div>
 
     <!-- Loading State -->
@@ -51,9 +64,19 @@
     <!-- Empty State -->
     @if (!loading && !error && courses.length === 0) {
       <div class="cl-empty">
-        <span class="cl-empty-icon">📭</span>
-        <h3 class="cl-empty-title">Chưa có khóa học nào</h3>
-        <p class="cl-empty-text">Hiện tại chưa có khóa học nào được tạo. Vui lòng quay lại sau.</p>
+        @if (allCourses.length > 0 && enrolledCount === allCourses.length) {
+          <!-- Đã đăng ký hết tất cả -->
+          <span class="cl-empty-icon">🎉</span>
+          <h3 class="cl-empty-title">Bạn đã đăng ký tất cả khóa học!</h3>
+          <p class="cl-empty-text">Tuyệt vời! Hãy vào “Khóa học của tôi” để bắt đầu học.</p>
+          <a routerLink="/my-courses" class="cl-my-courses-cta" id="all-enrolled-cta">
+            🎓 Xem khóa học của tôi
+          </a>
+        } @else {
+          <span class="cl-empty-icon">📭</span>
+          <h3 class="cl-empty-title">Chưa có khóa học nào</h3>
+          <p class="cl-empty-text">Hiện tại chưa có khóa học nào được tạo. Vui lòng quay lại sau.</p>
+        }
       </div>
     }
 
@@ -171,9 +194,19 @@
 
         <!-- Modal Footer -->
         <div class="cl-modal-footer">
-          <button class="cl-modal-cancel-btn" (click)="closeModal()">Đóng</button>
-          <button class="cl-modal-enroll-btn" (click)="enrollCourse()" id="enroll-course-btn">
-            🚀 Đăng ký học
+          <button class="cl-modal-cancel-btn" (click)="closeModal()">Hủy</button>
+          <button
+            class="cl-modal-enroll-btn"
+            (click)="enrollCourse()"
+            id="enroll-course-btn"
+            [disabled]="enrolling"
+          >
+            @if (enrolling) {
+              <span class="cl-enroll-spinner"></span>
+              Đang đăng ký...
+            } @else {
+              🚀 Đăng ký và học ngay
+            }
           </button>
         </div>
       </div>
