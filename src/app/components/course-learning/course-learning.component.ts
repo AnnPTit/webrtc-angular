@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { CourseService, Lesson as ApiLesson } from '../../services/course.service';
 import { AssignmentService, QuestionDTO } from '../../services/assignment.service';
 import { QuizResultService, QuizResultResponse, SubmitQuizRequest, AnswerItem } from '../../services/quiz-result.service';
+import { EnrollmentService } from '../../services/enrollment.service';
 import {
   CourseInfo,
   LessonData,
@@ -61,6 +62,7 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
     private courseService: CourseService,
     private assignmentService: AssignmentService,
     private quizResultService: QuizResultService,
+    private enrollmentService: EnrollmentService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -75,6 +77,17 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
       this.loadingCourse = false;
       return;
     }
+
+    // Khởi tạo enrollment service cho user hiện tại
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      this.enrollmentService.init(user.userId);
+      // Đảm bảo đã enroll (nếu chưa có, tạo enrollment mới)
+      if (!this.enrollmentService.isEnrolled(user.userId, this.courseId)) {
+        this.enrollmentService.enroll(user.userId, this.courseId);
+      }
+    }
+
     this.loadCourseAndLessons();
   }
 
@@ -124,6 +137,9 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
         this.applyLessonLocking();
         this.loadingCourse = false;
 
+        // ── Đồng bộ tiến độ vào EnrollmentService sau khi load lessons ──
+        this.syncProgressToEnrollment();
+
         // Auto-select the first non-completed, unlocked lesson (or first lesson)
         const firstUnlocked = this.sidebarLessons.find(
           (l) => l.status !== 'completed' && !l.locked
@@ -172,7 +188,17 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
       quiz: [],
     };
 
-    // Update sidebar
+    // ── Khi học viên bắt đầu bài học, cập nhật lastAccessed trong Enrollment ──
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      this.enrollmentService.updateLastAccessed(user.userId, this.courseId);
+
+      // Nếu bài học này chưa hoàn thành, chuyển sang in-progress
+      // (progressPercent > 0 do đã có completed lessons hoặc đang học)
+      // syncProgressToEnrollment sẽ xử lý đúng
+    }
+
+    // Update sidebar status
     if (sidebarItem && sidebarItem.status === 'not-started') {
       sidebarItem.status = 'in-progress';
     }
@@ -629,7 +655,7 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
   }
 
   // ═══════════════════════════════════════════
-  //  PROGRESS PERSISTENCE (localStorage)
+  //  PROGRESS PERSISTENCE (localStorage + EnrollmentService)
   // ═══════════════════════════════════════════
 
   /**
@@ -648,14 +674,59 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Load completed lesson IDs from localStorage.
+   * Load completed lesson IDs: ưu tiên EnrollmentService, fallback sang localStorage.
    */
   private loadProgress(): number[] {
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      const enrollment = this.enrollmentService.getEnrollment(user.userId, this.courseId);
+      if (enrollment && enrollment.completedLessons.length > 0) {
+        // Đồng bộ lại localStorage từ enrollment data
+        try {
+          localStorage.setItem(
+            this.PROGRESS_KEY_PREFIX + this.courseId,
+            JSON.stringify(enrollment.completedLessons),
+          );
+        } catch { /* ignore */ }
+        return enrollment.completedLessons;
+      }
+    }
+
+    // Fallback: đọc từ localStorage
     try {
       const raw = localStorage.getItem(this.PROGRESS_KEY_PREFIX + this.courseId);
       return raw ? JSON.parse(raw) : [];
     } catch {
       return [];
+    }
+  }
+
+  /**
+   * Đồng bộ tiến độ hiện tại lên EnrollmentService.
+   * Gọi sau khi load xong lessons để cập nhật progressPercent đúng.
+   */
+  private syncProgressToEnrollment(): void {
+    const user = this.authService.getCurrentUser();
+    if (!user) return;
+
+    const totalLessons = this.sidebarLessons.length;
+    if (totalLessons === 0) return;
+
+    const completedLessonIds = this.sidebarLessons
+      .filter(l => l.status === 'completed')
+      .map(l => l.id);
+
+    // Cập nhật từng bài đã completed vào enrollment
+    for (const lessonId of completedLessonIds) {
+      this.enrollmentService.updateProgress(user.userId, this.courseId, lessonId, totalLessons);
+    }
+
+    // Nếu chưa có bài nào completed nhưng đã enroll → đảm bảo enrollment tồn tại với progress = 0
+    if (completedLessonIds.length === 0) {
+      const enrollment = this.enrollmentService.getEnrollment(user.userId, this.courseId);
+      if (enrollment) {
+        // enrollment đã có, không cần làm gì thêm
+      }
     }
   }
 
@@ -675,7 +746,8 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Mark current lesson as completed, save progress, unlock next.
+   * Mark current lesson as completed, save progress to localStorage AND EnrollmentService,
+   * then unlock next lesson.
    */
   private markCurrentLessonCompleted(): void {
     const sidebarItem = this.sidebarLessons.find(
@@ -685,7 +757,21 @@ export class CourseLearningComponent implements OnInit, OnDestroy {
       sidebarItem.status = 'completed';
     }
     this.applyLessonLocking();
+
+    // Lưu vào localStorage
     this.saveProgress();
+
+    // ── Quan trọng: cập nhật tiến độ lên EnrollmentService ──
+    const user = this.authService.getCurrentUser();
+    if (user && this.currentLesson) {
+      const totalLessons = this.sidebarLessons.length;
+      this.enrollmentService.updateProgress(
+        user.userId,
+        this.courseId,
+        this.currentLesson.id,
+        totalLessons,
+      );
+    }
   }
 
   // ═══════════════════════════════════════════

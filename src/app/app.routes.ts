@@ -29,6 +29,13 @@ export const routes: Routes = [
     data: { roles: ['STUDENT', 'ADMIN'] }
   },
   {
+    path: 'superadmin',
+    loadComponent: () =>
+      import('./components/superadmin-dashboard/superadmin-dashboard.component').then(m => m.SuperadminDashboardComponent),
+    canActivate: [authGuard],
+    data: { roles: ['SUPERADMIN'] }
+  },
+  {
     path: 'dashboard',
     loadComponent: () =>
       import('./components/lecturer-dashboard/lecturer-dashboard.component').then(m => m.LecturerDashboardComponent),
@@ -141,6 +148,13 @@ export const routes: Routes = [
       import('./components/welcome/welcome.component').then(m => m.WelcomeComponent),
     canActivate: [authGuard],
     data: { roles: ['STUDENT', 'ADMIN'] }
+  },
+  {
+    path: 'superadmin',
+    loadComponent: () =>
+      import('./components/superadmin-dashboard/superadmin-dashboard.component').then(m => m.SuperadminDashboardComponent),
+    canActivate: [authGuard],
+    data: { roles: ['SUPERADMIN'] },
   },
   {
     path: '**',

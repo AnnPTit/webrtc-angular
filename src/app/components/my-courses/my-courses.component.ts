@@ -8,9 +8,9 @@ import {
   computed,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, NavigationEnd } from '@angular/router';
 import { Subject, forkJoin, of } from 'rxjs';
-import { takeUntil, switchMap, catchError } from 'rxjs/operators';
+import { takeUntil, switchMap, catchError, filter } from 'rxjs/operators';
 
 import { AuthService } from '../../services/auth.service';
 import { CourseService, Course } from '../../services/course.service';
@@ -63,6 +63,16 @@ export class MyCoursesComponent implements OnInit, OnDestroy {
     // Khởi tạo enrollment service với user hiện tại
     this.enrollmentService.init(user.userId);
     this.loadMyCourses();
+
+    // Subscribe vào enrollments$ — khi tiến độ thay đổi, reload danh sách
+    this.enrollmentService.enrollments$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        // Chỉ reload nếu đã có dữ liệu (tránh reload lần đầu
+        if (!this.loading && this.myCourses.length > 0) {
+          this.refreshEnrollmentData();
+        }
+      });
   }
 
   ngOnDestroy(): void {
@@ -124,18 +134,59 @@ export class MyCoursesComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Cập nhật enrollment data từ EnrollmentService vào myCourses.
+   * Không cần gọi lại API Course — chỉ cập nhật phần enrollment.
+   */
+  refreshEnrollmentData(): void {
+    const user = this.authService.getCurrentUser();
+    if (!user) return;
+
+    const freshEnrollments = this.enrollmentService.getEnrolledCourses(user.userId);
+    this.myCourses = this.myCourses.map(item => {
+      const freshEnrollment = freshEnrollments.find(e => e.courseId === item.course.id);
+      if (freshEnrollment) {
+        return { ...item, enrollment: freshEnrollment };
+      }
+      return item;
+    });
+    this.cdr.markForCheck();
+  }
+
+
+
   // ─────────────────────────────────────────────────────────────────
   //  FILTERED COURSES (theo tab)
   // ─────────────────────────────────────────────────────────────────
 
+  /**
+   * Xác định khóa học "Đang học":
+   * - progressPercent > 0 VÀ < 100 (đã học ít nhất 1 bài, chưa xong)
+   * - HOẶC: lastAccessedAt khác enrolledAt (đã bắt đầu vào học) nhưng chưa hoàn thành
+   */
+  public isInProgress(item: MyCourseItem): boolean {
+    const p = item.enrollment.progressPercent;
+    if (p >= 100) return false;
+    if (p > 0) return true;
+    // Kiểm tra đã có bài completed nào chưa
+    if (item.enrollment.completedLessons && item.enrollment.completedLessons.length > 0) return true;
+    // Kiểm tra đã truy cập (lastAccessedAt mới hơn enrolledAt)
+    if (item.enrollment.lastAccessedAt && item.enrollment.lastAccessedAt !== item.enrollment.enrolledAt) {
+      return true;
+    }
+    return false;
+  }
+
+  public isCompleted(item: MyCourseItem): boolean {
+    return item.enrollment.progressPercent >= 100;
+  }
+
   get filteredCourses(): MyCourseItem[] {
     switch (this.activeTab()) {
       case 'inProgress':
-        return this.myCourses.filter(
-          item => item.enrollment.progressPercent > 0 && item.enrollment.progressPercent < 100
-        );
+        return this.myCourses.filter(item => this.isInProgress(item));
       case 'completed':
-        return this.myCourses.filter(item => item.enrollment.progressPercent >= 100);
+        return this.myCourses.filter(item => this.isCompleted(item));
       default:
         return this.myCourses;
     }
@@ -143,12 +194,10 @@ export class MyCoursesComponent implements OnInit, OnDestroy {
 
   get totalCount(): number { return this.myCourses.length; }
   get inProgressCount(): number {
-    return this.myCourses.filter(
-      item => item.enrollment.progressPercent > 0 && item.enrollment.progressPercent < 100
-    ).length;
+    return this.myCourses.filter(item => this.isInProgress(item)).length;
   }
   get completedCount(): number {
-    return this.myCourses.filter(item => item.enrollment.progressPercent >= 100).length;
+    return this.myCourses.filter(item => this.isCompleted(item)).length;
   }
 
   // ─────────────────────────────────────────────────────────────────
@@ -261,22 +310,22 @@ export class MyCoursesComponent implements OnInit, OnDestroy {
     });
   }
 
-  getProgressStatusLabel(percent: number): string {
-    if (percent === 0) return 'Chưa bắt đầu';
-    if (percent >= 100) return 'Hoàn thành';
-    return `${percent}% hoàn thành`;
+  getProgressStatusLabel(item: MyCourseItem): string {
+    if (this.isCompleted(item)) return 'Hoàn thành';
+    if (this.isInProgress(item)) return `${item.enrollment.progressPercent}% hoàn thành`;
+    return 'Chưa bắt đầu';
   }
 
-  getProgressStatusClass(percent: number): string {
-    if (percent === 0) return 'status-not-started';
-    if (percent >= 100) return 'status-completed';
-    return 'status-in-progress';
+  getProgressStatusClass(item: MyCourseItem): string {
+    if (this.isCompleted(item)) return 'status-completed';
+    if (this.isInProgress(item)) return 'status-in-progress';
+    return 'status-not-started';
   }
 
-  getContinueBtnLabel(percent: number): string {
-    if (percent === 0) return 'Bắt đầu học';
-    if (percent >= 100) return 'Xem lại';
-    return 'Tiếp tục học';
+  getContinueBtnLabel(item: MyCourseItem): string {
+    if (this.isCompleted(item)) return 'Xem lại';
+    if (this.isInProgress(item)) return 'Tiếp tục học';
+    return 'Bắt đầu học';
   }
 
   logout(): void {

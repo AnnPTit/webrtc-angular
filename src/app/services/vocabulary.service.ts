@@ -179,19 +179,90 @@ export class VocabularyService {
   }
 
   // ═══════════════════════════════════════════
-  //  Pronunciation (Browser TTS)
+  //  Pronunciation (Browser TTS — forced English)
   // ═══════════════════════════════════════════
 
-  speak(text: string, lang: string = 'en-US'): void {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang;
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
+  /**
+   * Phát âm từ bằng giọng tiếng Anh, cố định ngôn ngữ en-US.
+   * Chủ động chọn voice tiếng Anh từ danh sách voices của trình duyệt/HĐH
+   * để tránh trình duyệt mobile tự chọn giọng theo ngôn ngữ hệ thống (VD: tiếng Việt).
+   *
+   * Thứ tự ưu tiên voice:
+   *   1. en-US  (Google US English, Samantha, ...)
+   *   2. en-GB  (Google UK English, Daniel, ...)
+   *   3. en-AU / en-CA / bất kỳ en-* nào
+   *   4. Fallback: dùng lang='en-US' mà không chỉ định voice
+   */
+  speak(text: string): void {
+    if (!('speechSynthesis' in window)) return;
+
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    const doSpeak = () => {
+      const voices = window.speechSynthesis.getVoices();
+      const englishVoice = this.pickEnglishVoice(voices);
+      if (englishVoice) {
+        utterance.voice = englishVoice;
+      }
       window.speechSynthesis.speak(utterance);
+    };
+
+    const voices = window.speechSynthesis.getVoices();
+    if (voices && voices.length > 0) {
+      // Voices đã sẵn sàng (desktop Chrome/Firefox)
+      doSpeak();
+    } else {
+      // Voices chưa load xong — cần chờ sự kiện voiceschanged (Android/iOS/Safari)
+      const onVoicesChanged = () => {
+        window.speechSynthesis.removeEventListener('voiceschanged', onVoicesChanged);
+        doSpeak();
+      };
+      window.speechSynthesis.addEventListener('voiceschanged', onVoicesChanged);
+
+      // Fallback timeout: nếu sau 800ms vẫn không có voices, phát không chỉ định voice
+      setTimeout(() => {
+        window.speechSynthesis.removeEventListener('voiceschanged', onVoicesChanged);
+        if (!utterance.voice) {
+          window.speechSynthesis.speak(utterance);
+        }
+      }, 800);
     }
   }
+
+  /**
+   * Chọn voice tiếng Anh theo thứ tự ưu tiên từ danh sách voices.
+   * Ưu tiên en-US > en-GB > en-AU/en-CA > bất kỳ en-* nào.
+   */
+  private pickEnglishVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
+    if (!voices || voices.length === 0) return null;
+
+    // Thứ tự ưu tiên các locale tiếng Anh
+    const preferred = ['en-US', 'en-GB', 'en-AU', 'en-CA', 'en-IN', 'en-NZ'];
+
+    for (const locale of preferred) {
+      // Tìm voice khớp chính xác locale (VD: "Google US English")
+      const exact = voices.find(v =>
+        v.lang.toLowerCase() === locale.toLowerCase()
+      );
+      if (exact) return exact;
+    }
+
+    // Fallback: bất kỳ voice nào có lang bắt đầu bằng 'en'
+    const anyEnglish = voices.find(v =>
+      v.lang.toLowerCase().startsWith('en')
+    );
+    if (anyEnglish) return anyEnglish;
+
+    return null;
+  }
+
+
 
   // ═══════════════════════════════════════════
   //  Error Handler

@@ -187,6 +187,21 @@
   margin-top: 0.15rem;
 }
 
+.stat-skeleton {
+  display: inline-block;
+  background: linear-gradient(90deg, var(--border) 25%, var(--bg-page) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s infinite;
+  border-radius: 4px;
+  color: transparent;
+  min-width: 2.5rem;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* Menu Section */
 .menu-section h2 {
   font-size: 1.15rem;

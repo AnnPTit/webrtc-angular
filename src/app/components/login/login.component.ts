@@ -59,18 +59,26 @@ export class LoginComponent {
           return;
         }
 
+        // SUPERADMIN always goes to superadmin dashboard
+        if (user?.role === 'SUPERADMIN') {
+          this.router.navigate(['/superadmin']);
+          return;
+        }
+
         // Normal login flow
         let target = this.returnUrl;
-        if (user?.role === 'LECTURER') {
+        if (user?.role === 'LECTURER' || user?.role === 'ADMIN') {
           if (target === '/home' || target === '/' || target.startsWith('/home')) {
             target = '/dashboard';
           }
         } else if (user?.role === 'STUDENT') {
-          if (target === '/dashboard' || target.startsWith('/dashboard')) {
+          if (target === '/dashboard' || target.startsWith('/dashboard') ||
+              target === '/superadmin' || target.startsWith('/superadmin')) {
             target = '/home';
           }
         }
         this.router.navigate([target]);
+
       },
       error: (error) => {
         this.isLoading.set(false);
