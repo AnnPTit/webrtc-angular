@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
@@ -16,6 +16,9 @@ import { VocabularyWord } from '../../models/vocabulary.model';
   imports: [RouterLink, CommonModule],
 })
 export class HomeComponent implements OnInit {
+  // ── Profile Menu ──
+  isProfileMenuOpen = false;
+
   // ── Stats ──
   enrolledCount = 0;
   completedAssignments = 0;
@@ -96,6 +99,30 @@ export class HomeComponent implements OnInit {
 
   get currentUser() {
     return this.authService.getCurrentUser();
+  }
+
+  // ═══════════════════════════════════════════
+  //  PROFILE MENU
+  // ═══════════════════════════════════════════
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.profile-wrapper')) {
+      this.isProfileMenuOpen = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  toggleProfileMenu(event: MouseEvent): void {
+    event.stopPropagation();
+    this.isProfileMenuOpen = !this.isProfileMenuOpen;
+    this.cdr.markForCheck();
+  }
+
+  closeProfileMenu(): void {
+    this.isProfileMenuOpen = false;
+    this.cdr.markForCheck();
   }
 
   logout(): void {

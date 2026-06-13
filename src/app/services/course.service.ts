@@ -124,7 +124,7 @@ export class CourseService {
 }
 
   deleteVideo(videoId: number): Observable<void> {
-    return this.http.delete<void>(`${this.API_URL}/${videoId}`);
+    return this.http.delete<void>(`${environment.apiBaseUrl}${environment.apiEndpoints.videos}/${videoId}`);
   }
 
   transcribeFromUrl(request: TranscribeRequest): Observable<ApiResponse<TranscribeResponse>> {

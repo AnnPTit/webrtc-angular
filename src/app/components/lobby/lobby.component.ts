@@ -47,6 +47,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
   selectedAudioDevice = '';
 
   private streamTracks: MediaStreamTrack[] = [];
+  private roomPassword = '';
 
   constructor() {
     effect(() => {
@@ -64,7 +65,15 @@ export class LobbyComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.roomPassword = this.route.snapshot.queryParamMap.get('password') || '';
+
     if (this.isBrowser) {
+      if (this.roomPassword) {
+        sessionStorage.setItem('roomPassword', this.roomPassword);
+      } else {
+        sessionStorage.removeItem('roomPassword');
+      }
+
       await this.loadDevices();
       await this.initPreview();
     }
@@ -161,7 +170,7 @@ export class LobbyComponent implements OnInit, OnDestroy {
   async joinRoom(): Promise<void> {
     // Store the media stream settings in sessionStorage for the room component
     if (this.isBrowser) {
-      const roomPassword = sessionStorage.getItem('roomPassword') || '';
+      const roomPassword = this.roomPassword || sessionStorage.getItem('roomPassword') || '';
 
       const userDisplayName = this.displayName.trim() || 'Anonymous';
 

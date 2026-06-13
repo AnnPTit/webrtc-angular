@@ -88,6 +88,10 @@ export class RoomComponent implements OnInit, OnDestroy {
   selectedAudioOutput = '';
 
   private subscriptions: Subscription[] = [];
+  private hasLeftRoom = false;
+  private readonly pageExitHandler = () => {
+    this.leaveCurrentRoom();
+  };
 
   async ngOnInit(): Promise<void> {
     if (!this.isBrowser) {
@@ -101,6 +105,8 @@ export class RoomComponent implements OnInit, OnDestroy {
     }
 
     this.roomId.set(roomIdParam);
+    window.addEventListener('pagehide', this.pageExitHandler);
+    window.addEventListener('beforeunload', this.pageExitHandler);
 
     try {
       // Check if user came from lobby with media settings
@@ -146,11 +152,9 @@ export class RoomComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Leave room before disconnecting
-    const currentRoomId = this.roomId();
-    if (currentRoomId) {
-      this.socket.leaveRoom(currentRoomId);
-    }
+    window.removeEventListener('pagehide', this.pageExitHandler);
+    window.removeEventListener('beforeunload', this.pageExitHandler);
+    this.leaveCurrentRoom();
     
     // Stop transcription if active
     this.subtitle.destroy();
@@ -160,6 +164,20 @@ export class RoomComponent implements OnInit, OnDestroy {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
     }
+  }
+
+  private leaveCurrentRoom(): void {
+    if (this.hasLeftRoom) {
+      return;
+    }
+
+    const currentRoomId = this.roomId();
+    if (!currentRoomId) {
+      return;
+    }
+
+    this.hasLeftRoom = true;
+    this.socket.leaveRoom(currentRoomId);
   }
 
   private setupSocketListeners(): void {
@@ -200,10 +218,18 @@ export class RoomComponent implements OnInit, OnDestroy {
       }),
 
       this.socket.onJoinResult.subscribe(result => {
-        if (result.success && result.startTime) {
-          this.roomStartTime.set(result.startTime);
-          this.startTimer(result.startTime);
+        if (result.success) {
+          if (result.startTime) {
+            this.roomStartTime.set(result.startTime);
+            this.startTimer(result.startTime);
+          }
+          return;
         }
+
+        const error = result.error || 'Không thể tham gia phòng';
+        this.errorMessage.set(error);
+        this.webrtc.stopAllMedia();
+        this.router.navigate(['/meeting'], { state: { meetingError: error } });
       }),
 
       this.socket.onReaction.subscribe(reaction => {
