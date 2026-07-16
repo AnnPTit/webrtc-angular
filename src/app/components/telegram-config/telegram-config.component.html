@@ -1,0 +1,215 @@
+<div class="tg-container">
+  <!-- Toast -->
+  @if (toastMessage()) {
+    <div class="toast" [class]="'toast-' + toastType()" (click)="dismissToast()">
+      <span class="toast-icon">
+        @switch (toastType()) {
+          @case ('success') { ✅ }
+          @case ('error') { ❌ }
+          @default { ℹ️ }
+        }
+      </span>
+      <span>{{ toastMessage() }}</span>
+    </div>
+  }
+
+  <!-- Header -->
+  <header class="tg-header">
+    <div>
+      <button class="btn-ghost" (click)="goBack()">← Quay lại</button>
+      <h1>📣 Cấu hình nhắc học bài qua Telegram</h1>
+      <p class="subtitle">
+        Lấy danh sách người đã nhắn bot, gắn chat_id vào tài khoản, và đặt lịch nhắc tự động.
+      </p>
+    </div>
+  </header>
+
+  <!-- Section 1: Contacts -->
+  <section class="card">
+    <div class="card-head">
+      <h2>1. Người đã nhắn bot</h2>
+      <button class="btn-primary" (click)="loadContacts()" [disabled]="loadingContacts()">
+        {{ loadingContacts() ? 'Đang tải...' : '🔄 Lấy danh sách' }}
+      </button>
+    </div>
+    <p class="hint">
+      Người dùng cần chủ động nhắn <code>/start</code> (hoặc bất kỳ tin nào) tới bot trước, sau đó bấm
+      nút trên để lấy chat_id.
+    </p>
+
+    @if (contacts().length > 0) {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Tên</th>
+              <th>Chat ID</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of contacts(); track c.chatId) {
+              <tr>
+                <td>{{ c.username ? '@' + c.username : '—' }}</td>
+                <td>{{ c.fullName }}</td>
+                <td><code>{{ c.chatId }}</code></td>
+                <td><button class="btn-sm" (click)="pickContact(c)">Chọn để gán</button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p class="empty">Chưa có dữ liệu. Bấm "Lấy danh sách" để tải.</p>
+    }
+  </section>
+
+  <!-- Section 2: Assign chat_id to user -->
+  <section class="card">
+    <div class="card-head">
+      <h2>2. Gán chat_id cho người dùng</h2>
+    </div>
+    <form [formGroup]="assignForm" (ngSubmit)="assign()" class="assign-form">
+      <div class="field">
+        <label>Chat ID</label>
+        <input type="text" formControlName="chatId" placeholder="Chọn từ bảng trên hoặc nhập tay" />
+      </div>
+      <div class="field">
+        <label>Người dùng</label>
+        <select formControlName="userId">
+          <option [ngValue]="null" disabled>-- Chọn người dùng --</option>
+          @for (u of users(); track u.userId) {
+            <option [ngValue]="u.userId">{{ u.fullName }} (&#64;{{ u.username }})</option>
+          }
+        </select>
+      </div>
+      <button type="submit" class="btn-primary" [disabled]="submitting()">Gán</button>
+    </form>
+
+    <h3 class="sub-h">Người dùng đã gắn Telegram</h3>
+    @if (linkedUsers().length > 0) {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tên</th>
+              <th>Username</th>
+              <th>Telegram</th>
+              <th>Chat ID</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (u of linkedUsers(); track u.userId) {
+              <tr>
+                <td>{{ u.fullName }}</td>
+                <td>&#64;{{ u.username }}</td>
+                <td>{{ u.telegramUsername ? '@' + u.telegramUsername : '—' }}</td>
+                <td><code>{{ u.telegramChatId }}</code></td>
+                <td class="row-actions">
+                  <button class="btn-sm" (click)="sendTest(u)">Gửi thử</button>
+                  <button class="btn-sm danger" (click)="unassign(u)">Bỏ gắn</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p class="empty">Chưa có người dùng nào được gắn Telegram.</p>
+    }
+  </section>
+
+  <!-- Section 3: Reminders -->
+  <section class="card">
+    <div class="card-head">
+      <h2>3. Lịch nhắc học bài</h2>
+    </div>
+
+    <form [formGroup]="reminderForm" (ngSubmit)="createReminder()" class="reminder-form">
+      <div class="field">
+        <label>Người dùng (đã gắn Telegram)</label>
+        <select formControlName="userId">
+          <option [ngValue]="null" disabled>-- Chọn người dùng --</option>
+          @for (u of linkedUsers(); track u.userId) {
+            <option [ngValue]="u.userId">{{ u.fullName }} (&#64;{{ u.username }})</option>
+          }
+        </select>
+      </div>
+      <div class="field small">
+        <label>Giờ nhắc</label>
+        <input type="time" formControlName="remindTime" />
+      </div>
+      <div class="field days-field">
+        <label>Các ngày trong tuần</label>
+        <div class="days">
+          @for (d of days; track d.key) {
+            <button
+              type="button"
+              class="day-chip"
+              [class.active]="isDaySelected(d.key)"
+              (click)="toggleDay(d.key)"
+            >
+              {{ d.label }}
+            </button>
+          }
+        </div>
+      </div>
+      <div class="field full">
+        <label>Lời nhắc (tùy chọn)</label>
+        <input type="text" formControlName="message" placeholder="Để trống sẽ dùng lời nhắc mặc định" maxlength="500" />
+      </div>
+      <button type="submit" class="btn-primary" [disabled]="submitting()">➕ Tạo lịch nhắc</button>
+    </form>
+
+    <h3 class="sub-h">Danh sách lịch nhắc</h3>
+    @if (loadingReminders()) {
+      <p class="empty">Đang tải...</p>
+    } @else if (reminders().length > 0) {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Người dùng</th>
+              <th>Giờ</th>
+              <th>Ngày</th>
+              <th>Lời nhắc</th>
+              <th>Trạng thái</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of reminders(); track r.id) {
+              <tr [class.disabled-row]="!r.enabled">
+                <td>
+                  {{ r.fullName || 'N/A' }}
+                  @if (!r.telegramLinked) {
+                    <span class="warn-tag">chưa gắn TG</span>
+                  }
+                </td>
+                <td><strong>{{ r.remindTime }}</strong></td>
+                <td>{{ dayLabels(r.daysOfWeek) }}</td>
+                <td class="msg-cell">{{ r.message || '(mặc định)' }}</td>
+                <td>
+                  <span class="status" [class.on]="r.enabled">
+                    {{ r.enabled ? 'Bật' : 'Tắt' }}
+                  </span>
+                </td>
+                <td class="row-actions">
+                  <button class="btn-sm" (click)="sendReminderNow(r)">Gửi ngay</button>
+                  <button class="btn-sm" (click)="toggleReminder(r)">
+                    {{ r.enabled ? 'Tắt' : 'Bật' }}
+                  </button>
+                  <button class="btn-sm danger" (click)="deleteReminder(r)">Xóa</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p class="empty">Chưa có lịch nhắc nào.</p>
+    }
+  </section>
+</div>

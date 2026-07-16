@@ -81,6 +81,20 @@ export class LecturerDashboardComponent implements OnInit {
   constructor(protected authService: AuthService) {}
 
   ngOnInit(): void {
+    // ADMIN-only: study-reminder Telegram configuration console
+    if (this.authService.isAdmin()) {
+      this.menuItems = [
+        {
+          id: 'telegram-reminders',
+          title: 'Nhắc học bài (Telegram)',
+          description: 'Cấu hình bot Telegram và đặt lịch nhắc học viên',
+          icon: 'calendar',
+          route: '/telegram-config',
+          color: '#0088cc',
+        },
+        ...this.menuItems,
+      ];
+    }
     this.loadStats();
   }
 

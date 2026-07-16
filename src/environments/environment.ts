@@ -13,6 +13,8 @@ export const environment = {
     assignments: '/api/assignments',
     quizResults: '/api/quiz-results',
     vocabulary: '/api/vocabulary',
+    telegram: '/api/telegram',
+    reminders: '/api/reminders',
   },
   socket: {
     url: 'http://localhost:3000',

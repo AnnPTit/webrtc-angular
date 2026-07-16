@@ -157,6 +157,13 @@ export const routes: Routes = [
     data: { roles: ['SUPERADMIN'] },
   },
   {
+    path: 'telegram-config',
+    loadComponent: () =>
+      import('./components/telegram-config/telegram-config.component').then(m => m.TelegramConfigComponent),
+    canActivate: [authGuard],
+    data: { roles: ['ADMIN'] },
+  },
+  {
     path: '**',
     redirectTo: 'login',
   },
