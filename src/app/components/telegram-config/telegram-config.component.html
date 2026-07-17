@@ -138,6 +138,13 @@
         </select>
       </div>
       <div class="field small">
+        <label>Loại</label>
+        <select formControlName="type">
+          <option value="TEXT">Nhắc văn bản</option>
+          <option value="VOCAB_QUIZ">Quiz từ vựng</option>
+        </select>
+      </div>
+      <div class="field small">
         <label>Giờ nhắc</label>
         <input type="time" formControlName="remindTime" />
       </div>
@@ -156,10 +163,16 @@
           }
         </div>
       </div>
-      <div class="field full">
-        <label>Lời nhắc (tùy chọn)</label>
-        <input type="text" formControlName="message" placeholder="Để trống sẽ dùng lời nhắc mặc định" maxlength="500" />
-      </div>
+      @if (isQuizType()) {
+        <div class="field full">
+          <p class="hint">🧠 Câu hỏi quiz sẽ được tự động sinh từ các từ vựng người dùng đã học (không cần nhập lời nhắc).</p>
+        </div>
+      } @else {
+        <div class="field full">
+          <label>Lời nhắc (tùy chọn)</label>
+          <input type="text" formControlName="message" placeholder="Để trống sẽ dùng lời nhắc mặc định" maxlength="500" />
+        </div>
+      }
       <button type="submit" class="btn-primary" [disabled]="submitting()">➕ Tạo lịch nhắc</button>
     </form>
 
@@ -172,6 +185,7 @@
           <thead>
             <tr>
               <th>Người dùng</th>
+              <th>Loại</th>
               <th>Giờ</th>
               <th>Ngày</th>
               <th>Lời nhắc</th>
@@ -188,9 +202,16 @@
                     <span class="warn-tag">chưa gắn TG</span>
                   }
                 </td>
+                <td>
+                  <span class="type-tag" [class.quiz]="r.type === 'VOCAB_QUIZ'">
+                    {{ typeLabel(r.type) }}
+                  </span>
+                </td>
                 <td><strong>{{ r.remindTime }}</strong></td>
                 <td>{{ dayLabels(r.daysOfWeek) }}</td>
-                <td class="msg-cell">{{ r.message || '(mặc định)' }}</td>
+                <td class="msg-cell">
+                  {{ r.type === 'VOCAB_QUIZ' ? '(quiz tự sinh)' : (r.message || '(mặc định)') }}
+                </td>
                 <td>
                   <span class="status" [class.on]="r.enabled">
                     {{ r.enabled ? 'Bật' : 'Tắt' }}

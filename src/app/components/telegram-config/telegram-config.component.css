@@ -203,6 +203,20 @@ th {
   background: var(--warning-light);
   color: var(--warning-text);
 }
+.type-tag {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.type-tag.quiz {
+  background: var(--purple-light);
+  color: var(--purple);
+}
 
 /* ── Buttons ── */
 .btn-primary {

@@ -76,6 +76,7 @@ export class TelegramConfigComponent implements OnInit {
     });
     this.reminderForm = this.fb.group({
       userId: [null, Validators.required],
+      type: ['TEXT'],
       remindTime: ['20:00', [Validators.required, Validators.pattern(/^([01]\d|2[0-3]):[0-5]\d$/)]],
       message: [''],
     });
@@ -215,11 +216,13 @@ export class TelegramConfigComponent implements OnInit {
       this.showToast('Vui lòng chọn ít nhất một ngày trong tuần.', 'error');
       return;
     }
+    const type = this.reminderForm.value.type === 'VOCAB_QUIZ' ? 'VOCAB_QUIZ' : 'TEXT';
     const request: CreateReminderRequest = {
       userId: this.reminderForm.value.userId,
       remindTime: this.reminderForm.value.remindTime,
       daysOfWeek: daysArr,
-      message: this.reminderForm.value.message?.trim() || null,
+      type,
+      message: type === 'VOCAB_QUIZ' ? null : this.reminderForm.value.message?.trim() || null,
     };
     this.submitting.set(true);
     this.telegramService.createReminder(request).subscribe({
@@ -269,6 +272,15 @@ export class TelegramConfigComponent implements OnInit {
     return keys
       .map((k) => this.days.find((d) => d.key === k)?.label ?? k)
       .join(', ');
+  }
+
+  /** True when the reminder form is currently set to the vocab-quiz type. */
+  isQuizType(): boolean {
+    return this.reminderForm.value.type === 'VOCAB_QUIZ';
+  }
+
+  typeLabel(type: string): string {
+    return type === 'VOCAB_QUIZ' ? 'Quiz từ vựng' : 'Văn bản';
   }
 
   goBack(): void {

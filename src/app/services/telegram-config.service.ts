@@ -40,6 +40,8 @@ export interface SendMessageRequest {
 }
 
 // ===== Reminders =====
+export type ReminderType = 'TEXT' | 'VOCAB_QUIZ';
+
 export interface StudyReminder {
   id: number;
   userId: number;
@@ -48,6 +50,7 @@ export interface StudyReminder {
   remindTime: string; // "HH:mm"
   daysOfWeek: string[]; // DayOfWeek names, e.g. ["MONDAY","WEDNESDAY"]
   message: string | null;
+  type: ReminderType;
   enabled: boolean;
   telegramLinked: boolean;
   createdAt: string;
@@ -59,12 +62,14 @@ export interface CreateReminderRequest {
   remindTime: string;
   daysOfWeek: string[];
   message?: string | null;
+  type?: ReminderType;
 }
 
 export interface UpdateReminderRequest {
   remindTime: string;
   daysOfWeek: string[];
   message?: string | null;
+  type?: ReminderType;
   enabled?: boolean;
 }
 
