@@ -10,10 +10,13 @@
         <p class="subtitle">Quản lý bản nháp và bài đã xuất bản</p>
       </div>
     </div>
-    <button type="button" class="btn-new" (click)="newPost()">
-      <svg viewBox="0 0 24 24" class="ic"><path d="M12 5v14M5 12h14"/></svg>
-      Viết bài mới
-    </button>
+    <div class="header-actions">
+      <a routerLink="/blog/feed" class="btn-ghost">Blog cộng đồng</a>
+      <button type="button" class="btn-new" (click)="newPost()">
+        <svg viewBox="0 0 24 24" class="ic"><path d="M12 5v14M5 12h14"/></svg>
+        Viết bài mới
+      </button>
+    </div>
   </header>
 
   <!-- Loading -->

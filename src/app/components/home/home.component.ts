@@ -54,9 +54,9 @@ export class HomeComponent implements OnInit {
     {
       id: 'blog',
       title: 'Blog',
-      description: 'Viết và chia sẻ bài viết kiến thức lập trình của bạn',
+      description: 'Đọc và chia sẻ bài viết kiến thức lập trình cộng đồng',
       icon: 'document',
-      route: '/blog',
+      route: '/blog/feed',
       color: '#8b5cf6'
     },
     {

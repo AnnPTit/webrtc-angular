@@ -39,9 +39,9 @@ export class LecturerDashboardComponent implements OnInit {
     {
       id: 'blog',
       title: 'Blog',
-      description: 'Viết và quản lý bài viết chia sẻ kiến thức lập trình',
+      description: 'Đọc bài cộng đồng, viết và quản lý bài chia sẻ kiến thức',
       icon: 'book',
-      route: '/blog',
+      route: '/blog/feed',
       color: '#8b5cf6'
     },
     {

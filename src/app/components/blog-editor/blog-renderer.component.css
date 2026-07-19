@@ -46,6 +46,10 @@
   font-weight: 600;
   color: var(--text-primary);
 }
+.blog-view-meta .date {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
 .tag-row {
   display: flex;
   flex-wrap: wrap;

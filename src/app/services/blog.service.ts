@@ -32,6 +32,7 @@ export interface BlogSummary {
   updatedAt: string | null;
   createdAt: string;
   publishedAt: string | null;
+  authorName?: string | null;
 }
 
 /** Create / update / autosave payload. */
@@ -89,6 +90,20 @@ export class BlogService {
   listMine(): Observable<BlogSummary[]> {
     return this.http
       .get<ApiResponse<BlogSummary[]>>(`${this.baseUrl}/mine`)
+      .pipe(map(res => res.data), catchError(this.handleError));
+  }
+
+  /** Public community feed of published posts. */
+  feed(): Observable<BlogSummary[]> {
+    return this.http
+      .get<ApiResponse<BlogSummary[]>>(`${this.baseUrl}/feed`)
+      .pipe(map(res => res.data), catchError(this.handleError));
+  }
+
+  /** Public read of a single published post. */
+  getPublic(id: number): Observable<BlogPost> {
+    return this.http
+      .get<ApiResponse<BlogPost>>(`${this.baseUrl}/public/${id}`)
       .pipe(map(res => res.data), catchError(this.handleError));
   }
 

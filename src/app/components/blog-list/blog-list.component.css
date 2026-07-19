@@ -68,6 +68,25 @@
 }
 .btn-new:hover { background: var(--brand-hover); }
 .btn-new .ic { width: 16px; height: 16px; }
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.header-actions .btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 0.55rem 1.1rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
+}
+.header-actions .btn-ghost:hover { background: var(--bg-tertiary); color: var(--text-primary); }
 
 /* ── Grid ── */
 .bl-grid {

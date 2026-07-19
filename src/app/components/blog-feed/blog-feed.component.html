@@ -1,0 +1,72 @@
+<div class="feed-container">
+  <!-- Header -->
+  <header class="feed-header">
+    <div>
+      <h1>Blog cộng đồng</h1>
+      <p class="subtitle">Khám phá bài viết chia sẻ kiến thức lập trình từ mọi người</p>
+    </div>
+    @if (isAuthed) {
+      <div class="feed-actions">
+        <a routerLink="/blog" class="btn-ghost">Bài viết của tôi</a>
+        <a routerLink="/blog/editor" class="btn-new">
+          <svg viewBox="0 0 24 24" class="ic"><path d="M12 5v14M5 12h14"/></svg>
+          Viết bài mới
+        </a>
+      </div>
+    } @else {
+      <a routerLink="/login" class="btn-new">Đăng nhập để viết</a>
+    }
+  </header>
+
+  @if (loading()) {
+    <div class="feed-grid">
+      @for (s of [1, 2, 3, 4]; track s) {
+        <div class="skeleton-card"></div>
+      }
+    </div>
+  } @else if (error()) {
+    <div class="state-box error">
+      <p>{{ error() }}</p>
+      <button type="button" class="btn-ghost" (click)="load()">Thử lại</button>
+    </div>
+  } @else if (posts().length === 0) {
+    <div class="state-box empty">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      </div>
+      <h2>Chưa có bài viết nào được xuất bản</h2>
+      <p>Hãy là người đầu tiên chia sẻ kiến thức với cộng đồng.</p>
+      @if (isAuthed) {
+        <a routerLink="/blog/editor" class="btn-new">Viết bài đầu tiên</a>
+      }
+    </div>
+  } @else {
+    <div class="feed-grid">
+      @for (post of posts(); track post.id) {
+        <article class="feed-card" (click)="openPost(post.id)">
+          @if (post.category) {
+            <span class="cat">{{ post.category }}</span>
+          }
+          <h3 class="feed-title">{{ post.title || '(Không có tiêu đề)' }}</h3>
+          @if (post.summary) {
+            <p class="feed-summary">{{ post.summary }}</p>
+          }
+          @if (post.tags.length) {
+            <div class="feed-tags">
+              @for (t of post.tags; track t) {
+                <span class="tag">#{{ t }}</span>
+              }
+            </div>
+          }
+          <div class="feed-foot">
+            <span class="avatar">{{ initials(post.authorName) }}</span>
+            <div class="byline">
+              <span class="author">{{ post.authorName || 'Ẩn danh' }}</span>
+              <span class="date">{{ displayDate(post.publishedAt || post.updatedAt) }}</span>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</div>

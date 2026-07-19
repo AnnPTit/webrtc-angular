@@ -180,6 +180,18 @@ export const routes: Routes = [
     data: { roles: ['STUDENT', 'LECTURER', 'ADMIN'] },
   },
   {
+    // Feed công khai — mọi người xem bài đã xuất bản (không cần đăng nhập).
+    path: 'blog/feed',
+    loadComponent: () =>
+      import('./components/blog-feed/blog-feed.component').then(m => m.BlogFeedComponent),
+  },
+  {
+    // Trang đọc bài công khai qua ?id=<blogId> (không cần đăng nhập).
+    path: 'blog/post',
+    loadComponent: () =>
+      import('./components/blog-post/blog-post.component').then(m => m.BlogPostComponent),
+  },
+  {
     path: '**',
     redirectTo: 'login',
   },

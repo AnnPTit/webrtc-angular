@@ -11,6 +11,9 @@
       @if (authorName) {
         <span class="author">{{ authorName }}</span>
       }
+      @if (dateLabel) {
+        <span class="date">{{ dateLabel }}</span>
+      }
       @if (tagList().length) {
         <span class="tag-row">
           @for (t of tagList(); track t) {

@@ -14,6 +14,11 @@
       }
       @if (isPublished()) {
         <span class="pub-badge">● Đã xuất bản</span>
+        @if (postId()) {
+          <a class="view-link" [routerLink]="['/blog/post']" [queryParams]="{ id: postId() }">
+            Xem bài
+          </a>
+        }
       }
     </div>
 

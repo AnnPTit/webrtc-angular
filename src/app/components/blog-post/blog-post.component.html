@@ -1,0 +1,32 @@
+<div class="bp-container">
+  <div class="bp-bar">
+    <a routerLink="/blog/feed" class="back-link">
+      <svg viewBox="0 0 24 24" class="ic"><path d="m15 18-6-6 6-6"/></svg>
+      Blog cộng đồng
+    </a>
+  </div>
+
+  @if (loading()) {
+    <div class="bp-state">
+      <div class="spinner"></div>
+      <p>Đang tải bài viết…</p>
+    </div>
+  } @else if (error()) {
+    <div class="bp-state error">
+      <h2>Không thể mở bài viết</h2>
+      <p>{{ error() }}</p>
+      <a routerLink="/blog/feed" class="btn-primary">Về trang Blog</a>
+    </div>
+  } @else if (post(); as p) {
+    <app-blog-renderer
+      [title]="p.title"
+      [summary]="p.summary"
+      [category]="p.category"
+      [authorName]="p.authorName"
+      [dateLabel]="publishedLabel()"
+      [tags]="p.tags"
+      [contentHtml]="p.contentHtml"
+      [trusted]="false"
+    />
+  }
+</div>

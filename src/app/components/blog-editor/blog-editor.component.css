@@ -79,6 +79,14 @@
   font-weight: 600;
   color: var(--success);
 }
+.view-link {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.view-link:hover { color: var(--brand-hover); }
 
 .tool-btn {
   display: inline-flex;
