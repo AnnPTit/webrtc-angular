@@ -12,6 +12,7 @@ export const environment = {
     vocabulary: '/api/vocabulary',
     telegram: '/api/telegram',
     reminders: '/api/reminders',
+    blogs: '/api/blogs',
   },
   socket: {
     url: '__SOCKET_URL__',

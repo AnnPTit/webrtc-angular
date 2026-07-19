@@ -37,6 +37,14 @@ export class LecturerDashboardComponent implements OnInit {
       color: '#45b7d1'
     },
     {
+      id: 'blog',
+      title: 'Blog',
+      description: 'Viết và quản lý bài viết chia sẻ kiến thức lập trình',
+      icon: 'book',
+      route: '/blog',
+      color: '#8b5cf6'
+    },
+    {
       id: 'create-meeting',
       title: 'Tạo cuộc họp',
       description: 'Khởi tạo phòng họp trực tuyến cho lớp',

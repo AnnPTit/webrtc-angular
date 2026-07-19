@@ -195,3 +195,167 @@ html, body {
   from { transform: scale(1); }
   to { transform: scale(1.15); }
 }
+
+/* ═══════════════════════════════════════════
+   BLOG EDITOR — shared content styles
+   Used by BOTH the contentEditable surface (.rte-surface.blog-prose) and the
+   preview/published renderer (.blog-prose). These live in the GLOBAL sheet on
+   purpose: Angular's emulated encapsulation does NOT tag dynamically-inserted
+   innerHTML, so component-scoped rules would never match the code blocks / rich
+   text the editor creates at runtime.
+   ═══════════════════════════════════════════ */
+
+/* Editor-scoped dark mode: override the design tokens on the editor root so
+   every descendant (chrome, modals, prose) adapts automatically via var(). */
+.blog-editor-root[data-theme='dark'] {
+  --bg-page: #0F172A;
+  --bg-primary: #1E293B;
+  --bg-secondary: #263244;
+  --bg-tertiary: #334155;
+  --text-primary: #E2E8F0;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --text-inverse: #FFFFFF;
+  --border: #334155;
+  --border-hover: #475569;
+  --brand-light: #1E3A5F;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Prose typography ── */
+.blog-prose {
+  color: var(--text-primary);
+  word-wrap: break-word;
+}
+.blog-prose h1,
+.blog-prose h2,
+.blog-prose h3 {
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 1.6em 0 0.6em;
+  color: var(--text-primary);
+}
+.blog-prose h1 { font-size: 1.9rem; }
+.blog-prose h2 { font-size: 1.5rem; }
+.blog-prose h3 { font-size: 1.25rem; }
+.blog-prose p { margin: 0 0 1.05em; }
+.blog-prose a {
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.blog-prose ul,
+.blog-prose ol {
+  margin: 0 0 1.05em;
+  padding-left: 1.6em;
+}
+.blog-prose li { margin: 0.3em 0; }
+.blog-prose blockquote {
+  margin: 1.2em 0;
+  padding: 0.5em 1.1em;
+  border-left: 4px solid var(--brand);
+  background: var(--bg-secondary);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+.blog-prose hr {
+  border: none;
+  height: 1px;
+  background: var(--border);
+  margin: 2em 0;
+}
+.blog-prose strong { font-weight: 700; }
+.blog-prose em { font-style: italic; }
+/* Inline code (not code blocks) */
+.blog-prose :not(pre) > code {
+  background: var(--bg-tertiary);
+  padding: 0.15em 0.4em;
+  border-radius: var(--radius-sm);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.9em;
+}
+.blog-prose img { max-width: 100%; height: auto; border-radius: var(--radius-md); }
+
+/* ── Code blocks (fixed dark theme in both light & dark page modes) ── */
+.cblock {
+  margin: 1.4em 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid #30363d;
+  background: #0d1117;
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  /* prevent the browser caret from entering the atomic block awkwardly */
+  user-select: none;
+}
+.cblock-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.75rem;
+  background: #161b22;
+  border-bottom: 1px solid #30363d;
+}
+.cblock-lang {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #8b949e;
+}
+.cblock-tools { display: flex; gap: 0.4rem; }
+.cblock-btn {
+  border: 1px solid #30363d;
+  background: #21262d;
+  color: #c9d1d9;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.cblock-btn:hover { background: #30363d; border-color: #8b949e; }
+.cblock-pre {
+  margin: 0;
+  padding: 0.85rem 0;
+  overflow-x: auto;
+  user-select: text;
+}
+.cblock-code {
+  display: block;
+  counter-reset: cln;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: #c9d1d9;
+  min-width: max-content;
+}
+.cline {
+  display: block;
+  counter-increment: cln;
+  padding: 0 1rem 0 3.4rem;
+  position: relative;
+  white-space: pre;
+}
+.cline::before {
+  content: counter(cln);
+  position: absolute;
+  left: 0;
+  width: 2.4rem;
+  text-align: right;
+  color: #6e7681;
+  user-select: none;
+}
+/* Syntax token colours (GitHub-dark palette) */
+.cblock .tok-com { color: #8b949e; font-style: italic; }
+.cblock .tok-str { color: #a5d6ff; }
+.cblock .tok-num { color: #79c0ff; }
+.cblock .tok-kw  { color: #ff7b72; }
+.cblock .tok-lit { color: #79c0ff; }
+.cblock .tok-tag { color: #7ee787; }
+.cblock .tok-attr { color: #d2a8ff; }
+
+/* Read-only render (preview / published): the "Sửa" affordance is meaningless. */
+.blog-prose.readonly [data-action='edit-code'] { display: none; }
+.blog-prose.readonly { user-select: text; }

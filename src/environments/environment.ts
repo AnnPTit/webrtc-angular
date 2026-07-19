@@ -15,6 +15,7 @@ export const environment = {
     vocabulary: '/api/vocabulary',
     telegram: '/api/telegram',
     reminders: '/api/reminders',
+    blogs: '/api/blogs',
   },
   socket: {
     url: 'http://localhost:3000',

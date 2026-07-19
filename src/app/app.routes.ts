@@ -164,6 +164,22 @@ export const routes: Routes = [
     data: { roles: ['ADMIN'] },
   },
   {
+    // Danh sách "Bài viết của tôi" — mở/xóa nháp, tạo bài mới.
+    path: 'blog',
+    loadComponent: () =>
+      import('./components/blog-list/blog-list.component').then(m => m.BlogListComponent),
+    canActivate: [authGuard],
+    data: { roles: ['STUDENT', 'LECTURER', 'ADMIN'] },
+  },
+  {
+    // Trình soạn thảo blog. Mở bài mới, hoặc chỉnh sửa qua ?id=<blogId>.
+    path: 'blog/editor',
+    loadComponent: () =>
+      import('./components/blog-editor/blog-editor.component').then(m => m.BlogEditorComponent),
+    canActivate: [authGuard],
+    data: { roles: ['STUDENT', 'LECTURER', 'ADMIN'] },
+  },
+  {
     path: '**',
     redirectTo: 'login',
   },

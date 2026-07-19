@@ -1,0 +1,25 @@
+<article class="blog-view">
+  <header class="blog-view-head">
+    @if (category) {
+      <span class="cat-pill">{{ category }}</span>
+    }
+    <h1 class="blog-view-title">{{ title || 'Tiêu đề bài viết' }}</h1>
+    @if (summary) {
+      <p class="blog-view-summary">{{ summary }}</p>
+    }
+    <div class="blog-view-meta">
+      @if (authorName) {
+        <span class="author">{{ authorName }}</span>
+      }
+      @if (tagList().length) {
+        <span class="tag-row">
+          @for (t of tagList(); track t) {
+            <span class="tag-chip">#{{ t }}</span>
+          }
+        </span>
+      }
+    </div>
+  </header>
+
+  <div class="blog-prose readonly" (click)="onBodyClick($event)" [innerHTML]="safeBody()"></div>
+</article>

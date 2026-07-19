@@ -1,0 +1,98 @@
+<div class="bl-container">
+  <!-- Header -->
+  <header class="bl-header">
+    <div class="bl-header-left">
+      <a [routerLink]="backRoute" class="back-link" title="Quay lại">
+        <svg viewBox="0 0 24 24" class="ic"><path d="m15 18-6-6 6-6"/></svg>
+      </a>
+      <div>
+        <h1>Bài viết của tôi</h1>
+        <p class="subtitle">Quản lý bản nháp và bài đã xuất bản</p>
+      </div>
+    </div>
+    <button type="button" class="btn-new" (click)="newPost()">
+      <svg viewBox="0 0 24 24" class="ic"><path d="M12 5v14M5 12h14"/></svg>
+      Viết bài mới
+    </button>
+  </header>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="bl-grid">
+      @for (s of [1, 2, 3]; track s) {
+        <div class="skeleton-card"></div>
+      }
+    </div>
+  } @else if (error()) {
+    <div class="state-box error">
+      <p>{{ error() }}</p>
+      <button type="button" class="btn-ghost" (click)="load()">Thử lại</button>
+    </div>
+  } @else if (posts().length === 0) {
+    <!-- Empty -->
+    <div class="state-box empty">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+      </div>
+      <h2>Chưa có bài viết nào</h2>
+      <p>Bắt đầu chia sẻ kiến thức lập trình của bạn ngay hôm nay.</p>
+      <button type="button" class="btn-new" (click)="newPost()">Viết bài đầu tiên</button>
+    </div>
+  } @else {
+    <!-- List -->
+    <div class="bl-grid">
+      @for (post of posts(); track post.id) {
+        <article class="post-card" (click)="openPost(post.id)">
+          <div class="post-top">
+            <span class="status-badge" [class.published]="!isDraft(post.status)">
+              {{ isDraft(post.status) ? 'Bản nháp' : 'Đã xuất bản' }}
+            </span>
+            @if (post.category) {
+              <span class="cat">{{ post.category }}</span>
+            }
+          </div>
+
+          <h3 class="post-title">{{ post.title || '(Chưa có tiêu đề)' }}</h3>
+          @if (post.summary) {
+            <p class="post-summary">{{ post.summary }}</p>
+          }
+
+          @if (post.tags.length) {
+            <div class="post-tags">
+              @for (t of post.tags; track t) {
+                <span class="tag">#{{ t }}</span>
+              }
+            </div>
+          }
+
+          <div class="post-foot">
+            <span class="date">Cập nhật: {{ displayDate(post.updatedAt || post.createdAt) }}</span>
+
+            <div class="post-actions" (click)="$event.stopPropagation()">
+              @if (confirmingId() === post.id) {
+                <span class="confirm-text">Xóa bài này?</span>
+                <button type="button" class="act danger" (click)="confirmDelete(post.id, $event)">Xóa</button>
+                <button type="button" class="act" (click)="cancelDelete($event)">Hủy</button>
+              } @else {
+                <button type="button" class="act" (click)="openPost(post.id)" title="Chỉnh sửa">
+                  <svg viewBox="0 0 24 24" class="ic"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+                </button>
+                <button type="button" class="act danger" (click)="askDelete(post.id, $event)" title="Xóa">
+                  <svg viewBox="0 0 24 24" class="ic"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+                </button>
+              }
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  <!-- Toast -->
+  @if (toast(); as t) {
+    <div class="toast" [class.success]="t.type === 'success'" [class.error]="t.type === 'error'"
+      (click)="dismissToast()">
+      {{ t.msg }}
+    </div>
+  }
+</div>
